@@ -1,0 +1,9 @@
+export const STORAGE_KEY_NAME = "caisse-post-store";
+export const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+export const TOKEN_TYPE = "Bearer";
+export const REQUEST_HEADER_AUTH_KEY = "Authorization";
+export const UNAUTHORIZED_STATUS_NUMBERS = [401];
+export const TOKEN_KEY = process.env.NEXT_PUBLIC_TOKEN_KEY || "mboasms-access-token";
+export const REFRESH_TOKEN_KEY = process.env.NEXT_PUBLIC_REFRESH_TOKEN_KEY || "mboasms-refresh-token";
+export const USER_KEY = process.env.NEXT_PUBLIC_USER_KEY || "mboasms-user";
+export const ROLE_KEY = ["SUPER_ADMIN", "ADMIN", "MANAGER", "SELLER", "USER"];
