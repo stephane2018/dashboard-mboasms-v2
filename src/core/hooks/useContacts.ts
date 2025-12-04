@@ -16,6 +16,7 @@ import {
     EnterpriseContactResponseType,
     PaginatedEnterpriseContactsResponseType
 } from "@/core/models/contact-new";
+import { invalidateContactQueries } from "@/core/utils/query-invalidation";
 
 // Query keys for cache management
 export const contactKeys = {
@@ -42,6 +43,7 @@ export function useGetAllContactsByEnterprise(enterpriseId: string) {
     return useQuery<EnterpriseContactResponseType[], Error>({
         queryKey: contactKeys.lists(),
         queryFn: () => getAllContactsByEnterprise(enterpriseId),
+
     });
 }
 
@@ -84,8 +86,8 @@ export function useCreateContact() {
             toast.success("Contact créé", {
                 description: `${data.firstname} ${data.lastname} a été ajouté avec succès`,
             });
-            // Invalidate and refetch contacts
-            queryClient.invalidateQueries({ queryKey: contactKeys.all });
+            // Invalidate contacts based on user role
+            invalidateContactQueries(queryClient);
         },
         onError: (error: any) => {
             const errorMessage = error?.message || "Erreur lors de la création du contact";
@@ -109,9 +111,8 @@ export function useUpdateContact() {
             toast.success("Contact mis à jour", {
                 description: `${data.firstname} ${data.lastname} a été modifié avec succès`,
             });
-            // Invalidate specific contact and list
-            queryClient.invalidateQueries({ queryKey: contactKeys.detail(variables.id) });
-            queryClient.invalidateQueries({ queryKey: contactKeys.all });
+            // Invalidate contacts based on user role
+            invalidateContactQueries(queryClient, variables.id);
         },
         onError: (error: any) => {
             const errorMessage = error?.message || "Erreur lors de la mise à jour du contact";
@@ -134,8 +135,8 @@ export function useDeleteContact() {
             toast.success("Contact supprimé", {
                 description: "Le contact a été supprimé avec succès",
             });
-            // Invalidate contacts list
-            queryClient.invalidateQueries({ queryKey: contactKeys.all });
+            // Invalidate contacts based on user role
+            invalidateContactQueries(queryClient);
         },
         onError: (error: any) => {
             const errorMessage = error?.message || "Erreur lors de la suppression du contact";
@@ -160,8 +161,8 @@ export function useImportContacts() {
             toast.success("Import réussi", {
                 description: `${importedCount} contact(s) importé(s) avec succès`,
             });
-            // Invalidate contacts list
-            queryClient.invalidateQueries({ queryKey: contactKeys.all });
+            // Invalidate contacts based on user role
+            invalidateContactQueries(queryClient);
         },
         onError: (error: any) => {
             const errorMessage = error?.message || "Erreur lors de l'import des contacts";

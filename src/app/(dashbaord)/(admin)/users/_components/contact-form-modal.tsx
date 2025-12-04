@@ -106,6 +106,7 @@ export function ContactFormModal({
                     id: contact.id,
                     data: {
                         ...data,
+                        id: contact.id,
                         enterpriseId,
                     },
                 },

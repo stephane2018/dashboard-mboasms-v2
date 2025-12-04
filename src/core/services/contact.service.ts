@@ -97,7 +97,7 @@ export const updateContact = async (
     data: Partial<UpdateContactRequestType>
 ): Promise<EnterpriseContactResponseType> => {
     try {
-        const response = await httpClient.put<EnterpriseContactResponseType>(`/api/v1/contact/${id}`, data);
+        const response = await httpClient.post<EnterpriseContactResponseType>(`/api/v1/contact`, data);
         console.log(response);
         return response;
     } catch (error) {

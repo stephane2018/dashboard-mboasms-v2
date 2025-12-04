@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Edit2, Trash, More } from "iconsax-react"
+import { Edit2, Trash, More, TickCircle, CloseCircle } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Gender } from "@/core/config/enum"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
@@ -18,6 +18,7 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import { Badge } from "@/shared/ui/badge"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
+import { getPhoneValidationStatus, checkPhoneValidation } from "@/core/utils/phone-validation"
 
 interface GetColumnsProps {
     onEdit: (contact: EnterpriseContactResponseType) => void
@@ -72,6 +73,79 @@ export function getColumns({
                 label: "Phone",
                 variant: "text",
                 placeholder: "Search by phone...",
+            },
+        },
+        {
+            id: "operator",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} label="Operator" />
+            ),
+            cell: ({ row }) => {
+                const phoneNumber = row.original.phoneNumber
+                const operator = checkPhoneValidation(phoneNumber)
+                
+                // Color mapping for operators
+                const operatorColors: Record<string, string> = {
+                    ORANGE: "bg-orange-100 text-orange-800 hover:bg-orange-100",
+                    MTN: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+                    CAMTEL: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+                    NEXTTEL: "bg-red-100 text-red-800 hover:bg-red-100",
+                    UNKNOWN: "bg-gray-100 text-gray-800 hover:bg-gray-100",
+                }
+                
+                return (
+                    <Badge className={operatorColors[operator] || operatorColors.UNKNOWN}>
+                        {operator}
+                    </Badge>
+                )
+            },
+            meta: {
+                label: "Operator",
+                className: "w-[120px]",
+            },
+        },
+        {
+            id: "status",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} label="Status" />
+            ),
+            cell: ({ row }) => {
+                const phoneNumber = row.original.phoneNumber
+                const status = getPhoneValidationStatus(phoneNumber)
+                
+                return (
+                    <div className="flex items-center gap-2">
+                        {status === "CORRECT" ? (
+                            <>
+                                <TickCircle 
+                                    size={16} 
+                                    variant="Bulk" 
+                                    color="currentColor" 
+                                    className="text-green-600"
+                                />
+                                <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+                                    Correct
+                                </Badge>
+                            </>
+                        ) : (
+                            <>
+                                <CloseCircle 
+                                    size={16} 
+                                    variant="Bulk" 
+                                    color="currentColor" 
+                                    className="text-red-600"
+                                />
+                                <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+                                    Invalid
+                                </Badge>
+                            </>
+                        )}
+                    </div>
+                )
+            },
+            meta: {
+                label: "Status",
+                className: "w-[120px]",
             },
         },
         {

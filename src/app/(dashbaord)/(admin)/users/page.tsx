@@ -11,13 +11,17 @@ import { UsersStatistics } from "./_components/users-statistics"
 import { StatisticsSkeleton } from "./_components/statistics-skeleton"
 import { ContactFormModal } from "./_components/contact-form-modal"
 import { getColumns } from "./_components/users-table-columns"
+import { SelectionToolbar } from "./_components/selection-toolbar"
+import { ExportModal } from "./_components/export-modal"
+import { SMSModal } from "./_components/sms-modal"
+import { ImportModal } from "./_components/import-modal"
 import { useAuthContext } from "@/core/providers"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { SearchNormal1, UserAdd } from "iconsax-react"
+import { SearchNormal1, UserAdd, DocumentDownload, Sms } from "iconsax-react"
+import { getPhoneValidationStatus } from "@/core/utils/phone-validation"
+import { searchContacts } from "@/core/utils/search.utils"
 
-// TODO: Get this from auth context
-const ENTERPRISE_ID = "your-enterprise-id"
 
 export default function UsersListPage() {
   const [pagination, setPagination] = useState<PaginationState>({
@@ -32,18 +36,30 @@ export default function UsersListPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [contactToDelete, setContactToDelete] = useState<EnterpriseContactResponseType | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedContacts, setSelectedContacts] = useState<EnterpriseContactResponseType[]>([])
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [isSMSModalOpen, setIsSMSModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   // Fetch contacts with pagination
   const { data, isLoading } = useGetAllContactsByEnterprise(user?.companyId!)
   console.log(data)
   const { mutate: deleteContact, isPending: isDeleting } = useDeleteContact()
 
-  const contacts = data || []
+  const allContacts = data || []
   const totalElements = data?.length || 0
+
+  // Filter contacts based on search term across multiple columns
+  const filteredContacts = useMemo(() => {
+    return searchContacts(allContacts, searchTerm)
+  }, [allContacts, searchTerm])
+
+  const contacts = filteredContacts
+  const displayedElements = filteredContacts.length
 
   // Calculate statistics
   const statistics = useMemo(() => {
-    if (!data) {
+    if (!allContacts) {
       return {
         totalUsers: 0,
         activeUsers: 0,
@@ -52,21 +68,21 @@ export default function UsersListPage() {
       }
     }
 
-    const uniqueCountries = new Set(contacts.map((c) => c.country))
+    const uniqueCountries = new Set(allContacts.map((c) => c.country))
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const newUsers = contacts.filter(
+    const newUsers = allContacts.filter(
       (c) => new Date(c.createdAt) >= thirtyDaysAgo
     ).length
 
     return {
       totalUsers: totalElements,
-      activeUsers: contacts.filter((c) => !c.archived).length,
+      activeUsers: allContacts.filter((c) => !c.archived).length,
       newUsersThisMonth: newUsers,
       countriesCount: uniqueCountries.size,
     }
-  }, [data, contacts, totalElements])
+  }, [allContacts, totalElements])
 
   // Handlers
   const handleAddContact = () => {
@@ -96,10 +112,15 @@ export default function UsersListPage() {
   }
 
   const handleSendSMS = (contacts: EnterpriseContactResponseType[]) => {
-    toast.info("Send SMS", {
-      description: `Sending SMS to ${contacts.length} contact(s)`,
+    setIsSMSModalOpen(true)
+  }
+
+  const handleSMSSend = (message: string, password: string) => {
+    toast.success("SMS envoyé", {
+      description: `Message envoyé à ${selectedContacts.length} contact(s)`,
     })
-    // TODO: Implement SMS sending modal
+    setIsSMSModalOpen(false)
+    // TODO: Implement actual SMS sending
   }
 
   const handleCreateGroup = (contacts: EnterpriseContactResponseType[]) => {
@@ -109,6 +130,13 @@ export default function UsersListPage() {
     // TODO: Implement group creation modal
   }
 
+  const handleAddToGroup = (contacts: EnterpriseContactResponseType[]) => {
+    toast.info("Add to Group", {
+      description: `Adding ${contacts.length} contact(s) to group`,
+    })
+    // TODO: Implement add to group modal
+  }
+
   const handleDeleteSelected = (contacts: EnterpriseContactResponseType[]) => {
     toast.info("Delete Selected", {
       description: `Deleting ${contacts.length} contact(s)`,
@@ -116,34 +144,19 @@ export default function UsersListPage() {
     // TODO: Implement bulk delete with confirmation
   }
 
-  const handleExport = (contacts: EnterpriseContactResponseType[]) => {
-    // Simple CSV export
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Country", "City"]
-    const rows = contacts.map((c) => [
-      c.firstname,
-      c.lastname,
-      c.email,
-      c.phoneNumber,
-      c.country,
-      c.city,
-    ])
+  const handleExport = (format: "csv" | "excel" | "json") => {
+    if (format === "excel") {
+      // Open Excel import flow instead of export
+      setIsExportModalOpen(false)
+      setIsImportModalOpen(true)
+      return
+    }
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.join(",")),
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `contacts-${new Date().toISOString().split("T")[0]}.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
-
-    toast.success("Export Complete", {
-      description: `Exported ${contacts.length} contact(s) to CSV`,
+    toast.info("Export", {
+      description: `Exporting ${contacts.length} contact(s) as ${format.toUpperCase()}`,
     })
+    // TODO: Implement actual export functionality
+    setIsExportModalOpen(false)
   }
 
   const columns = useMemo(
@@ -166,7 +179,6 @@ export default function UsersListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-
           {/* Add Contact Button */}
           <Button onClick={handleAddContact} size="sm" className="h-9">
             <UserAdd
@@ -176,6 +188,46 @@ export default function UsersListPage() {
               className="mr-2"
             />
             Ajouter
+          </Button>
+
+          {/* Export Button */}
+          <Button
+            onClick={() => setIsExportModalOpen(true)}
+            variant="outline"
+            size="sm"
+            className="h-9"
+          >
+            <DocumentDownload
+              size={16}
+              variant="Bulk"
+              color="currentColor"
+              className="mr-2"
+            />
+            Exporter
+          </Button>
+
+          {/* Send SMS Button */}
+          <Button
+            onClick={() => {
+              if (selectedContacts.length === 0) {
+                toast.warning("Sélectionnez au moins un contact", {
+                  description: "Veuillez sélectionner des contacts pour envoyer un SMS",
+                })
+                return
+              }
+              handleSendSMS(selectedContacts)
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 bg-pink-50 hover:bg-pink-100 text-pink-600 border-pink-200"
+          >
+            <Sms
+              size={16}
+              variant="Bulk"
+              color="currentColor"
+              className="mr-2"
+            />
+            SMS
           </Button>
         </div>
       </div>
@@ -189,24 +241,49 @@ export default function UsersListPage() {
           activeUsers={statistics.activeUsers}
           newUsersThisMonth={statistics.newUsersThisMonth}
           countriesCount={statistics.countriesCount}
+
         />
       )}
 
 
-      {/* Search Input */}
-      <div className="relative">
-        <SearchNormal1
-          size={16}
-          variant="Bulk"
-          color="currentColor"
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder="Rechercher..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-9 w-[200px] pl-9 sm:w-[250px]"
-        />
+      {/* Search and Export */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="relative flex items-center gap-2">
+          <div className="relative flex-1">
+            <SearchNormal1
+              size={16}
+              variant="Bulk"
+              color="currentColor"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder="Rechercher par nom, téléphone, email, ville..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-9 w-[200px] pl-9 sm:w-[300px]"
+            />
+          </div>
+          {searchTerm && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+        {/* Export Excel Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9"
+          onClick={() => setIsExportModalOpen(true)}
+        >
+          <DocumentDownload
+            size={16}
+            variant="Bulk"
+            color="currentColor"
+            className="mr-2"
+          />
+          Exporter Excel
+        </Button>
       </div>
       {/* Bulk Actions Toolbar */}
       <DataTable
@@ -217,11 +294,20 @@ export default function UsersListPage() {
         enablePagination={true}
         enableColumnFilter={true}
         rowSelectable={true}
+        getRowCanBeSelected={(contact) => getPhoneValidationStatus(contact.phoneNumber) === "CORRECT"}
         onPaginationChange={setPagination}
+        onRowSelectionChange={setSelectedContacts}
         initialState={{
           pagination,
         }}
-
+        toolbar={(table) => (
+          <SelectionToolbar
+            table={table}
+            onAddToGroup={handleAddToGroup}
+            onCreateGroup={handleCreateGroup}
+            onDeleteSelected={handleDeleteSelected}
+          />
+        )}
       />
 
       {/* Contact Form Modal */}
@@ -229,7 +315,7 @@ export default function UsersListPage() {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         contact={selectedContact}
-        enterpriseId={ENTERPRISE_ID}
+        enterpriseId={user?.companyId!}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -245,6 +331,31 @@ export default function UsersListPage() {
             cancel: "Cancel",
             action: "Delete",
           },
+        }}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExport}
+      />
+
+      {/* SMS Modal */}
+      <SMSModal
+        isOpen={isSMSModalOpen}
+        onClose={() => setIsSMSModalOpen(false)}
+        selectedContacts={selectedContacts}
+        onSend={handleSMSSend}
+      />
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={async (contacts) => {
+          console.log("Imported contacts:", contacts)
+          // TODO: Handle imported contacts
         }}
       />
     </div>
