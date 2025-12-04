@@ -1,0 +1,286 @@
+{
+  "regions": [
+    {
+      "id": 1,
+      "name": "Abidjan",
+      "code": "AB"
+    },
+    {
+      "id": 2,
+      "name": "Lagunes",
+      "code": "LG"
+    },
+    {
+      "id": 3,
+      "name": "Haut-Sassandra",
+      "code": "HS"
+    },
+    {
+      "id": 4,
+      "name": "Sassandra-Marahoué",
+      "code": "SM"
+    },
+    {
+      "id": 5,
+      "name": "Bas-Sassandra",
+      "code": "BS"
+    },
+    {
+      "id": 6,
+      "name": "Moyen-Cavally",
+      "code": "MC"
+    },
+    {
+      "id": 7,
+      "name": "Sud-Bandama",
+      "code": "SB"
+    },
+    {
+      "id": 8,
+      "name": "Lacs",
+      "code": "LC"
+    },
+    {
+      "id": 9,
+      "name": "Vallée du Bandama",
+      "code": "VB"
+    },
+    {
+      "id": 10,
+      "name": "Savanes",
+      "code": "SV"
+    },
+    {
+      "id": 11,
+      "name": "Denguélé",
+      "code": "DG"
+    },
+    {
+      "id": 12,
+      "name": "Worodougou",
+      "code": "WD"
+    },
+    {
+      "id": 13,
+      "name": "Marahoué",
+      "code": "MH"
+    },
+    {
+      "id": 14,
+      "name": "Gôh-Djiboua",
+      "code": "GD"
+    },
+    {
+      "id": 15,
+      "name": "Nzi-Comoé",
+      "code": "NC"
+    },
+    {
+      "id": 16,
+      "name": "Agnéby-Tiassa",
+      "code": "AT"
+    },
+    {
+      "id": 17,
+      "name": "Sud-Comoé",
+      "code": "SC"
+    },
+    {
+      "id": 18,
+      "name": "Fromager",
+      "code": "FR"
+    },
+    {
+      "id": 19,
+      "name": "Cavally",
+      "code": "CV"
+    },
+    {
+      "id": 20,
+      "name": "Tonkpi",
+      "code": "TK"
+    }
+  ],
+  "cities": [
+    {
+      "id": 1,
+      "name": "Abidjan",
+      "region": "Abidjan",
+      "regionCode": "AB"
+    },
+    {
+      "id": 2,
+      "name": "Yamoussoukro",
+      "region": "Lacs",
+      "regionCode": "LC"
+    },
+    {
+      "id": 3,
+      "name": "Bouaké",
+      "region": "Vallée du Bandama",
+      "regionCode": "VB"
+    },
+    {
+      "id": 4,
+      "name": "Korhogo",
+      "region": "Savanes",
+      "regionCode": "SV"
+    },
+    {
+      "id": 5,
+      "name": "Daloa",
+      "region": "Haut-Sassandra",
+      "regionCode": "HS"
+    },
+    {
+      "id": 6,
+      "name": "Gagnoa",
+      "region": "Sassandra-Marahoué",
+      "regionCode": "SM"
+    },
+    {
+      "id": 7,
+      "name": "San-Pédro",
+      "region": "Bas-Sassandra",
+      "regionCode": "BS"
+    },
+    {
+      "id": 8,
+      "name": "Man",
+      "region": "Tonkpi",
+      "regionCode": "TK"
+    },
+    {
+      "id": 9,
+      "name": "Divo",
+      "region": "Sassandra-Marahoué",
+      "regionCode": "SM"
+    },
+    {
+      "id": 10,
+      "name": "Ferkessédougou",
+      "region": "Savanes",
+      "regionCode": "SV"
+    },
+    {
+      "id": 11,
+      "name": "Odienné",
+      "region": "Denguélé",
+      "regionCode": "DG"
+    },
+    {
+      "id": 12,
+      "name": "Agboville",
+      "region": "Agnéby-Tiassa",
+      "regionCode": "AT"
+    },
+    {
+      "id": 13,
+      "name": "Dimbokro",
+      "region": "Nzi-Comoé",
+      "regionCode": "NC"
+    },
+    {
+      "id": 14,
+      "name": "Dabou",
+      "region": "Lagunes",
+      "regionCode": "LG"
+    },
+    {
+      "id": 15,
+      "name": "Séguela",
+      "region": "Worodougou",
+      "regionCode": "WD"
+    },
+    {
+      "id": 16,
+      "name": "Duékoué",
+      "region": "Moyen-Cavally",
+      "regionCode": "MC"
+    },
+    {
+      "id": 17,
+      "name": "Aboisso",
+      "region": "Sud-Comoé",
+      "regionCode": "SC"
+    },
+    {
+      "id": 18,
+      "name": "Grand-Bassam",
+      "region": "Sud-Comoé",
+      "regionCode": "SC"
+    },
+    {
+      "id": 19,
+      "name": "Sassandra",
+      "region": "Bas-Sassandra",
+      "regionCode": "BS"
+    },
+    {
+      "id": 20,
+      "name": "Toumodi",
+      "region": "Lacs",
+      "regionCode": "LC"
+    },
+    {
+      "id": 21,
+      "name": "Issia",
+      "region": "Haut-Sassandra",
+      "regionCode": "HS"
+    },
+    {
+      "id": 22,
+      "name": "Boundiali",
+      "region": "Savanes",
+      "regionCode": "SV"
+    },
+    {
+      "id": 23,
+      "name": "Tiébissou",
+      "region": "Lacs",
+      "regionCode": "LC"
+    },
+    {
+      "id": 24,
+      "name": "Katiola",
+      "region": "Vallée du Bandama",
+      "regionCode": "VB"
+    },
+    {
+      "id": 25,
+      "name": "Guiglo",
+      "region": "Cavally",
+      "regionCode": "CV"
+    },
+    {
+      "id": 26,
+      "name": "Danané",
+      "region": "Fromager",
+      "regionCode": "FR"
+    },
+    {
+      "id": 27,
+      "name": "Biankouma",
+      "region": "Fromager",
+      "regionCode": "FR"
+    },
+    {
+      "id": 28,
+      "name": "Taï",
+      "region": "Cavally",
+      "regionCode": "CV"
+    },
+    {
+      "id": 29,
+      "name": "Blolequin",
+      "region": "Cavally",
+      "regionCode": "CV"
+    },
+    {
+      "id": 30,
+      "name": "Toulépleu",
+      "region": "Cavally",
+      "regionCode": "CV"
+    }
+  ]
+}
