@@ -61,6 +61,7 @@ interface DataTableProps<T> {
   enableColumnFilter?: boolean;
   enableSorting?: boolean;
   rowSelectable?: boolean;
+  getRowCanBeSelected?: (row: T) => boolean;
   onRowSelectionChange?: (rows: T[]) => void;
   onPaginationChange?: (pagination: PaginationState) => void;
   toolbar?: (table: TableType<T>) => React.ReactNode;
@@ -76,6 +77,7 @@ export function DataTable<T>({
   classNames,
   autoPagination = false,
   rowSelectable = true,
+  getRowCanBeSelected,
   enablePagination = false,
   enableColumnFilter = false,
   enableSorting = true,
@@ -133,20 +135,27 @@ export function DataTable<T>({
                       table.toggleAllPageRowsSelected(!!value);
                     }}
                     aria-label="Sélectionner tout"
+                    disabled={getRowCanBeSelected ? !table.getRowModel().rows.some((row) => getRowCanBeSelected(row.original)) : false}
                   />
                 </div>
               ),
-              cell: ({ row }) => (
-                <div className="flex items-center">
-                  <Checkbox
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => {
-                      row.toggleSelected(!!value);
-                    }}
-                    aria-label="Sélectionner la ligne"
-                  />
-                </div>
-              ),
+              cell: ({ row }) => {
+                const canSelect = !getRowCanBeSelected || getRowCanBeSelected(row.original);
+                return (
+                  <div className="flex items-center">
+                    <Checkbox
+                      checked={row.getIsSelected()}
+                      onCheckedChange={(value) => {
+                        if (canSelect) {
+                          row.toggleSelected(!!value);
+                        }
+                      }}
+                      aria-label="Sélectionner la ligne"
+                      disabled={!canSelect}
+                    />
+                  </div>
+                );
+              },
               meta: {
                 className: "w-8",
               },
@@ -157,7 +166,7 @@ export function DataTable<T>({
         : []),
       ...initialColumns,
     ];
-  }, [initialColumns, rowSelectable]);
+  }, [initialColumns, rowSelectable, getRowCanBeSelected]);
 
   const handleUpdatePagination = (updaterOrValue: Updater<PaginationState>) => {
     let paginationUpdate: PaginationState;
@@ -182,7 +191,15 @@ export function DataTable<T>({
     }
 
     setRowSelection(rowSelectionUpdate);
-    onRowSelectionChange?.(table.getSelectedRowModel().rows.map((row) => row.original));
+    
+    // Calculate selected rows based on the updated selection state
+    const selectedRowIds = Object.keys(rowSelectionUpdate).filter(
+      (key) => rowSelectionUpdate[key] === true
+    );
+    const selectedRows = table.getRowModel().rows.filter((row) =>
+      selectedRowIds.includes(row.id)
+    );
+    onRowSelectionChange?.(selectedRows.map((row) => row.original));
   };
 
   const table = useReactTable({
@@ -214,6 +231,7 @@ export function DataTable<T>({
     onColumnVisibilityChange: setColumnVisibility,
     onColumnPinningChange: setColumnPinning,
     onPaginationChange: enablePagination ? handleUpdatePagination : undefined,
+    ...(getRowCanBeSelected ? { getRowCanBeSelected } : {}),
 
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
