@@ -88,11 +88,10 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-          isDragging
+        className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragging
             ? "border-blue-500 bg-blue-50"
             : "border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50"
-        } ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
+          } ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <input
           ref={fileInputRef}
@@ -105,7 +104,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
 
         <div className="flex flex-col items-center gap-3">
           <div className="p-3 rounded-lg bg-blue-100">
-            <CloudAdd size={24} className="text-blue-600" variant="Bulk" />
+            <CloudAdd size={24} className="text-blue-600" variant="Bulk" color="currentColor" />
           </div>
           <div>
             <p className="font-medium text-sm">Déposez votre fichier ici</p>
@@ -121,7 +120,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
         <div className="p-3 rounded-lg bg-green-50 border border-green-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DocumentDownload size={16} className="text-green-600" variant="Bulk" />
+              <DocumentDownload size={16} className="text-green-600" variant="Bulk" color="currentColor" />
               <div>
                 <p className="text-sm font-medium text-green-900">{selectedFile.name}</p>
                 <p className="text-xs text-green-700">
@@ -136,7 +135,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
               disabled={isProcessing}
               className="h-8 w-8 p-0"
             >
-              <Trash size={16} className="text-red-500" variant="Bulk" />
+              <Trash size={16} variant="Bulk" color="currentColor" />
             </Button>
           </div>
         </div>

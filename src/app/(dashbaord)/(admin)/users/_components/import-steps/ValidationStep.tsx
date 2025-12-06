@@ -45,9 +45,9 @@ export function ValidationStep({
       <div className={`p-4 rounded-lg border ${hasErrors ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}>
         <div className="flex items-start gap-3">
           {hasErrors ? (
-            <Warning2 size={20} className="text-red-600 shrink-0 mt-0.5" variant="Bulk" />
+            <Warning2 size={20} color="currentColor" className="text-red-600 shrink-0 mt-0.5" variant="Bulk" />
           ) : (
-            <TickCircle size={20} className="text-green-600 shrink-0 mt-0.5" variant="Bulk" />
+            <TickCircle size={20} color="currentColor" className="text-green-600 shrink-0 mt-0.5" variant="Bulk" />
           )}
           <div>
             <p className={`font-medium text-sm ${hasErrors ? "text-red-900" : "text-green-900"}`}>
@@ -76,7 +76,7 @@ export function ValidationStep({
                   className="p-2 rounded bg-red-50 border border-red-200 text-xs text-red-700"
                 >
                   <div className="flex items-start gap-2">
-                    <CloseCircle size={14} className="shrink-0 mt-0.5" variant="Bulk" />
+                    <CloseCircle size={14} className="shrink-0 mt-0.5" color="currentColor" variant="Bulk" />
                     <span>{error}</span>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ export function ValidationStep({
                   className="p-2 rounded bg-green-50 border border-green-200 text-xs text-green-700"
                 >
                   <div className="flex items-center gap-2">
-                    <TickCircle size={14} className="shrink-0" variant="Bulk" />
+                    <TickCircle size={14} className="shrink-0" color="currentColor" variant="Bulk" />
                     <span className="font-mono">{contact.phoneNumber}</span>
                     {contact.firstname && (
                       <span className="text-green-600">

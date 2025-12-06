@@ -39,7 +39,7 @@ export function ExportModal({
       icon: DocumentText,
       color: "bg-blue-100 text-blue-600",
     },
-   
+
   ]
 
   return (
@@ -64,7 +64,7 @@ export function ExportModal({
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg ${option.color}`}>
-                    <IconComponent size={20} variant="Bulk" color="currentColor" />
+                    <IconComponent size={20} variant="Bulk" color="currentColor" className="text-primary" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-sm">{option.title}</h3>
