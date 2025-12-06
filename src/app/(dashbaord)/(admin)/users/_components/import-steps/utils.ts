@@ -97,7 +97,7 @@ export async function validateAndExtractContacts(
     }
 
     // Get headers from first row
-    const headers = rows[0].map((h) => h.toLowerCase().trim())
+    const headers = rows[0].map((h) => String(h || "").toLowerCase().trim())
 
     // Check if phone number column exists (must be first column)
     const phoneColumnIndex = headers.findIndex(
@@ -135,11 +135,14 @@ export async function validateAndExtractContacts(
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i]
 
-      if (!row || row.length === 0 || !row[0]?.trim()) {
+      // Convert all cell values to strings
+      const stringRow = row.map((cell) => String(cell || ""))
+
+      if (!row || row.length === 0 || !stringRow[0]?.trim()) {
         continue // Skip empty rows
       }
 
-      const phoneNumber = row[0]?.trim() || ""
+      const phoneNumber = stringRow[0]?.trim() || ""
 
       // Validate phone number
       if (!isValidPhoneNumber(phoneNumber)) {
@@ -154,15 +157,15 @@ export async function validateAndExtractContacts(
       // Extract other fields
       const contact: ContactData = {
         phoneNumber,
-        firstname: row[1]?.trim() || undefined,
-        lastname: row[2]?.trim() || undefined,
-        email: row[3]?.trim() || undefined,
+        firstname: stringRow[1]?.trim() || undefined,
+        lastname: stringRow[2]?.trim() || undefined,
+        email: stringRow[3]?.trim() || undefined,
       }
 
       // Add any additional columns
-      for (let j = 4; j < row.length; j++) {
+      for (let j = 4; j < stringRow.length; j++) {
         const headerName = headers[j] || `column_${j}`
-        contact[headerName] = row[j]?.trim() || undefined
+        contact[headerName] = stringRow[j]?.trim() || undefined
       }
 
       contacts.push(contact)

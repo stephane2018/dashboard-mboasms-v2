@@ -48,7 +48,7 @@ export function ReviewStep({
     if (!isValidPhoneNumber(newPhone)) {
       setValidationErrors({
         ...validationErrors,
-        [index]: "Numéro de téléphone invalide",
+        [index]: "phone",
       })
       return
     }

@@ -14,6 +14,7 @@ import type { ContactData } from "./import-steps/types"
 import { ImportStep } from "./import-steps/ImportStep"
 import { ValidationStep } from "./import-steps/ValidationStep"
 import { ReviewStep } from "./import-steps/ReviewStep"
+import { ConfirmStep } from "./import-steps/ConfirmStep"
 
 interface ImportModalProps {
   isOpen: boolean
