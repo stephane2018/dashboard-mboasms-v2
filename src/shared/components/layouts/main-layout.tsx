@@ -72,6 +72,14 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
     router.push("/auth/login")
   }
 
+  // Dynamic progress bar color based on SMS usage
+  const getProgressBarColor = () => {
+    if (smsUsagePercent >= 90) return "bg-red-600"
+    if (smsUsagePercent >= 70) return "bg-orange-500"
+    if (smsUsagePercent >= 50) return "bg-yellow-500"
+    return "bg-primary"
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -113,115 +121,130 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
  	<div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="rounded-full" asChild>
               <Link href="/">
-                <Home2 size="18" />
+                <Home2 size="18" variant="Bulk" color="currentColor" className="text-primary" />
                 <span className="sr-only">Aller à l&apos;accueil</span>
               </Link>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 shadow-sm hover:border-primary hover:shadow-primary/10 transition-all duration-200">
+                <button className="flex items-center gap-3 rounded-full border border-border/70 bg-gradient-to-br from-primary/5 to-purple-500/5 px-3 py-2 shadow-sm hover:border-primary hover:shadow-primary/10 transition-all duration-200">
                   <div className="relative">
                     <Avatar className="h-9 w-9 ring-1 ring-border">
                       <AvatarImage src={user?.avatar || ""} alt={userDisplayName} />
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold leading-tight">{userDisplayName}</p>
-                    <p className="text-xs text-muted-foreground">Mon espace</p>
+                  <div className="flex items-center gap-3">
+                    <div className="text-left">
+                      <p className="text-sm font-semibold leading-tight">{userDisplayName}</p>
+                      <p className="text-xs text-muted-foreground">Mon espace</p>
+                    </div>
+                    <Separator orientation="vertical" className="h-8" />
+                    <div className="flex items-center gap-2">
+                      <div className="relative h-9 w-9">
+                        <svg className="h-9 w-9 -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-muted/40"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            fill="none"
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="text-primary"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            fill="none"
+                            strokeDasharray={`${smsUsagePercent}, 100`}
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-primary">
+                          {100 - smsUsagePercent}%
+                        </span>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Solde</p>
+                        <p className="text-sm font-semibold">{smsBalance.toLocaleString()}</p>
+                      </div>
+                    </div>
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2">
+              <DropdownMenuContent align="end" className="w-80 rounded-2xl p-3 space-y-3">
                 <DropdownMenuLabel>
-                  <p className="text-sm font-semibold">{userDisplayName}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/profile")} className="flex items-center gap-2">
-                  <Setting2 size="16" className="text-primary" />
-                  Paramètres
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/dashboard")} className="flex items-center gap-2">
-                  <Information size="16" className="text-primary" />
-                  Centre d&apos;activité
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 text-red-500 focus:text-red-500 focus:bg-red-50"
-                >
-                  <Logout size="16" />
-                  Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-xl border border-border/70 bg-gradient-to-br from-primary/5 to-purple-500/5 px-3 py-2 shadow-sm transition-all duration-200 hover:border-primary">
-                  <div className="relative h-10 w-10">
-                    <svg className="h-10 w-10 -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-muted/40"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        fill="none"
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                      <path
-                        className="text-primary"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        fill="none"
-                        strokeDasharray={`${smsUsagePercent}, 100`}
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary">
-                      {100 - smsUsagePercent}%
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12 ring-2 ring-border">
+                      <AvatarImage src={user?.avatar || ""} alt={userDisplayName} />
+                      <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold">{userDisplayName}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Solde restant</p>
-                    <p className="text-sm font-semibold flex items-center gap-1">
-                      {smsBalance.toLocaleString()} SMS
-                      <WalletMoney size="16" className="text-primary" />
+                </DropdownMenuLabel>
+
+                <DropdownMenuSeparator />
+
+                {/* SMS Balance Section */}
+                <div className="rounded-lg border border-border/60 bg-gradient-to-br from-primary/5 to-purple-500/5 p-3">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Détails du forfait</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Forfait courant</span>
+                      <span className="font-semibold">{user?.planName || "Plan Business"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-xs">SMS restant</span>
+                      <span className="font-semibold">{smsBalance.toLocaleString()} / {smsQuota.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full transition-all ${getProgressBarColor()}`}
+                        style={{ width: `${100 - smsUsagePercent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {smsUsagePercent}% consommés
                     </p>
                   </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 rounded-2xl p-3 space-y-3">
-                <DropdownMenuLabel className="text-sm font-semibold">Détails du forfait</DropdownMenuLabel>
-                <div className="rounded-lg border border-border/60 p-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Forfait courant</span>
-                    <span className="font-semibold">{user?.planName || "Plan Business"}</span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">SMS restant</span>
-                    <span className="font-semibold">{smsBalance.toLocaleString()} / {smsQuota.toLocaleString()}</span>
-                  </div>
-                  <div className="mt-2 h-2 rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${100 - smsUsagePercent}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {smsUsagePercent}% consommés - pensez à recharger pour éviter toute interruption.
-                  </p>
                 </div>
-                <Button asChild className="w-full rounded-full">
-                  <Link href="/recharge">Recharger maintenant</Link>
+
+                <Button asChild className="w-full rounded-full" size="sm">
+                  <Link href="/recharge">
+                    <WalletMoney size="16" className="mr-2" variant="Bulk" />
+                    Recharger maintenant
+                  </Link>
                 </Button>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem onClick={() => router.push("/profile")} className="flex items-center gap-2 cursor-pointer">
+                  <Setting2 size="16" variant="Bulk" color="currentColor" className="text-primary" />
+                  Paramètres
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/dashboard")} className="flex items-center gap-2 cursor-pointer">
+                  <Information size="16" variant="Bulk" color="currentColor" className="text-primary" />
+                  Centre d&apos;activité
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-red-500 focus:text-red-500 focus:bg-red-50 cursor-pointer"
+                >
+                  <Logout size="16"variant="Bulk" color="currentColor" className="text-primary" />
+                  Déconnexion
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
