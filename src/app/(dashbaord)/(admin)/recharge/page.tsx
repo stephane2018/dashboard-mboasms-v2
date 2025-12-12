@@ -3,9 +3,8 @@
 import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { useUserStore } from "@/core/stores/userStore"
-import { getAllRecharges } from "@/core/services/recharge.service"
 import { getActivePlans } from "@/core/services/pricing.service"
-import type { RechargeListContentType, RechargePageType } from "@/core/models/recharges"
+import type { RechargeListContentType } from "@/core/models/recharges"
 import type { PricingPlanType } from "@/core/models/pricing"
 import { DataTable } from "@/shared/common/data-table/table"
 import { Button } from "@/shared/ui/button"
@@ -17,13 +16,22 @@ import { getColumns } from "./_components/recharge-table-columns"
 import { RechargeFilters, type RechargeFilters as RechargeFiltersType } from "./_components/recharge-filters"
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
 import { ValidateRechargeModal, RefuseRechargeModal, CreditAccountModal } from "./_components/recharge-action-modals"
-import { useQuery } from "@tanstack/react-query"
 import { useRecharge } from "@/core/hooks/useRecharge"
+import { useQuery } from "@tanstack/react-query"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
-  const { createRechargeMutation, validateRechargeMutation, refuseRechargeMutation, creditAccountMutation } =
-    useRecharge()
+  const {
+    rechargesQuery,
+    createRechargeMutation,
+    validateRechargeMutation,
+    refuseRechargeMutation,
+    creditAccountMutation,
+  } = useRecharge({
+    queryOptions: {
+      enabled: isSuperAdmin(),
+    },
+  })
 
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -38,14 +46,6 @@ export default function RechargePage() {
     endDate: undefined,
   })
 
-  // Fetch recharges
-  const { data: rechargesData, isLoading: isLoadingRecharges } = useQuery<RechargePageType>({
-    queryKey: ["recharges"],
-    queryFn: getAllRecharges,
-    enabled: isSuperAdmin(),
-  })
-  console.log(rechargesData);
-
   // Fetch active pricing plans
   const { data: activePlansData, isLoading: isLoadingPlans } = useQuery<PricingPlanType[]>({
     queryKey: ["pricing-plans", "active"],
@@ -55,8 +55,9 @@ export default function RechargePage() {
     },
   })
 
-  const allRecharges = rechargesData?.content || []
-  const totalElements = rechargesData?.totalElements || 0
+  const allRecharges = rechargesQuery.data ?? []
+  const isLoadingRecharges = rechargesQuery.isLoading
+  const totalElements = allRecharges.length
 
   // Filter recharges based on search term and filters
   const filteredRecharges = useMemo(() => {

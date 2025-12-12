@@ -1,19 +1,25 @@
 "use client"
 
-import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
   createRecharge,
   validateRecharge,
   refuseRecharge,
   creditAccount,
+  getAllRecharges,
 } from "@/core/services/recharge.service"
-import type { CreateRechargeRequestType } from "@/core/models/recharges"
+import type { CreateRechargeRequestType, RechargeListContentType } from "@/core/models/recharges"
+import type { UseQueryOptions } from "@tanstack/react-query"
 
 type CreditAccountPayload = { enterpriseId: string; qteMessage: number }
 
 interface UseRechargeOptions {
   queryKey?: QueryKey
+  queryOptions?: Omit<
+    UseQueryOptions<RechargeListContentType[], unknown, RechargeListContentType[], QueryKey>,
+    "queryKey" | "queryFn"
+  >
 }
 
 export function useRecharge(options: UseRechargeOptions = {}) {
@@ -24,6 +30,12 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     if (!queryKey) return
     queryClient.invalidateQueries({ queryKey })
   }
+
+  const rechargesQuery = useQuery({
+    queryKey,
+    queryFn: getAllRecharges,
+    ...(options.queryOptions ?? {}),
+  })
 
   const createRechargeMutation = useMutation({
     mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),
@@ -87,6 +99,7 @@ export function useRecharge(options: UseRechargeOptions = {}) {
   })
 
   return {
+    rechargesQuery,
     createRechargeMutation,
     validateRechargeMutation,
     refuseRechargeMutation,

@@ -54,7 +54,7 @@ export const navigationConfig: RoleBasedNavSection[] = [
         items: [
             {
                 title: 'Users List',
-                url: '/users-list',
+                url: '/users',
                 icon: People,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
