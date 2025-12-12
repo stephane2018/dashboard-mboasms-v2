@@ -12,6 +12,7 @@ import {
     ProfileCircle,
     Setting2,
     Lifebuoy,
+    Sms,
 } from 'iconsax-react'
 import { Role } from '@/core/config/enum'
 
@@ -70,6 +71,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
             {
+                title: 'Envoyer SMS',
+                url: '/sms',
+                icon: Sms,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
+            {
                 title: 'Recharge',
                 url: '/recharge',
                 icon: WalletMoney,
@@ -87,6 +94,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: MoneyRecive,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
+            {
+                title: 'Groupes',
+                url: '/groupes-management',
+                icon: Element3,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
         ],
     },
     {
@@ -97,6 +110,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 title: 'Contacts',
                 url: '/contacts',
                 icon: People,
+                roles: [Role.USER],
+            },
+            {
+                title: 'Envoyer SMS',
+                url: '/sms-client',
+                icon: Sms,
                 roles: [Role.USER],
             },
             {

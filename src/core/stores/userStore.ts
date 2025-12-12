@@ -10,6 +10,8 @@ interface User {
   avatar?: string;
   phone?: string;
   companyId?: string;
+  smsSenderId?: string;
+  isSenderIdVerified?: boolean;
 }
 
 interface UserStore {

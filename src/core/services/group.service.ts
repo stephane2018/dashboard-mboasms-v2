@@ -1,7 +1,8 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
-import { AddContactsToGroupType, GroupType } from '../models/groups';
+import { AddContactsToGroupType, CreateGroupType, GroupType } from '../models/groups';
 
+type UpdateGroupInput = Partial<CreateGroupType> & { enterpriseId?: string }
 
 export const getGroups = async (): Promise<GroupType[]> => {
     try {
@@ -23,7 +24,7 @@ export const getGroupByEnterprise = async (enterpriseId: string): Promise<GroupT
     }
 };
 
-export const createGroup = async (data: Partial<GroupType>): Promise<GroupType> => {
+export const createGroup = async (data: CreateGroupType): Promise<GroupType> => {
     try {
         const response = await httpClient.post<GroupType>('/api/v1/group/save', data);
         console.log(response);
@@ -33,7 +34,7 @@ export const createGroup = async (data: Partial<GroupType>): Promise<GroupType> 
     }
 };
 
-export const updateGroup = async (groupId: string, data: Partial<GroupType>): Promise<GroupType> => {
+export const updateGroup = async (groupId: string, data: UpdateGroupInput): Promise<GroupType> => {
     try {
         const response = await httpClient.put<GroupType>(`/api/v1/group/${groupId}`, data);
         console.log(response);

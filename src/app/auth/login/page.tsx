@@ -81,7 +81,9 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
-      return await httpClient.post<LoginResponse>('/api/v1/auth/login', data)
+      return await httpClient.post<LoginResponse>('/api/v1/auth/login', data, {
+        useToken: false
+      })
     },
     onSuccess: (data) => {
       tokenManager.setTokens(data.token, data.refreshToken)

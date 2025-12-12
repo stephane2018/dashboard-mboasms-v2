@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -8,19 +8,33 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
 import { Textarea } from "@/shared/ui/textarea"
-import { Badge } from "@/shared/ui/badge"
-import { ScrollArea } from "@/shared/ui/scroll-area"
-import { Maximize2, CloseCircle, Sms, Lock, TickCircle, MessageText } from "iconsax-react"
+import { Maximize2, CloseCircle, Sms } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import { PhoneNumberInput, type PhoneEntry } from "@/shared/common/phone-number-input"
+import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
 
 interface SMSModalProps {
   isOpen: boolean
   onClose: () => void
   selectedContacts: EnterpriseContactResponseType[]
-  onSend: (message: string, password: string) => void
+  onSend: (message: string, password: string, phoneNumbers: string[]) => void
   isLoading?: boolean
+}
+
+// Convert contact to PhoneEntry
+const contactToPhoneEntry = (contact: EnterpriseContactResponseType): PhoneEntry => {
+  const phoneNumber = contact.phoneNumber || ""
+  const operator = checkPhoneValidation(phoneNumber)
+  const status = getPhoneValidationStatus(phoneNumber)
+
+  return {
+    id: `contact_${contact.id}`,
+    phoneNumber,
+    name: `${contact.firstname || ""} ${contact.lastname || ""}`.trim(),
+    isValid: status === "CORRECT",
+    operator
+  }
 }
 
 export function SMSModal({
@@ -33,7 +47,24 @@ export function SMSModal({
   const [message, setMessage] = useState("")
   const [password, setPassword] = useState("")
   const [isMaximized, setIsMaximized] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
+
+  // Initialize phone entries from selected contacts when modal opens
+  useEffect(() => {
+    if (isOpen && selectedContacts.length > 0) {
+      const entries = selectedContacts.map(contactToPhoneEntry)
+      setPhoneEntries(entries)
+    }
+  }, [isOpen, selectedContacts])
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setMessage("")
+      setPassword("")
+      setPhoneEntries([])
+    }
+  }, [isOpen])
 
   // Count special characters
   const specialCharCount = useMemo(() => {
@@ -48,48 +79,36 @@ export function SMSModal({
   }, [message, specialCharCount])
 
   const handleSend = () => {
-    if (!message.trim() || !password.trim()) {
+    if (!message.trim()) {
       return
     }
-    onSend(message, password)
+
+    // Get valid phone numbers
+    const validPhoneNumbers = phoneEntries
+      .filter(e => e.isValid)
+      .map(e => e.phoneNumber)
+
+    if (validPhoneNumbers.length === 0) {
+      return
+    }
+
+    onSend(message, password, validPhoneNumbers)
     setMessage("")
     setPassword("")
-  }
-
-  // Get initials for contact avatar
-  const getInitials = (contact: EnterpriseContactResponseType) => {
-    return `${contact.firstname?.[0] || ""}${contact.lastname?.[0] || ""}`.toUpperCase()
-  }
-
-  // Get avatar color based on initials
-  const getAvatarColor = (initials: string) => {
-    const colors = [
-      "bg-red-500",
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-indigo-500",
-      "bg-cyan-500",
-    ]
-    const charCode = initials.charCodeAt(0) || 0
-    return colors[charCode % colors.length]
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className={`${
-          isMaximized
-            ? "w-screen h-screen max-w-none rounded-none"
-            : "sm:max-w-2xl"
-        } transition-all duration-300 flex flex-col`}
+        className={`${isMaximized
+          ? "w-screen h-screen max-w-none rounded-none"
+          : "sm:max-w-2xl"
+          } transition-all duration-300 flex flex-col`}
       >
         {/* Header */}
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
           <div>
-            <DialogTitle>Nouveau Message à {selectedContacts.length} contact{selectedContacts.length > 1 ? "s" : ""}</DialogTitle>
+            <DialogTitle>Nouveau Message</DialogTitle>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -117,37 +136,16 @@ export function SMSModal({
 
         {/* Content */}
         <div className={`flex-1 overflow-hidden flex flex-col ${isMaximized ? "gap-4 p-6" : "gap-4"}`}>
-          {/* Selected Contacts */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Destinataires ({selectedContacts.length})</label>
-            <ScrollArea className="h-24 w-full rounded-lg border bg-muted/50 p-3">
-              <div className="flex flex-wrap gap-2">
-                {selectedContacts.map((contact) => {
-                  const initials = getInitials(contact)
-                  const avatarColor = getAvatarColor(initials)
-                  return (
-                    <Badge
-                      key={contact.id}
-                      variant="secondary"
-                      className="flex items-center gap-2 px-2 py-1"
-                    >
-                      <div
-                        className={`${avatarColor} text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold`}
-                      >
-                        {initials}
-                      </div>
-                      <span className="text-xs">
-                        {contact.firstname} {contact.lastname}
-                      </span>
-                    </Badge>
-                  )
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+          {/* Phone Number Input Component */}
+          <PhoneNumberInput
+            entries={phoneEntries}
+            onEntriesChange={setPhoneEntries}
+            maxHeight={isMaximized ? "h-40" : "h-28"}
+          />
+
 
           {/* Password Field */}
-          
+
           {/* Message Field */}
           <div className="space-y-2 flex-1 flex flex-col">
             <label className="text-sm font-medium">Message</label>
@@ -197,7 +195,7 @@ export function SMSModal({
           </Button>
           <Button
             onClick={handleSend}
-            disabled={isLoading || !message.trim() || !password.trim()}
+            disabled={isLoading || !message.trim() || phoneEntries.filter(e => e.isValid).length === 0}
             className="flex-1 bg-pink-600 hover:bg-pink-700"
           >
             <Sms size={16} variant="Bulk" color="currentColor" className="mr-2" />
