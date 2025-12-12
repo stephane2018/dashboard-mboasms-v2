@@ -1,0 +1,21 @@
+{
+  "name": "MboaSMS - Service d'envoi de SMS au Cameroun",
+  "short_name": "MboaSMS",
+  "icons": [
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#7B18CC",
+  "background_color": "#1E1B24",
+  "display": "standalone",
+  "start_url": "/",
+  "description": "Plateforme d'envoi de SMS professionnels au Cameroun avec API et services personnalisés"
+}
