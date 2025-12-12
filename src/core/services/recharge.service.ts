@@ -8,7 +8,7 @@ import {
     RechargeListContentType,
     RechargePageType,
     UpdateRechargeRequestType,
-} from '@/types/recharges';
+} from '@/core/models/recharges';
 
 export const createRecharge = async (data: CreateRechargeRequestType): Promise<CreateRechargeTypeResponse> => {
     try {
@@ -30,9 +30,9 @@ export const getRecharges = async (enterpriseId: string): Promise<RechargePageTy
     }
 };
 
-export const getAllRecharges = async (): Promise<RechargePageType> => {
+export const getAllRecharges = async (): Promise<RechargeListContentType[]> => {
     try {
-        const response = await httpClient.get<RechargePageType>(`/api/v1/recharge/all`);
+        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/all`);
         console.log(response);
         return response;
     } catch (error) {
