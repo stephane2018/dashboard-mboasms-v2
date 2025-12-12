@@ -9,6 +9,10 @@ interface LoginResponse {
   refreshToken: string;
 }
 
+export interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+  useToken?: boolean;
+}
+
 export class HttpClient {
   private static instance: HttpClient;
   private client: AxiosInstance;
@@ -47,22 +51,22 @@ export class HttpClient {
     return HttpClient.instance.client;
   }
 
-  public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  public async get<T>(url: string, config?: CustomAxiosRequestConfig): Promise<T> {
     const response = await this.client.get<T>(url, config);
     return response.data;
   }
 
-  public async post<T>(url: string, data?: RequestBody, config?: AxiosRequestConfig): Promise<T> {
+  public async post<T>(url: string, data?: RequestBody, config?: CustomAxiosRequestConfig): Promise<T> {
     const response = await this.client.post<T>(url, data as Record<string, any>, config);
     return response.data;
   }
 
-  public async put<T>(url: string, data?: RequestBody, config?: AxiosRequestConfig): Promise<T> {
+  public async put<T>(url: string, data?: RequestBody, config?: CustomAxiosRequestConfig): Promise<T> {
     const response = await this.client.put<T>(url, data as Record<string, any>, config);
     return response.data;
   }
 
-  public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  public async delete<T>(url: string, config?: CustomAxiosRequestConfig): Promise<T> {
     const response = await this.client.delete<T>(url, config);
     return response.data;
   }
@@ -130,7 +134,12 @@ export class HttpClient {
 
   private withAuthorization() {
     this.interceptors.request.use((config) => {
-      const requestConfig = { ...config };
+      const requestConfig = { ...config } as InternalAxiosRequestConfig & CustomAxiosRequestConfig;
+
+      // Skip token if useToken is explicitly set to false
+      if (requestConfig.useToken === false) {
+        return requestConfig;
+      }
 
       const token = tokenManager.getToken();
 

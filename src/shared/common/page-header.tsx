@@ -1,5 +1,5 @@
 import { Button } from "@/shared/ui/button"
-import type { Icon } from "iconsax-reactjs"
+import type { Icon } from "iconsax-react"
 
 export interface PageHeaderAction {
   label: string

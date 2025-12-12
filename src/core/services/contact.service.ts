@@ -90,14 +90,18 @@ export const createContact = async (data: CreateContactRequestType): Promise<Ent
 
 /**
  * Update an existing contact
- * PUT /api/v1/contact/{id}
+ * PUT /api/v1/contact?id={id}
  */
 export const updateContact = async (
     id: string,
     data: Partial<UpdateContactRequestType>
 ): Promise<EnterpriseContactResponseType> => {
     try {
-        const response = await httpClient.post<EnterpriseContactResponseType>(`/api/v1/contact`, data);
+        const response = await httpClient.post<EnterpriseContactResponseType>(
+            `/api/v1/contact`,
+            data,
+            { params: { id } }
+        );
         console.log(response);
         return response;
     } catch (error) {

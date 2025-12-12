@@ -5,7 +5,7 @@ import {
     CreateClientRequestType,
     CreateClientUserRequest,
     UpdateClientRequestType,
-} from '@/types/client';
+} from '@/core/models/client';
 
 export const createClient = async (data: CreateClientRequestType): Promise<ClientResponseType> => {
     try {
@@ -63,6 +63,26 @@ export const getClients = async (): Promise<ClientResponseType[]> => {
 export const getClient = async (id: string): Promise<ClientResponseType> => {
     try {
         const response = await httpClient.get<ClientResponseType>(`/api/v1/auth/users/${id}`);
+        console.log(response);
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
+/**
+ * Update user's SMS Sender ID only
+ * PUT /api/v1/auth/update-user/{id}
+ */
+export const updateUserSenderId = async (
+    userId: string,
+    smsSenderId: string
+): Promise<ClientResponseType> => {
+    try {
+        const response = await httpClient.put<ClientResponseType>(
+            `/api/v1/auth/update-user/${userId}`,
+            { smsSenderId }
+        );
         console.log(response);
         return response;
     } catch (error) {
