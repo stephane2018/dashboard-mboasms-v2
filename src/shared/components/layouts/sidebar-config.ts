@@ -53,6 +53,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
         roles: [Role.ADMIN, Role.SUPER_ADMIN],
         items: [
             {
+                title: 'Tableau de bord',
+                url: '/dashboard',
+                icon: Category,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
+            {
                 title: 'Users List',
                 url: '/users',
                 icon: People,
@@ -64,16 +70,10 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: Building,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
-            {
-                title: 'Sender ID Requests',
-                url: '/demande-sender-id',
-                icon: MessageText,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
-            },
-            {
-                title: 'Envoyer SMS',
-                url: '/sms',
-                icon: Sms,
+             {
+                title: 'Groupes',
+                url: '/groupes-management',
+                icon: Element3,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
             {
@@ -94,12 +94,7 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: MoneyRecive,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
-            {
-                title: 'Groupes',
-                url: '/groupes-management',
-                icon: Element3,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
-            },
+           
         ],
     },
     {

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/
 import { toast } from "sonner"
 import {
   getAllPlans,
+  getActivePlans,
   createPlan,
   updatePlan,
   deletePlan,
@@ -34,6 +35,12 @@ export function usePricing(options: UsePricingOptions = {}) {
   const plansQuery = useQuery({
     queryKey,
     queryFn: getAllPlans,
+    ...(options.queryOptions ?? {}),
+  })
+
+  const activePlansQuery = useQuery({
+    queryKey: ["active-pricing-plans"],
+    queryFn: getActivePlans,
     ...(options.queryOptions ?? {}),
   })
 
@@ -115,6 +122,7 @@ export function usePricing(options: UsePricingOptions = {}) {
 
   return {
     plansQuery,
+    activePlansQuery,
     createPlanMutation,
     updatePlanMutation,
     deletePlanMutation,

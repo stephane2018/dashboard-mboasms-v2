@@ -67,7 +67,7 @@ export default function Testimonials() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <QuoteUp size="32" variant="Bold" className="text-primary" />
+            <QuoteUp variant="Bulk" color='currentColor' className="text-primary" size="32" />
           </motion.div>
           
           <motion.h2 
@@ -103,7 +103,7 @@ export default function Testimonials() {
             >
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 bg-gradient-to-r from-primary to-purple-500 rounded-full p-4 text-white shadow-lg">
-                <QuoteUp size="24" variant="Bold" />
+                <QuoteUp color="currentColor"  size="24" variant="Bold" />
               </div>
               
               <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
@@ -154,7 +154,7 @@ export default function Testimonials() {
               className="bg-gradient-to-r from-[#2D2A37] to-[#3A1659] hover:from-primary hover:to-purple-500 text-white p-4 rounded-full transition-all duration-300 shadow-lg shadow-primary/10 group"
               aria-label="Previous testimonial"
             >
-              <ArrowLeft2 size="20" className="group-hover:scale-110 transition-transform duration-300" />
+              <ArrowLeft2 variant="Bulk" color='currentColor' size="20" className="group-hover:scale-110 transition-transform duration-300" />
             </button>
             
             <div className="flex space-x-3">
@@ -173,7 +173,7 @@ export default function Testimonials() {
               className="bg-gradient-to-r from-[#2D2A37] to-[#3A1659] hover:from-primary hover:to-purple-500 text-white p-4 rounded-full transition-all duration-300 shadow-lg shadow-primary/10 group"
               aria-label="Next testimonial"
             >
-              <ArrowRight2 size="20" className="group-hover:scale-110 transition-transform duration-300" />
+              <ArrowRight2 variant="Bulk" color='currentColor' size="20" className="group-hover:scale-110 transition-transform duration-300" />
             </button>
           </div>
         </div>

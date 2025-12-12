@@ -1,9 +1,9 @@
 "use client";
-
-import React, { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import React, { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
+
 import { useTheme } from 'next-themes';
 
 interface CodeBlockProps {
