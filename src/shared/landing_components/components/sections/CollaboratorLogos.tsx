@@ -25,17 +25,8 @@ const collaborators: Collaborator[] = [
     id: 3,
     name: 'Camtel',
     logo: '/images/logos/camtel.png',
-  },
-  {
-    id: 4,
-    name: 'Nexttel',
-    logo: '/images/logos/nexttel.png',
-  },
-  {
-    id: 5,
-    name: 'YooMee',
-    logo: '/images/logos/yoomee.png',
-  },
+  }
+  
 ];
 
 export default function CollaboratorLogos() {

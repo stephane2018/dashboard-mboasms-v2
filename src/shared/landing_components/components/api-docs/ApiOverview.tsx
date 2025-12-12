@@ -2,8 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CodeBlock } from '@/components/api-docs/CodeBlock';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
+import { CodeBlock } from './CodeBlock';
+
+
 
 export function ApiOverview() {
   return (

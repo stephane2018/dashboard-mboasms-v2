@@ -1,0 +1,165 @@
+"use client";
+
+import { Button } from "@/shared/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import {
+  ArrowRight2,
+  Chart,
+  MessageText1,
+  People,
+  WalletMoney,
+} from "iconsax-react";
+
+const kpiCards = [
+  {
+    label: "Campagnes actives",
+    value: "12",
+    trend: "+3 depuis hier",
+    icon: MessageText1,
+    accent: "from-primary/10 to-purple-500/10",
+  },
+  {
+    label: "SMS envoyés (30j)",
+    value: "148 230",
+    trend: "+12 % vs. période précédente",
+    icon: Chart,
+    accent: "from-emerald-100/60 to-emerald-50",
+  },
+  {
+    label: "Crédit disponible",
+    value: "2 450 000 FCFA",
+    trend: "Recharge recommandée",
+    icon: WalletMoney,
+    accent: "from-amber-100/70 to-amber-50",
+  },
+  {
+    label: "Nouveaux contacts",
+    value: "+847",
+    trend: "Cette semaine",
+    icon: People,
+    accent: "from-sky-100/70 to-sky-50",
+  },
+];
+
+const quickActions = [
+  {
+    title: "Envoyer une campagne SMS",
+    description: "Planifiez ou expédiez vos messages ciblés en quelques clics.",
+    href: "/sms",
+    cta: "Accéder à l’outil",
+  },
+  {
+    title: "Ajouter des crédits",
+    description: "Rechargez votre solde pour éviter toute interruption de campagne.",
+    href: "/recharge",
+    cta: "Recharger",
+  },
+  {
+    title: "Gérer les contacts",
+    description: "Importez, segmentez et maintenez vos listes à jour.",
+    href: "/contacts",
+    cta: "Ouvrir le module",
+  },
+];
+
+export default function DashboardHome() {
+  return (
+    <div className="space-y-8 p-6">
+      <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-wide text-muted-foreground">
+            Vue d’ensemble
+          </p>
+          <h1 className="bg-gradient-to-r from-primary via-purple-500 to-primary-light bg-clip-text text-3xl font-bold text-transparent">
+            Tableau de bord
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Surveillez vos campagnes SMS, vos recharges et l’engagement de vos
+            contacts en temps réel.
+          </p>
+        </div>
+        <Button asChild className="rounded-full px-6">
+          <a href="/sms" className="flex items-center gap-2">
+            Nouvelle campagne
+            <ArrowRight2 size="18" className="transition-transform group-hover:translate-x-1" />
+          </a>
+        </Button>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {kpiCards.map((kpi) => (
+          <Card key={kpi.label} className="border border-border/60 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {kpi.label}
+              </CardTitle>
+              <div
+                className={`rounded-full bg-gradient-to-br ${kpi.accent} p-2`}
+              >
+                <kpi.icon size="20" className="text-primary" variant="Bulk" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold">{kpi.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2 border border-border/60">
+          <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-lg">Performance des 30 derniers jours</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Volume de SMS envoyés et taux de délivrabilité par période.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" className="rounded-full">
+              Exporter le rapport
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 rounded-xl border border-dashed border-border/80 bg-muted/40 p-4 text-sm text-muted-foreground">
+              Graphique à intégrer (recharts / next-charts)
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-border/60">
+          <CardHeader>
+            <CardTitle>Actions rapides</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Gagnez du temps en accédant directement aux modules clés.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {quickActions.map((action) => (
+              <div
+                key={action.title}
+                className="rounded-xl border border-border/70 p-4 shadow-sm"
+              >
+                <h3 className="text-sm font-semibold">{action.title}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {action.description}
+                </p>
+                <Button asChild variant="ghost" className="mt-3 px-0 text-primary">
+                  <a href={action.href} className="inline-flex items-center gap-1 text-sm font-semibold">
+                    {action.cta}
+                    <ArrowRight2 size="16" />
+                  </a>
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}

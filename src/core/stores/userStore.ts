@@ -12,6 +12,9 @@ interface User {
   companyId?: string;
   smsSenderId?: string;
   isSenderIdVerified?: boolean;
+  smsBalance?: number;
+  smsQuota?: number;
+  planName?: string;
 }
 
 interface UserStore {

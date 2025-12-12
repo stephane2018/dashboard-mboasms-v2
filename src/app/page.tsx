@@ -1,6 +1,7 @@
 "use client"
 
 import Header from "@/shared/landing_components/components/layout/Header";
+import Footer from "@/shared/landing_components/components/layout/Footer";
 import ScheduleCallModal from "@/shared/landing_components/components/ScheduleCallModal";
 import CollaboratorLogos from "@/shared/landing_components/components/sections/CollaboratorLogos";
 import ServicePresentation from "@/shared/landing_components/components/sections/ServicePresentation";
@@ -9,12 +10,17 @@ import { Button } from "@/shared/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight2, Code1, MessageText1, Mobile, People, UserEdit } from "iconsax-react";
 import Image from "next/image";
+import { usePricing } from "@/core/hooks/usePricing";
+import type { PricingPlanType } from "@/core/models/pricing";
 
 import { useState } from "react";
-import { Footer } from "react-day-picker";
 
 export default function Home() {
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
+  const { activePlansQuery } = usePricing();
+  
+  const activePlans = activePlansQuery.data || [];
+  const isLoadingPlans = activePlansQuery.isLoading;
 
   return (
     <div className="min-h-screen bg-background pt-20">
@@ -99,6 +105,22 @@ export default function Home() {
                     Contactez-nous
                     <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full border-primary text-primary hover:bg-primary/10"
+                  asChild
+                >
+                  <a
+                    href="https://dashboard.mboasms.com/login"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center"
+                  >
+                    Accéder à l'espace admin
+                    <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  </a>
                 </Button>
               </motion.div>
             </div>
@@ -417,146 +439,78 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-6 lg:gap-8">
-            {[
-              {
-                name: "Démarrage",
-                price: "13",
-                unit: "FCFA / SMS",
-                features: [
-                  "Valide pour 3 mois",
-                  "SMS personnalisés",
-                  "Support par email",
-                  "API disponible",
-                ],
-                highlight: false,
-                cta: "Commencer",
-                icon: <MessageText1 size="24" variant="Bold" className="text-primary" />
-              },
-              {
-                name: "Basique",
-                price: "11",
-                unit: "FCFA / SMS",
-                features: [
-                  "Valide pour 6 mois",
-                  "SMS personnalisés",
-                  "Support prioritaire",
-                  "API complète",
-                  "Rapports basiques"
-                ],
-                highlight: false,
-                cta: "S&apos;abonner",
-                icon: <Mobile size="24" variant="Bold" className="text-primary" />
-              },
-              {
-                name: "Professionnel",
-                price: "9",
-                unit: "FCFA / SMS",
-                features: [
-                  "Valide pour 12 mois",
-                  "SMS personnalisés",
-                  "Support 24/7",
-                  "API avancée",
-                  "Rapports détaillés",
-                  "Programmation des envois"
-                ],
-                highlight: true,
-                cta: "Choisir ce forfait",
-                icon: <Code1 size="24" variant="Bold" className="text-white" />
-              },
-              {
-                name: "Entreprise",
-                price: "7",
-                unit: "FCFA / SMS",
-                features: [
-                  "Valide pour 12 mois",
-                  "SMS personnalisés",
-                  "Support dédié",
-                  "API complète",
-                  "Rapports avancés",
-                  "Programmation des envois",
-                  "Segmentation avancée"
-                ],
-                highlight: false,
-                cta: "Contacter commercial",
-                icon: <UserEdit size="24" variant="Bold" className="text-primary" />
-              },
-              {
-                name: "Sur mesure",
-                price: "Contactez-nous",
-                unit: "",
-                features: [
-                  "Forfait personnalisé",
-                  "Volume important",
-                  "Fonctionnalités sur mesure",
-                  "Intégration personnalisée",
-                  "Support VIP"
-                ],
-                highlight: false,
-                cta: "Demander un devis",
-                icon: <People size="24" variant="Bold" className="text-primary" />
-              }
-            ].map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                className={`relative rounded-2xl overflow-hidden h-full ${plan.highlight ? 'md:scale-110 z-10' : ''}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
-              >
-                <div className={`flex flex-col h-full p-6 md:p-8 ${plan.highlight ? 'bg-gradient-to-b from-primary to-purple-700 text-white' : 'bg-white border border-gray-200 shadow-lg text-gray-800'}`}>
-                  {plan.highlight && (
-                    <div className="absolute -top-1 -right-1 left-0 h-1 bg-gradient-to-r from-primary-light via-primary to-primary-light"></div>
-                  )}
-                  {plan.highlight && (
-                    <div className="absolute top-4 right-4 bg-primary-light text-xs font-bold uppercase tracking-wider text-white px-3 py-1 rounded-full">Populaire</div>
-                  )}
-                  <div className="mb-6 flex items-center">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${plan.highlight ? 'bg-white/20' : 'bg-primary/10'} mr-4`}>
-                      {plan.icon}
-                    </div>
-                    <h3 className={`text-xl font-bold ${plan.highlight ? 'text-white' : 'text-gray-800'}`}>{plan.name}</h3>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <div className="flex items-baseline">
-                      <span className={`text-4xl font-bold ${plan.highlight ? 'text-white' : 'text-primary'}`}>{plan.price}</span>
-                      <span className={`ml-2 ${plan.highlight ? 'text-white/90' : 'text-gray-600'}`}>{plan.unit}</span>
-                    </div>
-                  </div>
-                  
-                  <ul className="space-y-4 mb-8 flex-grow">
-                    {plan.features.map((feature, i) => (
-                      <motion.li
-                        key={i}
-                        className="flex items-start"
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.3, delay: 0.2 + i * 0.1 }}
-                      >
-                        <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" className={plan.highlight ? 'stroke-white' : 'stroke-primary'} />
-                        </svg>
-                        <span className={plan.highlight ? 'text-white/90' : 'text-gray-700'}>{feature}</span>
-                      </motion.li>
-                    ))}
-                  </ul>
-                  
-                  <div className="text-center relative">
-                    <Button 
-                      variant={plan.highlight ? "default" : "outline"} 
-                      className={`w-full relative overflow-hidden rounded-lg group mt-auto py-3 ${plan.highlight ? 'bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary' : 'border-primary text-primary hover:bg-primary/10'}`}
-                    >
-                      <span className="relative flex items-center justify-center">
-                        {plan.cta}
-                        <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                      </span>
-                    </Button>
-                  </div>
+            {isLoadingPlans ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="bg-gray-200 rounded-2xl h-96"></div>
                 </div>
-              </motion.div>
-            ))}
+              ))
+            ) : activePlans.length > 0 ? (
+              activePlans.map((plan: PricingPlanType, index: number) => (
+                <motion.div
+                  key={plan.id}
+                  className="relative rounded-2xl overflow-hidden h-full bg-white border border-gray-200 shadow-lg text-gray-800"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+                >
+                  <div className="flex flex-col h-full p-6 md:p-8">
+                    <div className="mb-6 flex items-center">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 mr-4">
+                        <MessageText1 size="24" variant="Bulk" color="currentColor" className="text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800">{plan.planNameFr}</h3>
+                    </div>
+                    
+                    <div className="mb-6">
+                      <div className="flex items-baseline">
+                        <span className="text-4xl font-bold text-primary">{plan.smsUnitPrice}</span>
+                        <span className="ml-2 text-gray-600">FCFA / SMS</span>
+                      </div>
+                    </div>
+                    
+                    <ul className="space-y-4 mb-8 flex-grow">
+                      <li className="flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-gray-700">{plan.minSMS} - {plan.maxSMS} SMS</span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-gray-700">Valide {plan.nbDaysToExpired} jours</span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="w-5 h-5 mr-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-gray-700">{plan.descriptionFr}</span>
+                      </li>
+                    </ul>
+                    
+                    <div className="text-center">
+                      <Button 
+                        variant="default" 
+                        className="w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary text-white"
+                      >
+                        <span className="flex items-center justify-center">
+                          Choisir ce forfait
+                          <ArrowRight2 size="18"  variant="Bulk" color="currentColor" className="text-primary ml-2" />
+                        </span>
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">Aucun plan disponible pour le moment.</p>
+              </div>
+            )}
           </div>
           
           <div className="mt-16 text-center">
@@ -565,7 +519,7 @@ export default function Home() {
               <span className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <span className="relative flex items-center justify-center">
                 Contactez notre équipe commerciale
-                <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight2 size="18"  variant="Bulk" color="currentColor" className="text-primary ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
           </div>
@@ -587,7 +541,7 @@ export default function Home() {
               <span className="absolute -inset-px rounded-full border-2 border-transparent bg-gradient-to-r from-primary-light via-primary to-purple-500 opacity-70 group-hover:opacity-100 mask-border animate-gradient-x"></span>
               <span className="relative flex items-center justify-center text-primary">
                 Inscrivez-vous gratuitement
-                <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight2 variant="Bulk" color="currentColor" size="18" className="text-primary ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
             <Button 
@@ -599,7 +553,7 @@ export default function Home() {
               <span className="absolute inset-0 border-2 border-transparent bg-gradient-to-r from-white via-primary-light to-white opacity-0 group-hover:opacity-30 rounded-full mask-border animate-gradient-x transition-opacity duration-300"></span>
               <span className="relative text-white flex items-center justify-center">
                 Contactez-Nous
-                <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight2 size="18"  variant="Bulk" color="currentColor" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
             </Button>
           </div>
