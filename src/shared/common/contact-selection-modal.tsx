@@ -31,6 +31,8 @@ import { useAuthContext } from "@/core/providers"
 import { ContactEditPopover } from "./contact-edit-popover"
 import { cn } from "@/lib/utils"
 
+const EMPTY_SELECTED_IDS: string[] = []
+
 interface ContactSelectionModalProps {
     isOpen: boolean
     onClose: () => void
@@ -56,7 +58,7 @@ export function ContactSelectionModal({
     isOpen,
     onClose,
     onSelectContacts,
-    selectedContactIds = [],
+    selectedContactIds = EMPTY_SELECTED_IDS,
     enterpriseId: propEnterpriseId,
 }: ContactSelectionModalProps) {
     const { user } = useAuthContext()
