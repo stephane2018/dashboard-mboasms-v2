@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Edit2, Trash, More, TickCircle, CloseCircle } from "iconsax-react"
+import { Edit2, Trash, More, TickCircle, CloseCircle, Sms } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Gender } from "@/core/config/enum"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
@@ -23,11 +23,13 @@ import { getPhoneValidationStatus, checkPhoneValidation } from "@/core/utils/pho
 interface GetColumnsProps {
     onEdit: (contact: EnterpriseContactResponseType) => void
     onDelete: (contact: EnterpriseContactResponseType) => void
+    onSendSMS: (contact: EnterpriseContactResponseType) => void
 }
 
 export function getColumns({
     onEdit,
     onDelete,
+    onSendSMS,
 }: GetColumnsProps): ColumnDef<EnterpriseContactResponseType>[] {
     return [
         {
@@ -233,15 +235,9 @@ export function getColumns({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(contact.email)}
-                            >
-                                Copy email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(contact.phoneNumber)}
-                            >
-                                Copy phone
+                            <DropdownMenuItem onClick={() => onSendSMS(contact)}>
+                                <Sms size={16} variant="Bulk" color="currentColor" className="mr-2" />
+                                Envoyer SMS
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onEdit(contact)}>
