@@ -443,7 +443,7 @@ export function PhoneImportModal({
                                         </>
                                     ) : (
                                         <>
-                                            <DocumentUpload size={16} variant="Bulk" className="mr-2" />
+                                            <DocumentUpload size={16} variant="Bulk" color="currentcolor" className="mr-2" />
                                             Choisir un fichier
                                         </>
                                     )}

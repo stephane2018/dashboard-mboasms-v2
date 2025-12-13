@@ -80,7 +80,7 @@ const Header = () => {
 
   const handleLoginClick = () => {
     // Redirect to dashboard login page
-    window.location.href = 'https://dashboard.mboasms.com/login';
+    window.location.href = `${API_URL_DASHBOARD}/auth/login`;
   };
 
   const handleLogout = () => {

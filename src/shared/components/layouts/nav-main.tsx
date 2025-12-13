@@ -27,6 +27,19 @@ export function NavMain({
   const pathname = usePathname()
   const { state } = useSidebar()
 
+  // Enhanced active check: exact match OR starts with the URL path
+  const isItemActive = (itemUrl: string) => {
+    // Exact match
+    if (pathname === itemUrl) return true
+
+    // For sub-routes: check if pathname starts with itemUrl
+    // But exclude dashboard from matching all routes
+    if (itemUrl === '/dashboard') return pathname === '/dashboard'
+
+    // Check if current path starts with the item URL (for sub-routes)
+    return pathname.startsWith(itemUrl + '/')
+  }
+
   return (
     <>
       {sections.map((section) => (
@@ -39,7 +52,7 @@ export function NavMain({
           <SidebarMenu>
             {section.items.map((item) => {
               const ItemIcon = item.icon
-              const isActive = pathname === item.url
+              const isActive = isItemActive(item.url)
               return (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
