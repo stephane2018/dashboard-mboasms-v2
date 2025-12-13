@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/shared/common/confirm-dialog"
 import { UsersStatistics } from "./_components/users-statistics"
 import { StatisticsSkeleton } from "./_components/statistics-skeleton"
 import { ContactFormModal } from "./_components/contact-form-modal"
+import { AddToGroupModal } from "./_components/add-to-group-modal"
 import { getColumns } from "./_components/users-table-columns"
 import { SelectionToolbar } from "./_components/selection-toolbar"
 import { ExportModal } from "./_components/export-modal"
@@ -43,7 +44,11 @@ export default function UsersListPage() {
   const [selectedContacts, setSelectedContacts] = useState<EnterpriseContactResponseType[]>([])
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [isSMSModalOpen, setIsSMSModalOpen] = useState(false)
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
+  const [contactsForGroup, setContactsForGroup] = useState<EnterpriseContactResponseType[]>([])
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
+  const [contactsToDelete, setContactsToDelete] = useState<EnterpriseContactResponseType[]>([])
 
   // Fetch contacts with pagination
   const { data, isLoading } = useGetAllContactsByEnterprise(user?.companyId!)
@@ -141,6 +146,10 @@ export default function UsersListPage() {
     router.push("/sms")
   }
 
+  const handleSendSingleSMS = (contact: EnterpriseContactResponseType) => {
+    handleSendSMS([contact])
+  }
+
   const handleSMSSend = (message: string, password: string) => {
     toast.success("SMS envoyé", {
       description: `Message envoyé à ${selectedContacts.length} contact(s)`,
@@ -157,17 +166,41 @@ export default function UsersListPage() {
   }
 
   const handleAddToGroup = (contacts: EnterpriseContactResponseType[]) => {
-    toast.info("Add to Group", {
-      description: `Adding ${contacts.length} contact(s) to group`,
-    })
-    // TODO: Implement add to group modal
+    setContactsForGroup(contacts)
+    setIsGroupModalOpen(true)
   }
 
   const handleDeleteSelected = (contacts: EnterpriseContactResponseType[]) => {
-    toast.info("Delete Selected", {
-      description: `Deleting ${contacts.length} contact(s)`,
-    })
-    // TODO: Implement bulk delete with confirmation
+    setContactsToDelete(contacts)
+    setIsBulkDeleteDialogOpen(true)
+  }
+
+  const confirmBulkDelete = () => {
+    // Delete all selected contacts
+    const deletePromises = contactsToDelete.map(contact => 
+      new Promise<void>((resolve, reject) => {
+        deleteContact(contact.id, {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error),
+        })
+      })
+    )
+
+    Promise.all(deletePromises)
+      .then(() => {
+        toast.success("Contacts supprimés", {
+          description: `${contactsToDelete.length} contact(s) supprimé(s) avec succès`,
+        })
+        setSelectedContacts([]) // Clear selection after successful deletion
+        setIsBulkDeleteDialogOpen(false)
+        setContactsToDelete([])
+      })
+      .catch((error) => {
+        toast.error("Erreur lors de la suppression", {
+          description: "Une erreur est survenue lors de la suppression des contacts",
+        })
+        console.error("Bulk delete error:", error)
+      })
   }
 
   const handleExport = (format: "csv" | "excel" | "json") => {
@@ -190,6 +223,7 @@ export default function UsersListPage() {
       getColumns({
         onEdit: handleEditContact,
         onDelete: handleDeleteContact,
+        onSendSMS: handleSendSingleSMS,
       }),
     []
   )
@@ -360,6 +394,25 @@ export default function UsersListPage() {
         }}
       />
 
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isBulkDeleteDialogOpen}
+        isLoading={isDeleting}
+        onDismiss={() => {
+          setIsBulkDeleteDialogOpen(false)
+          setContactsToDelete([])
+        }}
+        onAction={confirmBulkDelete}
+        messages={{
+          title: "Supprimer les contacts",
+          description: `Êtes-vous sûr de vouloir supprimer <strong>${contactsToDelete.length}</strong> contact(s) ? Cette action ne peut pas être annulée.`,
+          buttons: {
+            cancel: "Annuler",
+            action: "Supprimer",
+          },
+        }}
+      />
+
       {/* Export Modal */}
       <ExportModal
         isOpen={isExportModalOpen}
@@ -373,6 +426,14 @@ export default function UsersListPage() {
         onClose={() => setIsSMSModalOpen(false)}
         selectedContacts={selectedContacts}
         onSend={handleSMSSend}
+      />
+
+      {/* Add to Group Modal */}
+      <AddToGroupModal
+        isOpen={isGroupModalOpen}
+        onClose={() => setIsGroupModalOpen(false)}
+        contacts={contactsForGroup}
+        enterpriseId={user?.companyId!}
       />
 
       {/* Import Modal */}

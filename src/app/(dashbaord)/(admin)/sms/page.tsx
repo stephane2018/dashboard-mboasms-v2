@@ -69,6 +69,9 @@ export default function SMSPage() {
         })
     }, [searchParams])
 
+    // Get prefilled contacts from SMS store
+    const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
+
     // Handle prefilled contacts from SMS store
     useEffect(() => {
         if (prefilledContacts.length === 0) return
@@ -104,9 +107,6 @@ export default function SMSPage() {
 
     // Get user from store
     const { user, updateUser } = useUserStore()
-    
-    // Get prefilled contacts from SMS store
-    const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
 
     // User's sender ID (from store)
     const userSenderId = user?.smsSenderId || ""
