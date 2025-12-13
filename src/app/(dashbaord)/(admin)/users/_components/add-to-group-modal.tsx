@@ -49,7 +49,10 @@ export function AddToGroupModal({
     const [activeTab, setActiveTab] = useState("existing")
 
     const isDesktop = useMediaQuery("(min-width: 768px)")
-    const { groups, isLoading, createGroup, addContactsToGroup } = useGroups(enterpriseId)
+    const { groups, isLoading, createGroup, addContactsToGroup } = useGroups({ 
+        enterpriseId: enterpriseId || "",
+        autoLoad: true 
+    })
 
     const handleAddToExistingGroup = async () => {
         if (!selectedGroupId) {
@@ -61,7 +64,7 @@ export function AddToGroupModal({
         try {
             await addContactsToGroup({
                 groupId: selectedGroupId,
-                contactIds: contacts.map(c => c.id),
+                listContactid: contacts.map(c => c.id),
             })
             toast.success("Contacts ajoutés au groupe", {
                 description: `${contacts.length} contact(s) ajouté(s) avec succès`,
@@ -85,13 +88,14 @@ export function AddToGroupModal({
         try {
             const newGroup = await createGroup({
                 name: newGroupName.trim(),
-                code: newGroupCode.trim() || undefined,
+                code: newGroupCode.trim() || "",
+                enterpriseId: enterpriseId,
             })
             
             // Add contacts to the newly created group
             await addContactsToGroup({
                 groupId: newGroup.id,
-                contactIds: contacts.map(c => c.id),
+                listContactid: contacts.map(c => c.id),
             })
             
             toast.success("Groupe créé et contacts ajoutés", {
@@ -170,7 +174,7 @@ export function AddToGroupModal({
                                                 <div className="text-xs opacity-70">Code: {group.code}</div>
                                             )}
                                             <div className="text-xs opacity-70">
-                                                {group.contactCount || 0} contact(s)
+                                                {group.enterpriseContacts?.length || 0} contact(s)
                                             </div>
                                         </div>
                                     ))}
