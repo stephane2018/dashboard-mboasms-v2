@@ -127,18 +127,55 @@ export function DataTable<T>({
         ? ([
             {
               id: "select",
-              header: ({ table }) => (
-                <div className="flex items-center">
-                  <Checkbox
-                    checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-                    onCheckedChange={(value) => {
-                      table.toggleAllPageRowsSelected(!!value);
-                    }}
-                    aria-label="Sélectionner tout"
-                    disabled={getRowCanBeSelected ? !table.getRowModel().rows.some((row) => getRowCanBeSelected(row.original)) : false}
-                  />
-                </div>
-              ),
+              header: ({ table }) => {
+                const checked = (() => {
+                  if (!getRowCanBeSelected) {
+                    return table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+                  }
+
+                  const pageRows = table.getRowModel().rows
+                  const selectableRows = pageRows.filter((row) => getRowCanBeSelected(row.original))
+
+                  if (selectableRows.length === 0) return false
+
+                  const allSelected = selectableRows.every((row) => row.getIsSelected())
+                  const someSelected = selectableRows.some((row) => row.getIsSelected())
+
+                  return allSelected || (someSelected && "indeterminate")
+                })()
+
+                return (
+                  <div className="flex items-center">
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(value) => {
+                      if (!getRowCanBeSelected) {
+                        table.toggleAllPageRowsSelected(!!value);
+                        return
+                      }
+
+                      const shouldSelect = !!value
+
+                      table.getRowModel().rows.forEach((row) => {
+                        const canSelect = getRowCanBeSelected(row.original)
+
+                        if (canSelect) {
+                          row.toggleSelected(shouldSelect)
+                        } else {
+                          row.toggleSelected(false)
+                        }
+                      })
+                      }}
+                      aria-label="Sélectionner tout"
+                      disabled={
+                        getRowCanBeSelected
+                          ? !table.getRowModel().rows.some((row) => getRowCanBeSelected(row.original))
+                          : false
+                      }
+                    />
+                  </div>
+                )
+              },
               cell: ({ row }) => {
                 const canSelect = !getRowCanBeSelected || getRowCanBeSelected(row.original);
                 return (
