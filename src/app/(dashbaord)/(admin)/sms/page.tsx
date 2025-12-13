@@ -17,6 +17,7 @@ import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/pho
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useSettingsStore } from "@/core/stores"
 import { useUserStore } from "@/core/stores/userStore"
+import { useSMSStore } from "@/core/stores/smsStore"
 import { updateUserSenderId } from "@/core/services/client.service"
 import { toast } from "sonner"
 
@@ -68,11 +69,44 @@ export default function SMSPage() {
         })
     }, [searchParams])
 
+    // Handle prefilled contacts from SMS store
+    useEffect(() => {
+        if (prefilledContacts.length === 0) return
+
+        const newEntries: PhoneEntry[] = prefilledContacts.map((contact) => {
+            const operator = checkPhoneValidation(contact.phoneNumber)
+            const status = getPhoneValidationStatus(contact.phoneNumber)
+
+            return {
+                id: `store_${contact.id}`,
+                phoneNumber: contact.phoneNumber,
+                name: contact.name,
+                isValid: status === "CORRECT",
+                operator,
+            }
+        })
+
+        setPhoneEntries((prev) => {
+            const existingIds = new Set(prev.map((e) => e.id))
+            const existingPhones = new Set(prev.map((e) => e.phoneNumber))
+            const unique = newEntries.filter(
+                (e) => !existingIds.has(e.id) && !existingPhones.has(e.phoneNumber)
+            )
+            return unique.length > 0 ? [...prev, ...unique] : prev
+        })
+
+        // Clear prefilled contacts after processing
+        clearPrefilledContacts()
+    }, [prefilledContacts, clearPrefilledContacts])
+
     // TODO: Replace with actual user balance from API/context
     const [userBalance] = useState(1500) // Mock SMS credit balance
 
     // Get user from store
     const { user, updateUser } = useUserStore()
+    
+    // Get prefilled contacts from SMS store
+    const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
 
     // User's sender ID (from store)
     const userSenderId = user?.smsSenderId || ""
