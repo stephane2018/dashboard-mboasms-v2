@@ -8,6 +8,7 @@ import { Skeleton } from "@/shared/ui/skeleton"
 import { Sms } from "iconsax-react"
 import { DataTable } from "@/shared/common/data-table/table"
 import type { MessageHistoryType } from "@/core/models/history"
+import { SmsStatusPill } from "./sms-status-pill"
 
 interface MessageHistoryTabProps {
   enterpriseId: string
@@ -50,7 +51,7 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
       {
         accessorKey: "status",
         header: "Statut",
-        cell: ({ row }) => <div className="text-sm">{row.getValue("status") || "—"}</div>,
+        cell: ({ row }) => <SmsStatusPill status={row.getValue("status") as string | undefined} />,
         meta: { className: "w-28" },
       },
       {
@@ -79,7 +80,7 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
   }
 
   return (
-    <Card>
+    <Card className="p-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sms className="h-5 w-5 text-primary" variant="Bulk" color="currentColor" />
