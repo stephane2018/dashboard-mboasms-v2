@@ -59,12 +59,6 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
             {
-                title: 'SMS',
-                url: '/sms',
-                icon: Sms,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
-            },
-            {
                 title: 'Users List',
                 url: '/users',
                 icon: People,

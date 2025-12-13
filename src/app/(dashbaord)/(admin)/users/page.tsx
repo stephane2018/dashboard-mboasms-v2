@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import { useGetContactsByEnterprise, useDeleteContact, useGetAllContactsByEnterprise } from "@/core/hooks/useContacts"
@@ -21,14 +22,17 @@ import { Input } from "@/shared/ui/input"
 import { SearchNormal1, UserAdd, DocumentDownload, Sms } from "iconsax-react"
 import { getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import { searchContacts } from "@/core/utils/search.utils"
+import { useSMSStore } from "@/core/stores/smsStore"
 
 
 export default function UsersListPage() {
+  const router = useRouter()
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   })
   const { user } = useAuthContext()
+  const { setPrefilledContacts } = useSMSStore()
   console.log(user)
 
   const [selectedContact, setSelectedContact] = useState<EnterpriseContactResponseType | null>(null)
@@ -112,7 +116,29 @@ export default function UsersListPage() {
   }
 
   const handleSendSMS = (contacts: EnterpriseContactResponseType[]) => {
-    setIsSMSModalOpen(true)
+    // Filter contacts with valid phone numbers
+    const validContacts = contacts.filter(contact => 
+      contact.phoneNumber && getPhoneValidationStatus(contact.phoneNumber) === "CORRECT"
+    )
+    
+    if (validContacts.length === 0) {
+      toast.error("Aucun contact valide", {
+        description: "Les contacts sélectionnés n'ont pas de numéro de téléphone valide",
+      })
+      return
+    }
+    
+    // Transform contacts to the format expected by the store
+    const contactsForSMS = validContacts.map(contact => ({
+      id: contact.id,
+      name: `${contact.firstname || ""} ${contact.lastname || ""}`.trim() || contact.email || "Inconnu",
+      phoneNumber: contact.phoneNumber!,
+      email: contact.email,
+    }))
+    
+    // Store contacts in SMS store and navigate to SMS page
+    setPrefilledContacts(contactsForSMS)
+    router.push("/sms")
   }
 
   const handleSMSSend = (message: string, password: string) => {
