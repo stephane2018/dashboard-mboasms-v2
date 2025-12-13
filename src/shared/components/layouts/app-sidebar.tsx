@@ -34,7 +34,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar()
 
   const dashboardConfig = React.useMemo(() => getDashboardConfig(userRole), [userRole])
-  const isDashboardActive = pathname === dashboardConfig.url
+  const isDashboardActive =
+    pathname === dashboardConfig.url || pathname.startsWith(dashboardConfig.url + '/')
 
   const filteredSections = React.useMemo(() => {
     return navigationConfig
@@ -59,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className={`${state === 'collapsed' ? 'mx-auto' : ''}  p-2`}>
-            <SidebarMenuButton size="lg" asChild className="!bg-transparent">
+            <SidebarMenuButton size="lg" asChild className="bg-transparent!">
               <Link href="/" className={`flex ${state === 'collapsed' ? 'justify-center' : 'justify-start'} `}>
                 <Image src="/logo.png" alt="MboaSMS" fill className="rounded-sm" />
               </Link>

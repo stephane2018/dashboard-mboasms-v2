@@ -38,6 +38,7 @@ interface ContactSelectionModalProps {
     onClose: () => void
     onSelectContacts: (contacts: EnterpriseContactResponseType[]) => void
     selectedContactIds?: string[]
+    existingContactIds?: string[]
     enterpriseId?: string
 }
 
@@ -59,6 +60,7 @@ export function ContactSelectionModal({
     onClose,
     onSelectContacts,
     selectedContactIds = EMPTY_SELECTED_IDS,
+    existingContactIds = EMPTY_SELECTED_IDS,
     enterpriseId: propEnterpriseId,
 }: ContactSelectionModalProps) {
     const { user } = useAuthContext()
@@ -76,6 +78,8 @@ export function ContactSelectionModal({
 
     // Get enterprise ID from props or user context
     const enterpriseId = propEnterpriseId || user?.companyId || ""
+
+    const alreadyInGroupIds = useMemo(() => new Set(existingContactIds), [existingContactIds])
 
     // Load contacts when modal opens or page size changes
     useEffect(() => {
@@ -174,8 +178,8 @@ export function ContactSelectionModal({
     }, [filteredContacts])
 
     // Toggle contact selection (only for valid contacts)
-    const toggleContact = (contactId: string, isValid: boolean) => {
-        if (!isValid) return
+    const toggleContact = (contactId: string, isValid: boolean, isAlreadyInGroup: boolean) => {
+        if (!isValid || isAlreadyInGroup) return
 
         const newSelected = new Set(selectedIds)
         if (newSelected.has(contactId)) {
@@ -191,7 +195,8 @@ export function ContactSelectionModal({
         const newSelected = new Set(selectedIds)
         filteredContacts.forEach(c => {
             const isValid = getPhoneValidationStatus(c.phoneNumber || "") === "CORRECT"
-            if (isValid) {
+            const isAlreadyInGroup = alreadyInGroupIds.has(c.id)
+            if (isValid && !isAlreadyInGroup) {
                 newSelected.add(c.id)
             }
         })
@@ -217,13 +222,13 @@ export function ContactSelectionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <People size={20} variant="Bulk" color="currentColor" className="text-primary" />
                         Sélectionner des contacts
                         {totalElements > 0 && (
-                            <span className="text-sm font-normal text-muted-foreground">
+                            <span className="text-xs font-normal text-muted-foreground">
                                 ({totalElements} au total)
                             </span>
                         )}
@@ -261,7 +266,7 @@ export function ContactSelectionModal({
 
                 {/* Alert for invalid contacts */}
                 {!isLoading && invalidContactsCount > 0 && (
-                    <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-sm p-3 rounded-lg">
+                    <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs p-3 rounded-lg">
                         <Warning2 size={16} color="currentColor" variant="Bulk" />
                         <span>
                             {invalidContactsCount} contact(s) invalide(s) - Cliquez sur <Edit2 size={12} className="inline" /> pour modifier
@@ -270,7 +275,7 @@ export function ContactSelectionModal({
                 )}
 
                 {/* Selection controls */}
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                         {selectedIds.size} sélectionné(s) • {contacts.length} chargé(s)
                     </span>
@@ -286,7 +291,7 @@ export function ContactSelectionModal({
 
                 {/* Contact list with scrollable area */}
                 <div className="flex-1 min-h-0 border rounded-lg overflow-hidden">
-                    <ScrollArea className="h-[350px]">
+                    <ScrollArea className="h-[450px]">
                         {isLoading ? (
                             <div className="p-2 space-y-2">
                                 {Array.from({ length: 8 }).map((_, i) => (
@@ -302,40 +307,49 @@ export function ContactSelectionModal({
                                 {filteredContacts.map((contact) => {
                                     const isSelected = selectedIds.has(contact.id)
                                     const isValid = isContactValid(contact)
+                                    const isAlreadyInGroup = alreadyInGroupIds.has(contact.id)
+                                    const isSelectable = isValid && !isAlreadyInGroup
 
                                     return (
                                         <div
                                             key={contact.id}
-                                            onClick={() => toggleContact(contact.id, isValid)}
+                                            onClick={() => toggleContact(contact.id, isValid, isAlreadyInGroup)}
                                             className={cn(
                                                 "flex items-center gap-3 p-3 rounded-lg transition-colors",
-                                                isValid
+                                                isSelectable
                                                     ? "cursor-pointer"
                                                     : "cursor-default",
                                                 isSelected
                                                     ? "bg-primary/10 border border-primary/30"
-                                                    : isValid
+                                                    : isSelectable
                                                         ? "hover:bg-muted/50"
-                                                        : "bg-red-50/50 dark:bg-red-900/10"
+                                                        : isAlreadyInGroup
+                                                            ? "bg-blue-50/40 dark:bg-blue-900/20"
+                                                            : "bg-red-50/50 dark:bg-red-900/10"
                                             )}
                                         >
                                             <Checkbox
                                                 checked={isSelected}
-                                                onCheckedChange={() => toggleContact(contact.id, isValid)}
-                                                disabled={!isValid}
+                                                onCheckedChange={() => toggleContact(contact.id, isValid, isAlreadyInGroup)}
+                                                disabled={!isSelectable}
                                             />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={cn("font-medium truncate", !isValid && "text-muted-foreground")}>
+                                                    <span className={cn("text-sm font-medium truncate", !isValid && "text-muted-foreground")}>
                                                         {contact.firstname} {contact.lastname}
                                                     </span>
                                                     {!isValid && (
-                                                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                                        <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
                                                             Invalide
                                                         </Badge>
                                                     )}
+                                                    {isAlreadyInGroup && (
+                                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-blue-600 border-blue-500/50">
+                                                            Déjà dans le groupe
+                                                        </Badge>
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                                                     <span>{contact.phoneNumber || "Pas de numéro"}</span>
                                                     {contact.email && (
                                                         <span className="truncate">{contact.email}</span>
@@ -344,7 +358,7 @@ export function ContactSelectionModal({
                                             </div>
 
                                             {/* Edit button with popover for invalid contacts */}
-                                            {!isValid && (
+                                            {!isSelectable && !isAlreadyInGroup && (
                                                 <ContactEditPopover
                                                     contact={contact}
                                                     enterpriseId={enterpriseId}

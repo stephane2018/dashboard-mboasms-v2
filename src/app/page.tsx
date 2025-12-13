@@ -31,12 +31,12 @@ export default function Home() {
         {/* Background elements for light/dark modes */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           {/* Light mode background elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/15 to-purple-500/20 rounded-full filter blur-3xl opacity-80 dark:opacity-0 transition-opacity duration-1000"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-br from-primary/15 to-purple-500/20 rounded-full filter blur-3xl opacity-80 dark:opacity-0 transition-opacity duration-1000"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-500/20 to-primary/15 rounded-full filter blur-3xl opacity-80 dark:opacity-0 transition-opacity duration-1000"></div>
           <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-gradient-to-r from-primary-light/20 to-primary/10 rounded-full filter blur-2xl opacity-70 dark:opacity-0 transition-opacity duration-1000"></div>
           
           {/* Dark mode background elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/30 to-purple-500/20 rounded-full filter blur-3xl opacity-0 dark:opacity-50 transition-opacity duration-1000"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-br from-primary/30 to-purple-500/20 rounded-full filter blur-3xl opacity-0 dark:opacity-50 transition-opacity duration-1000"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-500/20 to-primary/30 rounded-full filter blur-3xl opacity-0 dark:opacity-50 transition-opacity duration-1000"></div>
           <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-gradient-to-r from-primary-light/30 to-primary/20 rounded-full filter blur-2xl opacity-0 dark:opacity-40 transition-opacity duration-1000"></div>
           
@@ -180,15 +180,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-br from-card to-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
+              className="bg-linear-to-br from-card to-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               <div className="h-3 bg-gradient-to-r from-primary via-purple-500 to-primary-light animate-gradient-x"></div>
               <div className="p-8 relative overflow-hidden">
-                <div className="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-gradient-to-br from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
+                <div className="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-linear-to-br from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
                 <div className="absolute -left-20 -bottom-20 w-40 h-40 rounded-full bg-gradient-to-tr from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
                 
                 <div className="flex items-center justify-center mb-6 relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-20 h-20 rounded-full bg-linear-to-br from-primary to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <Code1 size="32" color="#FFFFFF" variant="Bold"/>
                   </div>
                 </div>
@@ -235,15 +235,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-gradient-to-br h-full from-card to-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
+              className="bg-linear-to-br h-full from-card to-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               <div className="h-3 bg-gradient-to-r from-primary-light via-primary to-primary-light animate-gradient-x"></div>
               <div className="p-8 relative overflow-hidden">
-                <div className="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-gradient-to-br from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
+                <div className="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-linear-to-br from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
                 <div className="absolute -left-20 -bottom-20 w-40 h-40 rounded-full bg-gradient-to-tr from-primary/10 to-purple-500/5 group-hover:scale-150 transition-transform duration-500"></div>
                 
                 <div className="flex items-center justify-center mb-6 relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <MessageText1 size="32" color="#FFFFFF" variant="Bold"/>
                   </div>
                 </div>
@@ -393,7 +393,7 @@ export default function Home() {
         </div>
         
         {/* Gradient corner circles */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/30 to-purple-500/20 rounded-full filter blur-xl opacity-70"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-br from-primary/30 to-purple-500/20 rounded-full filter blur-xl opacity-70"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/20 to-primary/30 rounded-full filter blur-xl opacity-70"></div>
         
         <div className="container mx-auto relative z-10">
@@ -563,7 +563,7 @@ export default function Home() {
       {/* Contact Section */}
       <div className="mt-24 relative">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-2xl"></div>
-        <div className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-primary/20 to-purple-500/10 rounded-full filter blur-xl"></div>
+        <div className="absolute -top-6 -right-6 w-32 h-32 bg-linear-to-br from-primary/20 to-purple-500/10 rounded-full filter blur-xl"></div>
         <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-purple-500/10 to-primary/20 rounded-full filter blur-xl"></div>
         
         <div className="relative bg-white border border-gray-100 shadow-lg rounded-2xl p-8 md:p-10 text-center">

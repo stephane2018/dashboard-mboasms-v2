@@ -101,7 +101,7 @@ export default function DashboardHome() {
               <div
                 className={`rounded-full bg-gradient-to-br ${kpi.accent} p-2`}
               >
-                <kpi.icon size="20" className="text-primary" variant="Bulk" />
+                <kpi.icon size="20"  color="currentColor" variant="Bulk" />
               </div>
             </CardHeader>
             <CardContent>
@@ -152,7 +152,7 @@ export default function DashboardHome() {
                 <Button asChild variant="ghost" className="mt-3 px-0 text-primary">
                   <a href={action.href} className="inline-flex items-center gap-1 text-sm font-semibold">
                     {action.cta}
-                    <ArrowRight2 size="16" />
+                    <ArrowRight2 size="16"  color="currentColor" variant="Bulk" className="text-primary" />
                   </a>
                 </Button>
               </div>

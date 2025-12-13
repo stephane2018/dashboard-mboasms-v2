@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
+import { Badge } from "@/shared/ui/badge"
 import { toast } from "sonner"
 import { httpClient } from "@/core/lib/http-client"
 import type { Group } from "@/modules/groups/types"
@@ -31,6 +31,7 @@ import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
 import { groupsService } from "@/modules/groups/services"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { People, Building, AddSquare, Trash } from "iconsax-react"
 import { cn } from "@/lib/utils"
 
 interface Enterprise {
@@ -38,40 +39,28 @@ interface Enterprise {
   socialRaison: string
 }
 
-const GROUP_TABLE_COLUMNS = ["Nom", "Code", "Entreprise", "Contacts", "Actions"]
+const GROUP_CARD_PLACEHOLDER_COUNT = 6
 
-function GroupTableSkeleton() {
+function GroupCardsSkeleton() {
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <div className="border-b bg-muted/40 px-4 py-3">
-        <div className="h-5 w-40">
-          <Skeleton className="h-5 w-32" />
-        </div>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-10"></TableHead>
-            {GROUP_TABLE_COLUMNS.map((column) => (
-              <TableHead key={column}>{column}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <TableRow key={`group-skeleton-${index}`}>
-              <TableCell>
-                <Skeleton className="h-6 w-8" />
-              </TableCell>
-              {GROUP_TABLE_COLUMNS.map((column) => (
-                <TableCell key={`${column}-${index}`}>
-                  <Skeleton className="h-6 w-full" />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: GROUP_CARD_PLACEHOLDER_COUNT }).map((_, index) => (
+        <Card key={`group-card-skeleton-${index}`} className="border border-border/60">
+          <CardHeader className="space-y-1.5 pb-2">
+            <Skeleton className="h-3 w-1/4" />
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-3 w-1/3" />
+          </CardHeader>
+          <CardContent className="space-y-2.5">
+            <Skeleton className="h-2.5 w-full" />
+            <Skeleton className="h-2.5 w-2/3" />
+            <div className="flex gap-1.5">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 }
@@ -261,16 +250,40 @@ export default function AdminGroupesPage() {
 
   const handleAddContactsToGroup = async (selected: EnterpriseContactResponseType[]) => {
     if (!selectedGroupForContacts?.id) return
-    const ids = selected.map((c) => c.id)
+    if (selected.length === 0) {
+      toast.info("Sélectionnez des contacts à ajouter")
+      return
+    }
 
+    const ids = selected.map((c) => c.id)
+    const groupId = selectedGroupForContacts.id
+    const previousGroups = groups
+
+    const toastId = toast.loading("Mise à jour du groupe…")
     setIsCreating(true)
+    setGroups((prev) =>
+      prev.map((group) => {
+        if (group.id !== groupId) return group
+        const existingContacts = group.enterpriseContacts || []
+        const mergedContacts = [
+          ...existingContacts,
+          ...selected.filter((contact) => !existingContacts.some((existing) => existing.id === contact.id)),
+        ]
+        return {
+          ...group,
+          enterpriseContacts: mergedContacts,
+        }
+      })
+    )
+
     try {
-      await groupsService.addContactsToGroup(selectedGroupForContacts.id, ids)
-      toast.success(`${ids.length} contact(s) ajouté(s)`)
-      await loadGroups()
+      await groupsService.addContactsToGroup(groupId, ids)
+      toast.success(`${ids.length} contact(s) ajouté(s)`, { id: toastId })
       setIsContactModalOpen(false)
+      setSelectedGroupForContacts(null)
     } catch (e) {
-      toast.error("Erreur lors de l'ajout des contacts")
+      setGroups(previousGroups)
+      toast.error("Erreur lors de l'ajout des contacts", { id: toastId })
       console.error(e)
     } finally {
       setIsCreating(false)
@@ -375,127 +388,152 @@ export default function AdminGroupesPage() {
       </Card>
 
       <div>
-        <div className="pb-3">
-          <div className="text-lg font-semibold">Liste des groupes</div>
-          <div className="text-sm text-muted-foreground">
-            {filteredGroups.length} groupe(s) trouvé(s)
+        <div className="pb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-lg font-semibold">Liste des groupes</div>
+            <div className="text-sm text-muted-foreground">
+              {filteredGroups.length} groupe(s) trouvé(s)
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Cliquez sur une carte pour la sélectionner
           </div>
         </div>
-        <div>
-          {isLoading ? (
-            <GroupTableSkeleton />
-          ) : filteredGroups.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Aucun groupe</div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Entreprise</TableHead>
-                    <TableHead>Contacts</TableHead>
-                    <TableHead className="w-40">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedGroups.map((g) => {
-                    const contacts = g.enterpriseContacts || []
 
-                    return (
-                      <TableRow
-                        key={g.id}
-                        className={cn(
-                          "cursor-pointer hover:bg-muted/50 transition-colors",
-                          selectedGroupId === g.id && "bg-primary/5"
-                        )}
-                        onClick={() => setSelectedGroupId(g.id)}
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            {g.code || "—"}
+        {isLoading ? (
+          <GroupCardsSkeleton />
+        ) : filteredGroups.length === 0 ? (
+          <div className="text-sm text-muted-foreground border border-dashed rounded-lg p-6 text-center">
+            Aucun groupe
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {paginatedGroups.map((g) => {
+                const contacts = g.enterpriseContacts || []
+                const isSelected = selectedGroupId === g.id
+
+                return (
+                  <Card
+                    key={g.id}
+                    className={cn(
+                      "cursor-pointer border transition-all duration-200 hover:shadow-sm",
+                      isSelected && "border-primary ring-2 ring-primary/20"
+                    )}
+                    onClick={() => setSelectedGroupId(g.id)}
+                  >
+                    <CardHeader className="space-y-0.5 pb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          {g.code || "—"}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0">
+                          {g.enterpriseName}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg leading-tight">{g.name}</CardTitle>
+                      <CardDescription>
+                        {contacts.length} contact(s) • ID: {g.id.slice(0, 6)}…
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-md bg-muted/40 p-2 flex items-center gap-2">
+                          <div className="rounded-full bg-background p-1">
+                            <Building size="14" variant="Bulk" color="currentColor" className="text-primary" />
                           </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{g.name}</TableCell>
-                        <TableCell>{g.code}</TableCell>
-                        <TableCell>{g.enterpriseName}</TableCell>
-                        <TableCell>{contacts.length}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setSelectedGroupForContacts(g)
-                                setIsContactModalOpen(true)
-                              }}
-                              disabled={isCreating}
-                            >
-                              Ajouter
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setGroupToDelete(g)
-                                setIsDeleteOpen(true)
-                              }}
-                              disabled={isCreating}
-                            >
-                              Supprimer
-                            </Button>
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-muted-foreground">Entreprise</p>
+                            <p className="font-semibold truncate">{g.enterpriseName}</p>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-              <div className="flex flex-col gap-3 border-t bg-muted/30 px-3 py-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-                <div>
-                  Affichage{" "}
-                  {totalGroups === 0
-                    ? "0"
-                    : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)}`}{" "}
-                  sur {totalGroups} groupes
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                    <SelectTrigger className="h-8 w-28 text-xs">
-                      <SelectValue placeholder="Taille" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAGE_SIZE_OPTIONS.map((size) => (
-                        <SelectItem key={size} value={size.toString()}>
-                          {size} / page
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={handlePrevPage} disabled={page === 0}>
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-xs">
-                      Page {page + 1} / {totalPages}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={page >= totalPages - 1}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+                        </div>
+                        <div className="rounded-md bg-muted/40 p-2 flex items-center gap-2">
+                          <div className="rounded-full bg-background p-1">
+                            <People size="14" variant="Bulk" color="currentColor" className="text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">Contacts</p>
+                            <p className="font-semibold">{contacts.length}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedGroupForContacts(g)
+                            setIsContactModalOpen(true)
+                          }}
+                          disabled={isCreating}
+                          className="flex-1 h-8 text-xs"
+                        >
+                          <AddSquare size="16" color="currentColor" variant="Bulk" className="mr-1" />
+                          Ajouter
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setGroupToDelete(g)
+                            setIsDeleteOpen(true)
+                          }}
+                          disabled={isCreating}
+                          className="h-8 px-4 text-xs"
+                        >
+                          <Trash size="16" color="currentColor" variant="Bulk" className="mr-1" />
+                          Supprimer
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                Affichage{" "}
+                {totalGroups === 0
+                  ? "0"
+                  : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)}`}{" "}
+                sur {totalGroups} groupes
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-8 w-28 text-xs">
+                    <SelectValue placeholder="Taille" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <SelectItem key={size} value={size.toString()}>
+                        {size} / page
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="sm" onClick={handlePrevPage} disabled={page === 0}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs">
+                    Page {page + 1} / {totalPages}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={page >= totalPages - 1}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       <AlertDialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -575,6 +613,7 @@ export default function AdminGroupesPage() {
         }}
         onSelectContacts={handleAddContactsToGroup}
         enterpriseId={selectedGroupForContacts?.enterprise}
+        existingContactIds={selectedGroupForContacts?.enterpriseContacts?.map((c) => c.id)}
       />
 
       <AlertDialog open={isRemoveContactOpen} onOpenChange={setIsRemoveContactOpen}>
