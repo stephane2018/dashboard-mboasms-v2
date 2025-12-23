@@ -27,17 +27,15 @@ import { toast } from "sonner"
 import { httpClient } from "@/core/lib/http-client"
 import type { Group } from "@/modules/groups/types"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import type { EnterpriseType } from "@/core/models/enterprise"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
+import { GroupTableView } from "./group-table-view"
 import { groupsService } from "@/modules/groups/services"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react"
 import { People, Building, AddSquare, Trash } from "iconsax-react"
 import { cn } from "@/lib/utils"
 
-interface Enterprise {
-  id: string
-  socialRaison: string
-}
 
 const GROUP_CARD_PLACEHOLDER_COUNT = 6
 
@@ -66,14 +64,14 @@ function GroupCardsSkeleton() {
 }
 
 export default function AdminGroupesPage() {
-  const [groups, setGroups] = useState<(Group & { enterpriseName?: string })[]>([])
-  const [enterprises, setEnterprises] = useState<Enterprise[]>([])
+  const [groups, setGroups] = useState<(Group & { enterpriseFull?: EnterpriseType })[]>([])
+  const [enterprises, setEnterprises] = useState<EnterpriseType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(10)
-  const PAGE_SIZE_OPTIONS = [5, 10, 20, 50]
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -87,15 +85,28 @@ export default function AdminGroupesPage() {
   const [newGroupName, setNewGroupName] = useState("")
   const [newGroupCode, setNewGroupCode] = useState("")
   const [newGroupEnterpriseId, setNewGroupEnterpriseId] = useState("")
+  const [contactCountFilter, setContactCountFilter] = useState<string>("")
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set())
 
   const filteredGroups = useMemo(() => {
-    if (selectedEnterpriseId === "all") return groups
-    return groups.filter((g) => g.enterprise === selectedEnterpriseId)
-  }, [groups, selectedEnterpriseId])
+    let filtered = groups
+
+    if (selectedEnterpriseId !== "all") {
+      filtered = filtered.filter((g) => g.enterprise === selectedEnterpriseId)
+    }
+
+    if (contactCountFilter) {
+      const minContacts = parseInt(contactCountFilter, 10)
+      if (!isNaN(minContacts)) {
+        filtered = filtered.filter((g) => (g.enterpriseContacts?.length || 0) >= minContacts)
+      }
+    }
+
+    return filtered
+  }, [groups, selectedEnterpriseId, contactCountFilter])
 
   const totalGroups = filteredGroups.length
-  const totalPages = Math.max(1, Math.ceil(totalGroups / pageSize))
+  const totalPages = viewMode === 'grid' ? Math.max(1, Math.ceil(totalGroups / pageSize)) : 1
   const paginatedGroups = useMemo(() => {
     const start = page * pageSize
     return filteredGroups.slice(start, start + pageSize)
@@ -124,17 +135,13 @@ export default function AdminGroupesPage() {
     setSelectedContactIds(new Set())
   }, [selectedGroupId])
 
-  const handlePageSizeChange = (value: string) => {
-    setPageSize(Number(value))
-    setPage(0)
-  }
-
+  
   const handlePrevPage = () => setPage((prev) => Math.max(0, prev - 1))
   const handleNextPage = () => setPage((prev) => Math.min(totalPages - 1, prev + 1))
 
   const loadEnterprises = async () => {
     try {
-      const data = await httpClient.get<Enterprise[]>("/api/v1/enterprise/all")
+      const data = await httpClient.get<EnterpriseType[]>("/api/v1/enterprise/all")
       setEnterprises(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Error loading enterprises:", error)
@@ -170,11 +177,11 @@ export default function AdminGroupesPage() {
     try {
       const data = await httpClient.get<Group[] | Record<string, unknown>>("/api/v1/group/all")
       const parsedGroups = normalizeGroupsResponse(data)
-      const groupsWithNames = parsedGroups.map((g) => ({
+      const groupsWithFullEnterprise = parsedGroups.map((g) => ({
         ...g,
-        enterpriseName: enterprises.find((e) => e.id === g.enterprise)?.socialRaison || g.enterprise,
+        enterpriseFull: enterprises.find((e) => e.id === g.enterprise),
       }))
-      setGroups(groupsWithNames)
+      setGroups(groupsWithFullEnterprise)
     } catch (error) {
       console.error("Error loading groups:", error)
       toast.error("Erreur lors du chargement des groupes")
@@ -212,10 +219,10 @@ export default function AdminGroupesPage() {
         enterpriseId: newGroupEnterpriseId,
       })
 
-      const enterpriseName = enterprises.find((e) => e.id === newGroupEnterpriseId)?.socialRaison
+      const enterpriseFull = enterprises.find((e) => e.id === newGroupEnterpriseId)
       setGroups((prev) => [
         ...prev,
-        { ...created, enterpriseName },
+        { ...created, enterpriseFull },
       ])
       toast.success("Groupe créé")
       setIsCreateOpen(false)
@@ -367,46 +374,75 @@ export default function AdminGroupesPage() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Filtrer par entreprise</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-lg">Filtres</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
-            <SelectTrigger className="w-full md:w-96">
-              <SelectValue placeholder="Toutes les entreprises" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les entreprises</SelectItem>
-              {enterprises.map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.socialRaison}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <p className="text-sm font-medium mb-2">Filtrer par entreprise</p>
+            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Toutes les entreprises" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les entreprises</SelectItem>
+                {enterprises.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.socialRaison}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-2">Nombre de contacts minimum</p>
+            <Input
+              type="number"
+              placeholder="Ex: 10"
+              value={contactCountFilter}
+              onChange={(e) => setContactCountFilter(e.target.value)}
+            />
+          </div>
+        </div>
+          </CardContent>
       </Card>
 
       <div>
         <div className="pb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-lg font-semibold">Liste des groupes</div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("grid")}
+                className="h-9 w-9"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("list")}
+                className="h-9 w-9"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="text-sm text-muted-foreground">
               {filteredGroups.length} groupe(s) trouvé(s)
             </div>
           </div>
-          <div className="text-xs text-muted-foreground">
-            Cliquez sur une carte pour la sélectionner
-          </div>
-        </div>
+                  </div>
 
-        {isLoading ? (
+        {isLoading && viewMode === 'grid' ? (
           <GroupCardsSkeleton />
         ) : filteredGroups.length === 0 ? (
           <div className="text-sm text-muted-foreground border border-dashed rounded-lg p-6 text-center">
             Aucun groupe
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {paginatedGroups.map((g) => {
@@ -428,7 +464,7 @@ export default function AdminGroupesPage() {
                           {g.code || "—"}
                         </span>
                         <Badge variant="outline" className="text-[10px] px-2 py-0">
-                          {g.enterpriseName}
+                          {g.enterpriseFull?.socialRaison}
                         </Badge>
                       </div>
                       <CardTitle className="text-lg leading-tight">{g.name}</CardTitle>
@@ -444,7 +480,7 @@ export default function AdminGroupesPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] text-muted-foreground">Entreprise</p>
-                            <p className="font-semibold truncate">{g.enterpriseName}</p>
+                            <p className="font-semibold truncate">{g.enterpriseFull?.socialRaison}</p>
                           </div>
                         </div>
                         <div className="rounded-md bg-muted/40 p-2 flex items-center gap-2">
@@ -463,8 +499,7 @@ export default function AdminGroupesPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelectedGroupForContacts(g)
-                            setIsContactModalOpen(true)
+                            handleOpenAddContacts(g)
                           }}
                           disabled={isCreating}
                           className="flex-1 h-8 text-xs"
@@ -502,18 +537,6 @@ export default function AdminGroupesPage() {
                 sur {totalGroups} groupes
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                  <SelectTrigger className="h-8 w-28 text-xs">
-                    <SelectValue placeholder="Taille" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <SelectItem key={size} value={size.toString()}>
-                        {size} / page
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="sm" onClick={handlePrevPage} disabled={page === 0}>
                     <ChevronLeft className="h-4 w-4" />
@@ -533,6 +556,16 @@ export default function AdminGroupesPage() {
               </div>
             </div>
           </>
+        ) : (
+          <GroupTableView
+            data={filteredGroups}
+            isLoading={isLoading}
+            onAddContacts={handleOpenAddContacts}
+            onDelete={(group) => {
+              setGroupToDelete(group)
+              setIsDeleteOpen(true)
+            }}
+          />
         )}
       </div>
 

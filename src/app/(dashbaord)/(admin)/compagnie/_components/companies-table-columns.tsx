@@ -59,10 +59,13 @@ export function getColumnsWithRouter(
       header: "Crédit SMS",
       cell: ({ row }) => {
         const credit = row.getValue("smsCredit") as number
+        if (credit > 0) {
+          return <Badge variant="default">{credit} SMS</Badge>
+        }
         return (
-          <Badge variant={credit > 0 ? "default" : "destructive"}>
+          <div className="inline-flex items-center rounded-md border border-dashed border-primary/30 bg-transparent px-2.5 py-0.5 text-xs font-semibold text-foreground">
             {credit ?? 0} SMS
-          </Badge>
+          </div>
         )
       },
     },

@@ -77,6 +77,30 @@ export const getMessages = async (enterpriseId: string, page: number, size: numb
     }
 };
 
+export const getAllMessageHistory = async (page: number = 0, size: number = 10): Promise<PaginatedResponse<MessageHistoryType>> => {
+    try {
+        const response = await httpClient.get<PaginatedResponse<MessageHistoryType>>(
+            `/api/v1/message`,
+            { params: { page, size } }
+        );
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
+export const searchMessagesByPhoneNumber = async (phoneNumber: string, page: number = 0, size: number = 10): Promise<PaginatedResponse<MessageHistoryType>> => {
+    try {
+        const response = await httpClient.get<PaginatedResponse<MessageHistoryType>>(
+            `/api/v1/message/phone/${phoneNumber}`,
+            { params: { page, size } }
+        );
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
 export const getAllMessages = async (enterpriseId: string, page: number, size: number): Promise<GetMessageResponseType> => {
     try {
         const response = await httpClient.get<GetMessageResponseType>(

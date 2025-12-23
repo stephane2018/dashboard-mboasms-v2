@@ -15,8 +15,18 @@ import {
  */
 export const getAllContacts = async (): Promise<EnterpriseContactResponseType[]> => {
     try {
-        const response = await httpClient.get<EnterpriseContactResponseType[]>('/api/v1/contact/all');
-        console.log(response);
+        const response = await httpClient.get<PaginatedEnterpriseContactsResponseType>('/api/v1/contact/all');
+        return response.content;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
+export const getPaginatedAllContacts = async (page: number = 0, size: number = 10): Promise<PaginatedEnterpriseContactsResponseType> => {
+    try {
+        const response = await httpClient.get<PaginatedEnterpriseContactsResponseType>('/api/v1/contact/all', {
+            params: { page, size }
+        });
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

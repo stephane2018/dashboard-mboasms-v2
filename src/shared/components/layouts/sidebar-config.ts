@@ -65,9 +65,21 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
             {
+                title: 'Contacts',
+                url: '/contacts-management',
+                icon: People,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
+            {
                 title: 'Companies',
                 url: '/compagnie',
                 icon: Building,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
+            {
+                title: 'SMS',
+                url: '/sms',
+                icon: Sms,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
              {
@@ -94,7 +106,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: MoneyRecive,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
-           
+            {
+                title: 'Historique',
+                url: '/historique-plateforme',
+                icon: Clock,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
         ],
     },
     {
