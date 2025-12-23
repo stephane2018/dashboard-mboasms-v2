@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import { NavMain } from '@/shared/components/layouts/nav-main'
 import { NavUser } from '@/shared/components/layouts/nav-user'
+import { PlanDetails } from '@/shared/components/layouts/plan-details'
 import {
   Sidebar,
   SidebarContent,
@@ -96,6 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
+        <PlanDetails />
         <NavUser />
       </SidebarFooter>
     </Sidebar>

@@ -576,11 +576,20 @@ export function PhoneNumberInput({
                     <span>
                         {entries.filter(e => e.isValid).length} valide(s), {entries.filter(e => !e.isValid).length} invalide(s)
                     </span>
-                    {entries.filter(e => !e.isValid).length > 0 && (
-                        <span className="text-amber-600">
-                            Les numéros invalides ne recevront pas de SMS
-                        </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {entries.filter(e => !e.isValid).length > 0 && (
+                            <span className="text-amber-600">
+                                Les numéros invalides ne recevront pas de SMS
+                            </span>
+                        )}
+                        <button
+                            onClick={() => onEntriesChange([])}
+                            className="text-xs p-3 cursor-pointer bg-red-500 text-white hover:bg-red-600 px-2 py-1 rounded transition-colors"
+                            title="Vider tous les destinataires"
+                        >
+                            Vider tout
+                        </button>
+                    </div>
                 </div>
             )}
 

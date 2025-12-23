@@ -21,6 +21,7 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useGroups } from "@/modules/groups/hooks"
 import { groupsService } from "@/modules/groups/services"
 import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
+import { AddCircle } from "iconsax-react"
 
 export default function GroupeDetailsPage() {
   const params = useParams<{ groupId: string }>()
@@ -150,6 +151,7 @@ export default function GroupeDetailsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => setIsContactModalOpen(true)} disabled={isLoading || isMutating}>
+                <AddCircle variant="Bulk" color="currentColor"  className="mr-2 h-4 w-4"  />
                 Ajouter des contacts
               </Button>
               <Button onClick={() => handleSendSms(selectedContacts)} disabled={selectedContacts.length === 0}>

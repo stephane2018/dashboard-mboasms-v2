@@ -16,14 +16,12 @@ import {
     Drawer,
     DrawerContent,
     DrawerDescription,
-    DrawerFooter,
     DrawerHeader,
     DrawerTitle,
 } from "@/shared/ui/drawer"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
-import { Add, People, ArrowRight2 } from "iconsax-react"
+import { Add, People, User } from "iconsax-react"
 import { Loader2 } from "lucide-react"
-import type { GroupType } from "@/core/models/groups"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useGroups } from "@/core/hooks/useGroups"
 import { toast } from "sonner"
@@ -62,10 +60,7 @@ export function AddToGroupModal({
 
         setIsSubmitting(true)
         try {
-            await addContactsToGroup({
-                groupId: selectedGroupId,
-                listContactid: contacts.map(c => c.id),
-            })
+            await addContactsToGroup(selectedGroupId, contacts.map(c => c.id))
             toast.success("Contacts ajoutés au groupe", {
                 description: `${contacts.length} contact(s) ajouté(s) avec succès`,
             })
@@ -93,10 +88,7 @@ export function AddToGroupModal({
             })
             
             // Add contacts to the newly created group
-            await addContactsToGroup({
-                groupId: newGroup.id,
-                listContactid: contacts.map(c => c.id),
-            })
+            await addContactsToGroup(newGroup.id, contacts.map(c => c.id))
             
             toast.success("Groupe créé et contacts ajoutés", {
                 description: `Le groupe "${newGroupName}" a été créé avec ${contacts.length} contact(s)`,
@@ -120,19 +112,43 @@ export function AddToGroupModal({
 
     const content = (
         <div className="space-y-6">
-            <div>
-                <p className="text-sm text-muted-foreground mb-4">
-                    {contacts.length} contact(s) sélectionné(s)
-                </p>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
+            <div className="bg-muted/30 rounded-lg p-4 border">
+                <div className="flex items-center gap-2 mb-3">
+                    <People className="h-5 w-5 text-primary" color="currentColor" variant="Bulk" />
+                    <h3 className="font-medium text-sm">Contacts sélectionnés</h3>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                        {contacts.length}
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                        {contacts.length === 1 ? 'contact sélectionné' : 'contacts sélectionnés'}
+                    </span>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                     {contacts.slice(0, 5).map(contact => (
-                        <div key={contact.id} className="text-sm">
-                            {contact.firstname} {contact.lastname} {contact.email && `(${contact.email})`}
+                        <div key={contact.id} className="flex items-center gap-3 p-2 bg-background rounded-md border hover:border-primary/50 transition-colors">
+                            <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                                <User className="h-4 w-4" color="currentColor" variant="Bulk" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm truncate">
+                                    {contact.firstname} {contact.lastname}
+                                </div>
+                                {contact.email && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                        {contact.email}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ))}
                     {contacts.length > 5 && (
-                        <div className="text-sm text-muted-foreground">
-                            ... et {contacts.length - 5} autres
+                        <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground bg-muted/50 rounded-md">
+                            <div className="bg-muted-foreground/20 rounded-full w-6 h-6 flex items-center justify-center">
+                                +{contacts.length - 5}
+                            </div>
+                            <span>et {contacts.length - 5} autre{contacts.length - 5 > 1 ? 's' : ''}</span>
                         </div>
                     )}
                 </div>
@@ -146,7 +162,10 @@ export function AddToGroupModal({
                 
                 <TabsContent value="existing" className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Sélectionner un groupe</Label>
+                        <div className="flex items-center gap-2">
+                            <People className="h-4 w-4 text-muted-foreground" color="currentColor" variant="Bulk" />
+                            <Label>Sélectionner un groupe</Label>
+                        </div>
                         {isLoading ? (
                             <div className="space-y-2">
                                 <div className="h-10 bg-muted animate-pulse rounded" />
@@ -162,19 +181,43 @@ export function AddToGroupModal({
                                     {groups.map(group => (
                                         <div
                                             key={group.id}
-                                            className={`p-2 rounded cursor-pointer transition-colors ${
+                                            className={`p-3 rounded-lg cursor-pointer transition-all border ${
                                                 selectedGroupId === group.id
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : "hover:bg-muted"
+                                                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                                    : "bg-background hover:bg-muted/50 border-border hover:border-primary/30"
                                             }`}
                                             onClick={() => setSelectedGroupId(group.id)}
                                         >
-                                            <div className="font-medium">{group.name}</div>
-                                            {group.code && (
-                                                <div className="text-xs opacity-70">Code: {group.code}</div>
-                                            )}
-                                            <div className="text-xs opacity-70">
-                                                {group.enterpriseContacts?.length || 0} contact(s)
+                                            <div className="flex items-start gap-3">
+                                                <div className={`rounded-full w-8 h-8 flex items-center justify-center shrink-0 ${
+                                                    selectedGroupId === group.id
+                                                        ? "bg-primary-foreground/20 text-primary-foreground"
+                                                        : "bg-primary/10 text-primary"
+                                                }`}>
+                                                    <People className="h-4 w-4" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-medium text-sm truncate">
+                                                        {group.name}
+                                                    </div>
+                                                    {group.code && (
+                                                        <div className={`text-xs mt-1 ${
+                                                            selectedGroupId === group.id
+                                                                ? "text-primary-foreground/80"
+                                                                : "text-muted-foreground"
+                                                        }`}>
+                                                            Code: {group.code}
+                                                        </div>
+                                                    )}
+                                                    <div className={`text-xs mt-1 flex items-center gap-1 ${
+                                                        selectedGroupId === group.id
+                                                            ? "text-primary-foreground/70"
+                                                            : "text-muted-foreground"
+                                                    }`}>
+                                                        <People className="h-3 w-3" color="currentColor" variant="Bulk" />
+                                                        {group.enterpriseContacts?.length || 0} contact{group.enterpriseContacts?.length !== 1 ? 's' : ''}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -216,17 +259,17 @@ export function AddToGroupModal({
                 >
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" color="currentColor" />
                             Traitement...
                         </>
                     ) : activeTab === "existing" ? (
                         <>
-                            <People className="mr-2 h-4 w-4" />
+                            <People className="mr-2 h-4 w-4" color="currentColor" variant="Bulk" />
                             Ajouter au groupe
                         </>
                     ) : (
                         <>
-                            <Add className="mr-2 h-4 w-4" />
+                            <Add className="mr-2 h-4 w-4" color="currentColor" variant="Bulk" />
                             Créer et ajouter
                         </>
                     )}
