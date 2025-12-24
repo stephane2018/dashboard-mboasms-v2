@@ -1,6 +1,7 @@
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
+import { Building, Category, Receipt, Sms, Call } from 'iconsax-react';
 
 export function Step2Enterprise() {
   const { control } = useFormContext();
@@ -12,9 +13,12 @@ export function Step2Enterprise() {
         name="socialRaison"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company Name</FormLabel>
+                        <FormLabel className="text-gray-300">Nom de l'entreprise</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your company name" {...field} />
+              <div className="relative">
+                <Building size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter your company name" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -25,9 +29,12 @@ export function Step2Enterprise() {
         name="activityDomain"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Activity Domain</FormLabel>
+                        <FormLabel className="text-gray-300">Domaine d'activité</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="e.g., Technology, Finance" {...field} />
+              <div className="relative">
+                <Category size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="e.g., Technology, Finance" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -38,9 +45,12 @@ export function Step2Enterprise() {
         name="contribuableNumber"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Taxpayer Number</FormLabel>
+                        <FormLabel className="text-gray-300">Numéro de contribuable</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your taxpayer number" {...field} />
+              <div className="relative">
+                <Receipt size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter your taxpayer number" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -51,9 +61,12 @@ export function Step2Enterprise() {
         name="emailEnterprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company Email</FormLabel>
+                        <FormLabel className="text-gray-300">Email de l'entreprise</FormLabel>
             <FormControl>
-                            <Input type="email" className="bg-gray-800 border-gray-600 text-white" placeholder="contact@company.com" {...field} />
+              <div className="relative">
+                <Sms size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input type="email" placeholder="contact@company.com" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -64,9 +77,12 @@ export function Step2Enterprise() {
         name="telephoneEntreprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company Phone</FormLabel>
+                        <FormLabel className="text-gray-300">Téléphone de l'entreprise</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter company phone number" {...field} />
+              <div className="relative">
+                <Call size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter company phone number" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>

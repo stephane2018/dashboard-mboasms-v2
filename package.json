@@ -53,6 +53,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.25",
+    "i18next": "^25.7.3",
     "iconsax-react": "^0.0.8",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.555.0",
@@ -70,7 +71,8 @@
     "tailwind-merge": "^3.4.0",
     "vaul": "^1.1.2",
     "xlsx": "^0.18.5",
-    "zod": "^4.1.13",
+        "zod": "^3.23.8",
+    "zod-i18n-map": "^2.27.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

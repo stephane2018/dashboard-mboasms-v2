@@ -388,6 +388,14 @@ export default function LoginPage() {
                   Créer un compte
                 </Link>
               </p>
+              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+                <Link
+                  href="/"
+                  className="font-semibold text-primary hover:underline transition-colors"
+                >
+                  Retour à l'accueil
+                </Link>
+              </p>
             </form>
           </Form>
         </div>

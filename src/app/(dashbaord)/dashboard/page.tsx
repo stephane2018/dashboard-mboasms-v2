@@ -14,6 +14,7 @@ import {
   People,
   WalletMoney,
 } from "iconsax-react";
+import { SmsTransactionChart } from "@/modules/sms/components/sms-transaction-chart";
 
 const kpiCards = [
   {
@@ -75,7 +76,7 @@ export default function DashboardHome() {
           <p className="text-sm uppercase tracking-wide text-muted-foreground">
             Vue d’ensemble
           </p>
-          <h1 className="bg-gradient-to-r from-primary via-purple-500 to-primary-light bg-clip-text text-3xl font-bold text-transparent">
+          <h1 className="bg-linear-to-r from-primary via-purple-500 to-primary-light bg-clip-text text-3xl font-bold text-transparent">
             Tableau de bord
           </h1>
           <p className="mt-2 text-muted-foreground">
@@ -99,7 +100,7 @@ export default function DashboardHome() {
                 {kpi.label}
               </CardTitle>
               <div
-                className={`rounded-full bg-gradient-to-br ${kpi.accent} p-2`}
+                className={`rounded-full bg-linear-to-br ${kpi.accent} p-2`}
               >
                 <kpi.icon size="20"  color="currentColor" variant="Bulk" />
               </div>
@@ -126,9 +127,7 @@ export default function DashboardHome() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="h-64 rounded-xl border border-dashed border-border/80 bg-muted/40 p-4 text-sm text-muted-foreground">
-              Graphique à intégrer (recharts / next-charts)
-            </div>
+            <SmsTransactionChart />
           </CardContent>
         </Card>
 
