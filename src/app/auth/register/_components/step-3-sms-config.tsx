@@ -1,6 +1,8 @@
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { CountrySelect } from '@/modules/countries/components/country-select';
 import { Input } from '@/shared/ui/input';
+import { MessageText, Hashtag, Home, Building, Global } from 'iconsax-react';
 
 export function Step3SmsConfig() {
   const { control } = useFormContext();
@@ -12,9 +14,12 @@ export function Step3SmsConfig() {
         name="smsESenderId"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">SMS Sender ID</FormLabel>
+                        <FormLabel className="text-gray-300">ID de l'expéditeur SMS</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Max 11 characters" {...field} />
+              <div className="relative">
+                <MessageText size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Max 11 characters" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -25,9 +30,12 @@ export function Step3SmsConfig() {
         name="numeroCommerce"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Trade Number</FormLabel>
+                        <FormLabel className="text-gray-300">Numéro de commerce</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your trade number" {...field} />
+              <div className="relative">
+                <Hashtag size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter your trade number" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -38,22 +46,28 @@ export function Step3SmsConfig() {
         name="adresseEnterprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company Address</FormLabel>
+                        <FormLabel className="text-gray-300">Adresse de l'entreprise</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your company address" {...field} />
+              <div className="relative">
+                <Home size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter your company address" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-       <FormField
+      <FormField
         control={control}
         name="villeEntreprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company City</FormLabel>
+                        <FormLabel className="text-gray-300">Ville de l'entreprise</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your company city" {...field} />
+              <div className="relative">
+                <Building size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="Enter your company city" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -64,9 +78,9 @@ export function Step3SmsConfig() {
         name="enterpriseCountryId"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Company Country</FormLabel>
+            <FormLabel className="text-gray-300">Pays de l'entreprise</FormLabel>
             <FormControl>
-                            <Input className="bg-gray-800 border-gray-600 text-white" placeholder="Enter your company country" {...field} />
+              <CountrySelect {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

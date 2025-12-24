@@ -1,0 +1,29 @@
+{
+  "validation": {
+    "firstNameRequired": "Le prénom est requis",
+    "lastNameRequired": "Le nom de famille est requis",
+    "socialRaisonRequired": "La raison sociale est requise",
+    "activityDomainRequired": "Le domaine d'activité est requis",
+    "contribuableNumberRequired": "Le numéro de contribuable est requis",
+    "emailInvalid": "L'adresse e-mail n'est pas valide",
+    "emailEnterpriseInvalid": "L'e-mail de l'entreprise n'est pas valide",
+    "phoneNumberRequired": "Le numéro de téléphone est requis",
+    "telephoneEntrepriseRequired": "Le téléphone de l'entreprise est requis",
+    "countryRequired": "Le pays est requis",
+    "cityRequired": "La ville est requise",
+    "addressRequired": "L'adresse est requise",
+    "smsESenderIdRequired": "L'ID de l'expéditeur SMS est requis",
+    "smsESenderIdMax": "L'ID de l'expéditeur SMS ne doit pas dépasser 11 caractères",
+    "villeEntrepriseRequired": "La ville de l'entreprise est requise",
+    "numeroCommerceRequired": "Le numéro de commerce est requis",
+    "adresseEnterpriseRequired": "L'adresse de l'entreprise est requise",
+    "enterpriseCountryRequired": "Le pays de l'entreprise est requis"
+  },
+  "passwordValidation": {
+    "minLength": "Le mot de passe doit contenir au moins 8 caractères",
+    "hasUppercase": "Le mot de passe doit contenir au moins une majuscule",
+    "hasLowercase": "Le mot de passe doit contenir au moins une minuscule",
+    "hasNumber": "Le mot de passe doit contenir au moins un chiffre",
+    "hasSpecial": "Le mot de passe doit contenir au moins un caractère spécial"
+  }
+}

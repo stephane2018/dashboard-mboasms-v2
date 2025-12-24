@@ -8,16 +8,16 @@ import { cn } from '@/shared/utils/cn';
 
 const texts = [
   {
-    title: "Join Our Network",
-    description: "Create your account and become part of a qualified ecosystem of professionals and experts. Start building meaningful connections and grow your business with our powerful SMS management platform.",
+    title: "Connectez-vous au monde entier",
+    description: "Créez votre compte et rejoignez un écosystème qualifié de professionnels. Développez votre entreprise grâce à notre puissante plateforme de gestion de SMS.",
   },
   {
-    title: "Powerful SMS Tools",
-    description: "Access a full suite of tools to manage your SMS campaigns, track analytics, and engage with your audience effectively.",
+    title: "Des outils SMS puissants",
+    description: "Accédez à une suite complète d'outils pour gérer vos campagnes SMS, suivre les analyses et interagir efficacement avec votre audience.",
   },
   {
-    title: "Secure & Reliable",
-    description: "Our platform is built with security in mind, ensuring your data is safe and your messages are delivered reliably every time.",
+    title: "Sécurité et Fiabilité Garanties",
+    description: "Notre plateforme est conçue pour la sécurité, garantissant la protection de vos données et la livraison fiable de vos messages à chaque fois.",
   },
 ];
 
@@ -41,7 +41,7 @@ export function AnimatedPanel() {
         }}
       ></div>
       <div className="relative z-10">
-        <Brand imgClassNames="w-48" className="w-fit mb-16" />
+                        <Brand imgClassNames="w-48" className="w-fit mb-16" />
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
@@ -61,7 +61,7 @@ export function AnimatedPanel() {
             <div className="relative z-10">
         <div className="flex items-center gap-8">
           <button className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors">
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} variant="Bulk" color="currentColor" />
           </button>
           <div className="flex items-center gap-2">
             {texts.map((_, i) => (
@@ -70,7 +70,7 @@ export function AnimatedPanel() {
           </div>
           <span className="text-sm text-gray-400">{index + 1} / {texts.length}</span>
           <button className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors">
-            <ArrowRight size={16} />
+            <ArrowRight size={16} variant="Bulk" color="currentColor" />
           </button>
         </div>
         <p className="text-sm text-gray-400 mt-8">© 2025 MboaSMS</p>
