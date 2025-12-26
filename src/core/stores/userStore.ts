@@ -21,9 +21,13 @@ interface UserStore {
   user: User | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+  actingCompanyId?: string;
+  actingCompanyName?: string;
   setUser: (user: User) => void;
   clearUser: () => void;
   updateUser: (userData: Partial<User>) => void;
+  setActingCompany: (company: { id: string; name: string }) => void;
+  clearActingCompany: () => void;
   isAdmin: () => boolean;
   isSuperAdmin: () => boolean;
   isRegularUser: () => boolean;
@@ -36,15 +40,35 @@ export const useUserStore = create<UserStore>()(
       user: null,
       isAuthenticated: false,
       isHydrated: false,
+      actingCompanyId: undefined,
+      actingCompanyName: undefined,
 
       setUser: (user: User) => set({ user, isAuthenticated: true }),
 
-      clearUser: () => set({ user: null, isAuthenticated: false }),
+      clearUser: () =>
+        set({
+          user: null,
+          isAuthenticated: false,
+          actingCompanyId: undefined,
+          actingCompanyName: undefined,
+        }),
 
       updateUser: (userData: Partial<User>) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...userData } : null,
         })),
+
+      setActingCompany: (company: { id: string; name: string }) =>
+        set({
+          actingCompanyId: company.id,
+          actingCompanyName: company.name,
+        }),
+
+      clearActingCompany: () =>
+        set({
+          actingCompanyId: undefined,
+          actingCompanyName: undefined,
+        }),
 
       isAdmin: () => {
         const { user } = get();
