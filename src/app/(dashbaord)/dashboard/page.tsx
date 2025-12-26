@@ -15,6 +15,8 @@ import {
   WalletMoney,
 } from "iconsax-react";
 import { SmsTransactionChart } from "@/modules/sms/components/sms-transaction-chart";
+import { GlobalSmsCard } from "./components/global-sms-card";
+import { BalanceRechargeChart } from "./components/balance-recharge-chart";
 
 const kpiCards = [
   {
@@ -95,22 +97,25 @@ export default function DashboardHome() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {kpiCards.map((kpi) => (
           <Card key={kpi.label} className="border border-border/60 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {kpi.label}
-              </CardTitle>
-              <div
-                className={`rounded-full bg-linear-to-br ${kpi.accent} p-2`}
-              >
-                <kpi.icon size="20"  color="currentColor" variant="Bulk" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{kpi.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {kpi.label}
+                </CardTitle>
+                <div
+                  className={`rounded-full bg-linear-to-br ${kpi.accent} p-2`}
+                >
+                  <kpi.icon size="20"  color="currentColor" variant="Bulk" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
+              </CardContent>
+            </Card>
+          )
+        )}
+
+        <GlobalSmsCard label="SMS envoyés (global)" value="148 230" trend="+12 % vs. période précédente" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
@@ -156,6 +161,22 @@ export default function DashboardHome() {
                 </Button>
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-1">
+        <Card className="border border-border/60 shadow-sm">
+          <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-lg">Balance annuelle des recharges</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Montant rechargé par mois sur l&apos;année en cours.
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <BalanceRechargeChart />
           </CardContent>
         </Card>
       </section>

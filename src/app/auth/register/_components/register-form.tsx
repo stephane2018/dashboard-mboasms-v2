@@ -40,7 +40,7 @@ export function RegisterForm() {
       numeroCommerce: '',
       adresseEnterprise: '',
       villeEntreprise: '',
-      enterpriseCountryId: 'CM',
+      enterpriseCountryId: '',
     },
   });
 

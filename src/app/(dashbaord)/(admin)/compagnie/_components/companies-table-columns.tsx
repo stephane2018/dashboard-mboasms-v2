@@ -1,9 +1,7 @@
-"use client"
-
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
-import { More, UserAdd, Wallet, Trash, Eye } from "iconsax-react"
+import { More, UserAdd, Wallet, Trash, Eye, Login } from "iconsax-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +12,7 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import type { EnterpriseType } from "@/core/models/company"
 import { useRouter } from "next/navigation"
+import { useUserStore } from "@/core/stores/userStore"
 
 interface CompaniesTableColumnsProps {
   onAddUser: (company: EnterpriseType) => void
@@ -83,6 +82,13 @@ export function getColumnsWithRouter(
       enableHiding: false,
       cell: ({ row }) => {
         const company = row.original
+        const setActingCompany = useUserStore((s) => s.setActingCompany)
+        const handleImpersonate = () => {
+          setActingCompany({ id: company.id, name: company.socialRaison || "" })
+          sessionStorage.setItem("actingCompanyId", company.id)
+          sessionStorage.setItem("actingCompanyName", company.socialRaison || "")
+          router.push("/dashboard")
+        }
 
         return (
           <DropdownMenu>
@@ -97,6 +103,10 @@ export function getColumnsWithRouter(
               <DropdownMenuItem onClick={() => router.push(`/compagnie/${company.id}`)}>
                 <Eye className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
                 Voir détails
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleImpersonate}>
+                <Login className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
+                Se connecter en tant que
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onAddUser(company)}>

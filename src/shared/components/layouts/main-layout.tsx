@@ -33,6 +33,8 @@ import {
   AvatarImage,
 } from "@/shared/ui/avatar"
 import { useUserStore } from "@/core/stores/userStore"
+import { useEffect } from "react"
+import { Info } from "lucide-react"
 import {
   Home2,
   Logout,
@@ -51,7 +53,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const router = useRouter()
-  const { user, clearUser } = useUserStore()
+  const { user, clearUser, actingCompanyId, actingCompanyName, setActingCompany, clearActingCompany } = useUserStore()
 
   const userDisplayName = user?.name || user?.email || "Utilisateur"
   const userInitials = userDisplayName
@@ -70,6 +72,21 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const handleLogout = () => {
     clearUser()
     router.push("/auth/login")
+  }
+
+  // Hydrate acting company from sessionStorage (e.g., after impersonation)
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("actingCompanyId")
+    const storedName = sessionStorage.getItem("actingCompanyName")
+    if (storedId) {
+      setActingCompany({ id: storedId, name: storedName || "" })
+    }
+  }, [setActingCompany])
+
+  const exitImpersonation = () => {
+    sessionStorage.removeItem("actingCompanyId")
+    sessionStorage.removeItem("actingCompanyName")
+    clearActingCompany()
   }
 
   // Dynamic progress bar color based on SMS usage
@@ -118,7 +135,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
             </Breadcrumb>
           </div>
 
- 	<div className="flex items-center gap-4">
+ 	        <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="rounded-full" asChild>
               <Link href="/">
                 <Home2 size="18" variant="Bulk" color="currentColor" className="text-primary" />
@@ -140,41 +157,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                       <p className="text-sm font-semibold leading-tight">{userDisplayName}</p>
                       <p className="text-xs text-muted-foreground">Mon espace</p>
                     </div>
-                    <Separator orientation="vertical" className="h-8" />
-                    <div className="flex items-center gap-2">
-                      <div className="relative h-9 w-9">
-                        <svg className="h-9 w-9 -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            className="text-muted/40"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            fill="none"
-                            d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831"
-                          />
-                          <path
-                            className="text-primary"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            fill="none"
-                            strokeDasharray={`${smsUsagePercent}, 100`}
-                            d="M18 2.0845
-                              a 15.9155 15.9155 0 0 1 0 31.831
-                              a 15.9155 15.9155 0 0 1 0 -31.831"
-                          />
-                        </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-primary">
-                          {100 - smsUsagePercent}%
-                        </span>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Solde</p>
-                        <p className="text-sm font-semibold">{smsBalance.toLocaleString()}</p>
-                      </div>
-                    </div>
+                    
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -191,39 +174,6 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                     </div>
                   </div>
                 </DropdownMenuLabel>
-
-                <DropdownMenuSeparator />
-
-                {/* SMS Balance Section */}
-                <div className="rounded-lg border border-border/60 bg-gradient-to-br from-primary/5 to-purple-500/5 p-3">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">Détails du forfait</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Forfait courant</span>
-                      <span className="font-semibold">{user?.planName || "Plan Business"}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground text-xs">SMS restant</span>
-                      <span className="font-semibold">{smsBalance.toLocaleString()} / {smsQuota.toLocaleString()}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted">
-                      <div
-                        className={`h-full rounded-full transition-all ${getProgressBarColor()}`}
-                        style={{ width: `${100 - smsUsagePercent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {smsUsagePercent}% consommés
-                    </p>
-                  </div>
-                </div>
-
-                <Button asChild className="w-full rounded-full" size="sm">
-                  <Link href="/recharge">
-                    <WalletMoney size="16" className="mr-2" variant="Bulk" />
-                    Recharger maintenant
-                  </Link>
-                </Button>
 
                 <DropdownMenuSeparator />
 
@@ -250,6 +200,19 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
+          {actingCompanyId && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary shadow-sm">
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                <span>
+                  Connecté en tant que <span className="font-semibold">{actingCompanyName || "Entreprise"}</span>
+                </span>
+              </div>
+              <Button variant="outline" size="sm" className="rounded-full" onClick={exitImpersonation}>
+                Quitter l&apos;impersonation
+              </Button>
+            </div>
+          )}
           {children}
         </div>
       </SidebarInset>
