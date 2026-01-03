@@ -1,4 +1,6 @@
-import type { SmsTransaction } from '../types/sms.types';
+import { httpClient } from '@/core/lib/http-client'
+import { refractHttpError } from '@/core/utils/http-error'
+import type { SmsTransaction, SendMessageParams, SendMessageResponse } from '../types/sms.types'
 
 // Mock data for the last 30 days
 const generateMockData = (): SmsTransaction[] => {
@@ -28,6 +30,20 @@ async function getSmsTransactions(): Promise<SmsTransaction[]> {
   });
 }
 
+// Send SMS function
+export async function sendSMS(params: SendMessageParams): Promise<SendMessageResponse> {
+  try {
+    const response = await httpClient.post<SendMessageResponse>(
+      '/api/v1/message/sendMessage',
+      params as Record<string, any>
+    )
+    return response
+  } catch (error) {
+    return Promise.reject(refractHttpError(error))
+  }
+}
+
 export const smsService = {
   getSmsTransactions,
+  sendSMS,
 };

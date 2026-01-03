@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Trash } from "iconsax-reactjs"
+import { Trash } from "iconsax-react"
 import {
   AlertDialog,
   AlertDialogCancel,

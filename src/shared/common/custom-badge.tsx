@@ -1,4 +1,4 @@
-import { TickCircle, CloseCircle } from "iconsax-reactjs";
+import { TickCircle, CloseCircle } from "iconsax-react";
 
 interface CustomBadgeProps {
   is_active?: boolean

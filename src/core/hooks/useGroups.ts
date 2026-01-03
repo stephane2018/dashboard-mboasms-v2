@@ -41,8 +41,14 @@ export function useGroups(options: UseGroupsOptions = {}) {
             setGroups(Array.isArray(data) ? data : [])
         } catch (err) {
             console.error("Error loading groups:", err)
-            setError("Erreur lors du chargement des groupes")
-            setGroups([])
+            // Ne pas afficher d'erreur si les API n'existent pas encore
+            if (err instanceof Error && err.message.includes('404')) {
+                console.log("Group API not implemented yet - skipping group loading")
+                setGroups([])
+            } else {
+                setError("Erreur lors du chargement des groupes")
+                setGroups([])
+            }
         } finally {
             setIsLoading(false)
         }
