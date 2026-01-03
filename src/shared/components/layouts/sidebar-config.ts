@@ -82,6 +82,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: Sms,
                 roles: [Role.ADMIN, Role.SUPER_ADMIN],
             },
+            {
+                title: 'Sender IDs',
+                url: '/sender-ids',
+                icon: MessageText,
+                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+            },
              {
                 title: 'Groupes',
                 url: '/groupes-management',

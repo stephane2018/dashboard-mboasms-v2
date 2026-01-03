@@ -21,15 +21,36 @@ import {
     SummarySection,
     ActionsSection,
 } from "@/modules/sms"
+import { useSendMessage } from "@/modules/sms/hooks/useSendMessage"
 
 // Default temporary sender ID
 const DEFAULT_TEMP_SENDER_ID = "infos"
+
+/**
+ * Separates phone entries by operator (MTN vs others)
+ * MTN numbers use "infos" sender ID, others use custom sender ID
+ */
+function separatePhoneNumbersByOperator(phoneEntries: PhoneEntry[]) {
+    const mtnNumbers: string[] = []
+    const otherNumbers: string[] = []
+
+    phoneEntries
+        .filter(entry => entry.isValid)
+        .forEach(entry => {
+            if (entry.operator === "MTN") {
+                mtnNumbers.push(entry.phoneNumber)
+            } else {
+                otherNumbers.push(entry.phoneNumber)
+            }
+        })
+
+    return { mtnNumbers, otherNumbers }
+}
 
 export default function SMSPage() {
     const searchParams = useSearchParams()
     const [message, setMessage] = useState("")
     const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
-    const [isSending, setIsSending] = useState(false)
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
     const [isSavingSenderId, setIsSavingSenderId] = useState(false)
     const [newSenderIdInput, setNewSenderIdInput] = useState("")
@@ -40,6 +61,9 @@ export default function SMSPage() {
 
     // Get user from store
     const { user, updateUser } = useUserStore()
+
+    // SMS sending hook
+    const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
     // User's sender ID (from store)
     const userSenderId = user?.smsSenderId || ""
@@ -247,25 +271,73 @@ export default function SMSPage() {
 
     // Confirmed send action
     const handleConfirmSend = async () => {
-        const validPhoneNumbers = phoneEntries
-            .filter(e => e.isValid)
-            .map(e => e.phoneNumber)
-
-        setIsSending(true)
-
+        console.log("🚀 handleConfirmSend START")
+        
         try {
-            // TODO: Replace with actual API call
-            await new Promise(resolve => setTimeout(resolve, 1500))
+            // Separate phone numbers by operator
+            const { mtnNumbers, otherNumbers } = separatePhoneNumbersByOperator(phoneEntries)
+            console.log("📊 Phone numbers separated:", { mtnNumbers, otherNumbers })
+            
+            const totalRecipients = mtnNumbers.length + otherNumbers.length
+            console.log("📈 Total recipients:", totalRecipients)
+            
+            if (totalRecipients === 0) {
+                console.log("❌ No valid recipients")
+                toast.error("Aucun destinataire valide trouvé")
+                return
+            }
 
-            toast.success(`SMS envoyé à ${validPhoneNumbers.length} destinataire(s)`)
+            let mtnSent = 0
+            let othersSent = 0
+            console.log("🔄 Starting SMS sending...")
+
+            // Send to MTN numbers with "infos" sender ID
+            if (mtnNumbers.length > 0) {
+                console.log("📡 Sending MTN SMS...")
+                const response = await sendMessage({
+                    phoneNumber: mtnNumbers,
+                    message,
+                    senderId: "infos"
+                })
+                mtnSent = response.mtnSent || mtnNumbers.length
+                console.log("✅ MTN Response:", response)
+            }
+
+            // Send to other numbers with user's sender ID
+            if (otherNumbers.length > 0) {
+                console.log("📱 Sending other operators SMS...")
+                const response = await sendMessage({
+                    phoneNumber: otherNumbers,
+                    message,
+                    senderId: activeSenderId
+                })
+                othersSent = response.othersSent || otherNumbers.length
+                console.log("✅ Others Response:", response)
+            }
+
+            console.log("📝 Calculating success message...")
+            console.log("📊 Data for message:", { mtnNumbers: mtnNumbers.length, otherNumbers: otherNumbers.length, mtnSent, othersSent, activeSenderId })
+            
+            const successMessage = mtnNumbers.length > 0 && otherNumbers.length > 0
+                ? `SMS envoyés : ${mtnSent} MTN avec "infos" et ${othersSent} autres avec "${activeSenderId}"`
+                : mtnNumbers.length > 0
+                ? `${mtnSent} SMS MTN envoyés avec senderId "infos"`
+                : `${othersSent} SMS envoyés avec senderId "${activeSenderId}"`
+
+            console.log("💬 Success message calculated:", successMessage)
+            console.log("🍞 Showing toast...")
+            
+            toast.success(successMessage)
+            
+            console.log("🧹 Cleaning up...")
             setMessage("")
             setPhoneEntries([])
             setIsConfirmationModalOpen(false)
+            
+            console.log("✅ handleConfirmSend COMPLETE")
         } catch (error) {
+            console.error("❌ Send SMS error:", error)
             toast.error("Erreur lors de l'envoi du SMS")
-            console.error("Send SMS error:", error)
-        } finally {
-            setIsSending(false)
         }
     }
 
@@ -341,7 +413,7 @@ export default function SMSPage() {
                     <MessageSection
                         message={message}
                         onMessageChange={setMessage}
-                        isSending={isSending}
+                        isSending={isSendingMessage}
                         smsCount={smsCount}
                         totalCharCount={totalCharCount}
                         specialCharCount={specialCharCount}
@@ -388,7 +460,7 @@ export default function SMSPage() {
                         message={message}
                         phoneEntries={phoneEntries}
                         validRecipientsCount={validRecipientsCount}
-                        isSending={isSending}
+                        isSending={isSendingMessage}
                         onSend={handleSend}
                         onClear={handleClear}
                         hasInsufficientBalance={hasInsufficientBalance}
@@ -401,7 +473,7 @@ export default function SMSPage() {
                 isOpen={isConfirmationModalOpen}
                 onClose={() => setIsConfirmationModalOpen(false)}
                 onConfirm={handleConfirmSend}
-                isLoading={isSending}
+                isLoading={isSendingMessage}
                 message={message}
                 totalRecipients={phoneEntries.length}
                 validRecipients={validRecipientsCount}

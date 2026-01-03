@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "./button"
 import {  CardContent, CardFooter, CardHeader } from "./card"
 import { motion } from "framer-motion";
-import { ArrowRight2 } from "iconsax-reactjs";
+import { ArrowRight2 } from "iconsax-react";
 
 interface ServiceCardProps {
   id: string

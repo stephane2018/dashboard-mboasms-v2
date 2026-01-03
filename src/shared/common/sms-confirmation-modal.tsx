@@ -43,6 +43,9 @@ interface SMSConfirmationModalProps {
     currentBalance: number
     remainingBalance: number
     hasInsufficientBalance: boolean
+    // Operator breakdown
+    mtnCount?: number
+    otherOperatorsCount?: number
 }
 
 export function SMSConfirmationModal({
@@ -61,6 +64,8 @@ export function SMSConfirmationModal({
     currentBalance,
     remainingBalance,
     hasInsufficientBalance,
+    mtnCount = 0,
+    otherOperatorsCount = 0,
 }: SMSConfirmationModalProps) {
     const messagePreview = message.length > 150 ? `${message.slice(0, 150)}...` : message
 
@@ -120,7 +125,7 @@ export function SMSConfirmationModal({
                             <span className="font-semibold">Message</span>
                         </div>
                         <div className="bg-background p-3 rounded-md border">
-                            <p className="text-sm whitespace-pre-wrap break-words">{messagePreview}</p>
+                            <p className="text-sm whitespace-pre-wrap wrap-break-word">{messagePreview}</p>
                             {message.length > 150 && (
                                 <p className="text-xs text-muted-foreground mt-2 italic">
                                     (Message tronqué pour l'aperçu)
@@ -187,6 +192,38 @@ export function SMSConfirmationModal({
                                     {invalidRecipients} numéro(s) invalide(s) seront ignoré(s)
                                 </AlertDescription>
                             </Alert>
+                        )}
+
+                        {/* Operator Breakdown */}
+                        {(mtnCount > 0 || otherOperatorsCount > 0) && (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
+                                    <span className="text-xs text-muted-foreground font-semibold">Répartition par opérateur</span>
+                                </div>
+                                <div className="space-y-1 text-sm">
+                                    {mtnCount > 0 && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-blue-700 dark:text-blue-400">
+                                                📡 MTN (Sender ID: "infos")
+                                            </span>
+                                            <span className="font-semibold text-blue-700 dark:text-blue-400">
+                                                {mtnCount} × {smsCount} = {mtnCount * smsCount} SMS
+                                            </span>
+                                        </div>
+                                    )}
+                                    {otherOperatorsCount > 0 && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-green-700 dark:text-green-400">
+                                                📱 Autres opérateurs (Sender ID: "{senderId}")
+                                            </span>
+                                            <span className="font-semibold text-green-700 dark:text-green-400">
+                                                {otherOperatorsCount} × {smsCount} = {otherOperatorsCount * smsCount} SMS
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </div>
 

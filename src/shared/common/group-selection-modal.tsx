@@ -42,7 +42,7 @@ export function GroupSelectionModal({
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const isDesktop = useMediaQuery("(min-width: 768px)")
-    const { groups, isLoading } = useGroups({ 
+    const { groups, isLoading, error } = useGroups({ 
         enterpriseId: enterpriseId || "",
         autoLoad: true 
     })
@@ -111,9 +111,20 @@ export function GroupSelectionModal({
                 ) : groups.length === 0 ? (
                     <div className="text-center py-8">
                         <People className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground">
-                            Aucun groupe disponible
-                        </p>
+                        {error ? (
+                            <>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Service de groupes indisponible
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Veuillez contacter l'administrateur pour activer cette fonctionnalité
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Aucun groupe disponible
+                            </p>
+                        )}
                     </div>
                 ) : (
                     <ScrollArea className="h-64 w-full border rounded-md">
