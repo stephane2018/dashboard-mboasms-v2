@@ -1,31 +1,68 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { DataTable } from "@/shared/common/data-table/table"
-import { useSenderIds, useSenderIdActions } from "@/modules/sender-id/hooks"
+import {
+  useGetSenderIdsByEnterprise,
+  useCreateSenderId,
+  useUpdateSenderId,
+  useUpdateSenderIdStatus,
+  useDeleteSenderId,
+  useGetAllSenderIds,
+} from "@/modules/sender-id/hooks"
+import { useAuthContext } from "@/core/providers"
 import { MessageText, Add } from "iconsax-react"
 import { createColumns } from "./columns"
 import type { PaginationState } from "@tanstack/react-table"
 import type { SenderId } from "@/modules/sender-id/types"
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
-import { EditSenderIdDialog } from "@/modules/sender-id/components"
+import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/components"
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
 import { Button } from "@/shared/ui/button"
+import { toast } from "sonner"
 
 export default function SenderIdsPage() {
+  const { user } = useAuthContext()
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
   const [selectedSenderId, setSelectedSenderId] = useState<SenderId | null>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const { data, isLoading, loadSenderIds } = useSenderIds({
-    page: pagination.pageIndex,
-    size: pagination.pageSize,
-  })
+  // React Query hooks - using enterprise-specific endpoint
+  const { data, isLoading, error } = useGetAllSenderIds(
+    {
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+      
+    },
+  )
+  console.log("[SenderIdsPage] Data:", data)
 
-  const { updateSenderId, updateSenderIdStatus, deleteSenderId, isUpdating, isUpdatingStatus, isDeleting } =
-    useSenderIdActions()
+  const createSenderIdMutation = useCreateSenderId()
+  const updateSenderIdMutation = useUpdateSenderId()
+  const updateStatusMutation = useUpdateSenderIdStatus()
+  const deleteSenderIdMutation = useDeleteSenderId()
+
+  // Handle errors - show warning about backend not being ready
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading sender IDs:", error)
+      const errorMessage = (error as any)?.response?.data?.message ||
+                          (error as any)?.message ||
+                          "Erreur lors du chargement des Sender IDs"
+
+      // Check if it's a 403 error
+      if ((error as any)?.response?.status === 403) {
+        toast.warning("Fonctionnalité en développement", {
+          description: "Les endpoints Sender ID ne sont pas encore disponibles sur le backend. La page est prête à être utilisée une fois les endpoints implémentés."
+        })
+      } else {
+        toast.error(errorMessage)
+      }
+    }
+  }, [error])
 
   const handleEdit = useCallback((senderId: SenderId) => {
     setSelectedSenderId(senderId)
@@ -42,29 +79,40 @@ export default function SenderIdsPage() {
     setIsDeleteDialogOpen(true)
   }, [])
 
+  const handleCreate = useCallback(() => {
+    setIsCreateDialogOpen(true)
+  }, [])
+
+  const handleSaveCreate = useCallback(
+    async (input: { name: string; description: string; enterpriseId: string }) => {
+      await createSenderIdMutation.mutateAsync(input)
+      setIsCreateDialogOpen(false)
+    },
+    [createSenderIdMutation]
+  )
+
   const handleSaveEdit = useCallback(
     async (id: string, input: { name: string; description: string }) => {
-      await updateSenderId(id, input)
-      loadSenderIds({ page: pagination.pageIndex, size: pagination.pageSize })
+      await updateSenderIdMutation.mutateAsync({ id, data: input })
+      setIsEditDialogOpen(false)
     },
-    [updateSenderId, loadSenderIds, pagination]
+    [updateSenderIdMutation]
   )
 
   const handleSaveStatus = useCallback(
     async (id: string, input: { status: string; rejectionReason?: string }) => {
-      await updateSenderIdStatus(id, input as any)
-      loadSenderIds({ page: pagination.pageIndex, size: pagination.pageSize })
+      await updateStatusMutation.mutateAsync({ id, data: input as any })
+      setIsStatusDialogOpen(false)
     },
-    [updateSenderIdStatus, loadSenderIds, pagination]
+    [updateStatusMutation]
   )
 
   const handleConfirmDelete = useCallback(async () => {
     if (!selectedSenderId) return
-    await deleteSenderId(selectedSenderId.id)
-    loadSenderIds({ page: pagination.pageIndex, size: pagination.pageSize })
+    await deleteSenderIdMutation.mutateAsync(selectedSenderId.id)
     setIsDeleteDialogOpen(false)
     setSelectedSenderId(null)
-  }, [selectedSenderId, deleteSenderId, loadSenderIds, pagination])
+  }, [selectedSenderId, deleteSenderIdMutation])
 
   const columns = createColumns({
     onEdit: handleEdit,
@@ -87,8 +135,8 @@ export default function SenderIdsPage() {
             Gérez tous les Sender IDs de votre entreprise.
           </p>
         </div>
-        <Button className="gap-2">
-          <Add size="20" />
+        <Button className="gap-2" onClick={handleCreate}>
+          <Add size="20" variant="Bulk" color="currentColor" />
           Nouveau Sender ID
         </Button>
       </div>
@@ -103,6 +151,15 @@ export default function SenderIdsPage() {
         initialState={{
           pagination,
         }}
+        emptyMessage="Aucun Sender ID trouvé. Les endpoints backend (/api/v1/sender-ids) doivent être implémentés pour afficher les données."
+      />
+
+      <CreateSenderIdDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSave={handleSaveCreate}
+        isLoading={createSenderIdMutation.isPending}
+        enterpriseId={user?.companyId || ""}
       />
 
       {selectedSenderId && (
@@ -112,7 +169,7 @@ export default function SenderIdsPage() {
             onOpenChange={setIsEditDialogOpen}
             senderId={selectedSenderId}
             onSave={handleSaveEdit}
-            isLoading={isUpdating}
+            isLoading={updateSenderIdMutation.isPending}
           />
 
           <ChangeStatusDialog
@@ -120,7 +177,7 @@ export default function SenderIdsPage() {
             onOpenChange={setIsStatusDialogOpen}
             senderId={selectedSenderId}
             onSave={handleSaveStatus}
-            isLoading={isUpdatingStatus}
+            isLoading={updateStatusMutation.isPending}
           />
 
           <DeleteConfirmationDialog
@@ -130,7 +187,7 @@ export default function SenderIdsPage() {
             title="Supprimer le Sender ID"
             description={`Êtes-vous sûr de vouloir supprimer le Sender ID "${selectedSenderId.name}" ? Cette action est irréversible.`}
             itemName={selectedSenderId.name}
-            isDeleting={isDeleting}
+            isDeleting={deleteSenderIdMutation.isPending}
           />
         </>
       )}

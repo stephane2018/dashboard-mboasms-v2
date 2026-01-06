@@ -12,6 +12,7 @@ import type { EnterpriseContactResponseType as ContactType } from "@/core/models
 import { useSettingsStore } from "@/core/stores"
 import { useUserStore } from "@/core/stores/userStore"
 import { useSMSStore } from "@/core/stores/smsStore"
+import { useMainStatistics } from "@/modules/statistics/hooks"
 import { updateUserSenderId } from "@/core/services/client.service"
 // Import modular components
 import {
@@ -89,8 +90,9 @@ export default function SMSPage() {
         return temporarySenderId || DEFAULT_TEMP_SENDER_ID
     }, [hasPrimarySenderId, isSenderIdVerified, useTemporarySenderId, userSenderId, temporarySenderId])
 
-    // TODO: Replace with actual user balance from API/context
-    const [userBalance] = useState(1500)
+    // Get user enterprise SMS credit from statistics
+    const { statistics } = useMainStatistics()
+    const userBalance = statistics?.smsCredit || 0
 
     // Handle prefilled contacts from URL params
     useEffect(() => {

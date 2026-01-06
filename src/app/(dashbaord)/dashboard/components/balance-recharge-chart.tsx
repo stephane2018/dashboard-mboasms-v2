@@ -1,7 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Calendar } from '@/shared/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   ChartConfig,
   ChartContainer,
@@ -9,63 +14,41 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/shared/ui/chart';
-import { TrendingUp } from 'lucide-react';
-import { CartesianGrid, ComposedChart, Line, ReferenceLine, XAxis, YAxis } from 'recharts';
-
-const portfolioData = [
-  { date: 'Jan 1', value: 850, time: '20:00' },
-  { date: 'Jan 2', value: 1100, time: '00:00' },
-  { date: 'Jan 3', value: 1680, time: '04:00' },
-  { date: 'Jan 4', value: 1490, time: '08:00' },
-  { date: 'Jan 5', value: 2020, time: '12:00' },
-  { date: 'Jan 6', value: 2080, time: '16:00' },
-  { date: 'Jan 7', value: 2180, time: '20:00' },
-  { date: 'Jan 8', value: 2250, time: '00:00' },
-  { date: 'Jan 9', value: 2480, time: '04:00' },
-  { date: 'Jan 10', value: 2290, time: '08:00' },
-  { date: 'Jan 11', value: 2450, time: '12:00' },
-  { date: 'Jan 12', value: 2380, time: '16:00' },
-  { date: 'Jan 13', value: 2220, time: '20:00' },
-  { date: 'Jan 14', value: 1980, time: '00:00' },
-  { date: 'Jan 15', value: 1750, time: '04:00' },
-  { date: 'Jan 16', value: 1620, time: '08:00' },
-  { date: 'Jan 17', value: 1480, time: '12:00' },
-  { date: 'Jan 18', value: 1580, time: '16:00' },
-  { date: 'Jan 19', value: 1820, time: '20:00' },
-  { date: 'Jan 20', value: 1950, time: '00:00' },
-  { date: 'Jan 21', value: 2080, time: '04:00' },
-  { date: 'Jan 22', value: 2220, time: '08:00' },
-  { date: 'Jan 23', value: 2380, time: '12:00' },
-  { date: 'Jan 24', value: 2550, time: '16:00' },
-  { date: 'Jan 25', value: 2480, time: '20:00' },
-  { date: 'Jan 26', value: 2720, time: '00:00' },
-  { date: 'Jan 27', value: 2900, time: '04:00' },
-  { date: 'Jan 28', value: 2550, time: '08:00' },
-  { date: 'Jan 29', value: 2320, time: '12:00' },
-  { date: 'Feb 15', value: 2250, time: '14:00' },
-  { date: 'Mar 24', value: 1900, time: '16:00' },
-];
+import { TrendingUp, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
+import { useRechargeTimeline } from '@/modules/statistics/hooks';
+import type { Period, RechargeStatus } from '@/modules/statistics/types';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const chartConfig = {
-  value: {
-    label: 'Balance',
+  count: {
+    label: 'Recharges',
     color: 'var(--chart-3)',
   },
 } satisfies ChartConfig;
 
-const currentBalance = 24847.83;
-const todaysPnL = 1249.0;
-const pnlPercentage = 8;
-const highValue = Math.max(...portfolioData.map((d) => d.value));
-const lowValue = Math.min(...portfolioData.map((d) => d.value));
-const change = -0.082;
+const periods: { value: Period; label: string }[] = [
+  { value: 'DAY', label: 'Journalier' },
+  { value: 'WEEK', label: 'Hebdomadaire' },
+  { value: 'MONTH', label: 'Mensuel' },
+  { value: 'YEAR', label: 'Annuel' },
+];
+
+const statuses: { value: RechargeStatus; label: string }[] = [
+  { value: 'VALIDE', label: 'Validé' },
+  { value: 'REFUSE', label: 'Refusé' },
+  { value: 'ANNULE', label: 'Annulé' },
+  { value: 'PENDING', label: 'En attente' },
+  { value: 'DEMAND', label: 'Demandé' },
+];
 
 interface TooltipProps {
   active?: boolean;
   payload?: Array<{
     payload: {
-      date: string;
-      value: number;
+      label: string;
+      count: number;
     };
   }>;
 }
@@ -75,10 +58,9 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
     const data = payload[0].payload;
     return (
       <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-        <div className="text-sm text-muted-foreground mb-1">{data.date}</div>
+        <div className="text-sm text-muted-foreground mb-1">{data.label}</div>
         <div className="flex items-center gap-2">
-          <div className="text-base font-bold">${(data.value * 10).toLocaleString()}.00</div>
-          <div className="text-[11px] text-emerald-600">+12.7%</div>
+          <div className="text-base font-bold">{data.count} recharges</div>
         </div>
       </div>
     );
@@ -87,42 +69,215 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
 };
 
 export function BalanceRechargeChart() {
+  const [period, setPeriod] = useState<Period>('MONTH');
+  const [status, setStatus] = useState<RechargeStatus | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  
+  // Convert dates to ISO format for API (memoized to prevent unnecessary re-renders)
+  const startDateISO = React.useMemo(() => 
+    startDate ? startDate.toISOString() : '', [startDate]
+  );
+  const endDateISO = React.useMemo(() => 
+    endDate ? endDate.toISOString() : '', [endDate]
+  );
+  
+  const { data, isLoading, error, loadRechargeTimeline } = useRechargeTimeline({
+    period,
+    status,
+    startDate: startDateISO,
+    endDate: endDateISO,
+    autoLoad: false, // Disable auto-load, we'll trigger it manually
+  });
+
+  // Load data when filters change
+  React.useEffect(() => {
+    loadRechargeTimeline();
+  }, [period, status, startDateISO, endDateISO, loadRechargeTimeline]);
+
+  const totalRecharges = React.useMemo(() => 
+    data.reduce((sum, item) => sum + item.count, 0), [data]
+  );
+  const maxCount = React.useMemo(() => 
+    Math.max(...data.map((d) => d.count), 1), [data]
+  );
+  const minCount = React.useMemo(() => 
+    Math.min(...data.map((d) => d.count), 0), [data]
+  );
+
+  const handleRefresh = () => {
+    loadRechargeTimeline();
+  };
+
+  const handleClearDates = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+  };
+
   return (
     <Card className="w-full">
       <CardContent className="flex flex-col items-stretch gap-5 pt-6">
         <div className="flex w-full items-baseline gap-2 sm:gap-3">
           <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Current Balance</span>
-            <span className="text-3xl font-bold">${currentBalance.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground">Total Recharges</span>
+            <span className="text-3xl font-bold">{totalRecharges.toLocaleString()}</span>
           </div>
           <div className="flex w-full items-center gap-1 text-emerald-600">
             <TrendingUp className="w-4 h-4" />
-            <span className="font-medium">+12.7%</span>
-            <span className="text-muted-foreground font-normal">Last 24 hours</span>
+            <span className="font-medium">{data.length} périodes</span>
+            <span className="text-muted-foreground font-normal">Dernière période</span>
           </div>
         </div>
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
           <span>
-            High: <span className="text-sky-600 font-medium">{highValue.toLocaleString()}.08</span>
+            Max: <span className="text-sky-600 font-medium">{maxCount}</span>
           </span>
           <span>
-            Low: <span className="text-amber-600 font-medium">{lowValue.toLocaleString()}.42</span>
+            Min: <span className="text-amber-600 font-medium">{minCount}</span>
           </span>
           <span>
-            Change: <span className="text-red-500 font-medium">{change}%</span>
+            Période: <span className="text-purple-600 font-medium">{periods.find(p => p.value === period)?.label}</span>
           </span>
-          <span>
-            Today: <span className="text-emerald-600 font-medium">${todaysPnL.toLocaleString()}</span>
-          </span>
+          {status && (
+            <span>
+              Statut: <span className="text-orange-600 font-medium">{statuses.find(s => s.value === status)?.label}</span>
+            </span>
+          )}
         </div>
+
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Filtres:</span>
+          </div>
+          
+          <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
+            <SelectTrigger className="w-[140px]">
+              <Calendar className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Période" />
+            </SelectTrigger>
+            <SelectContent>
+              {periods.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={status || 'all'} onValueChange={(value) => setStatus(value === 'all' ? undefined : value as RechargeStatus)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              {statuses.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Début:</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[140px] justify-start text-left font-normal",
+                    !startDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP", { locale: fr }) : "Choisir une date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    // Auto-adjust end date if it's before start date
+                    if (date && endDate && date > endDate) {
+                      setEndDate(date);
+                    }
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Fin:</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[140px] justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP", { locale: fr }) : "Choisir une date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={(date) => {
+                    setEndDate(date);
+                    // Auto-adjust start date if it's after end date
+                    if (date && startDate && date < startDate) {
+                      setStartDate(date);
+                    }
+                  }}
+                  disabled={(date) => startDate ? date < startDate : false}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {(startDate || endDate) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClearDates}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Effacer dates
+            </Button>
+          )}
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Chargement...' : 'Actualiser'}
+          </Button>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
 
         <ChartContainer
           config={chartConfig}
           className="h-[320px] w-full [&_.recharts-curve.recharts-tooltip-cursor]:stroke-initial"
         >
           <ComposedChart
-            data={portfolioData}
+            data={data}
             margin={{
               top: 20,
               right: 10,
@@ -132,11 +287,11 @@ export function BalanceRechargeChart() {
           >
             <defs>
               <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={chartConfig.value.color} stopOpacity={0.1} />
-                <stop offset="100%" stopColor={chartConfig.value.color} stopOpacity={0} />
+                <stop offset="0%" stopColor={chartConfig.count.color} stopOpacity={0.1} />
+                <stop offset="100%" stopColor={chartConfig.count.color} stopOpacity={0} />
               </linearGradient>
               <pattern id="dotGrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="10" cy="10" r="1" fill="var(--input)" fillOpacity="0.3" />
+                <circle cx="10" cy="10" r="1" fill="var(--input)" fillOpacity={0.3} />
               </pattern>
               <filter id="dotShadow" x="-50%" y="-50%" width="200%" height="200%">
                 <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor="rgba(0,0,0,0.8)" />
@@ -156,13 +311,11 @@ export function BalanceRechargeChart() {
               vertical={false}
             />
 
-            <ReferenceLine x="Jan 17" stroke={chartConfig.value.color} strokeDasharray="4 4" strokeWidth={1} />
-
             <XAxis
-              dataKey="date"
+              dataKey="label"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: chartConfig.value.color }}
+              tick={{ fontSize: 12, fill: chartConfig.count.color }}
               tickMargin={15}
               interval="preserveStartEnd"
               tickCount={5}
@@ -171,8 +324,8 @@ export function BalanceRechargeChart() {
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: chartConfig.value.color }}
-              tickFormatter={(value) => `$${(value * 2).toLocaleString()}`}
+              tick={{ fontSize: 12, fill: chartConfig.count.color }}
+              tickFormatter={(value) => value.toString()}
               tickMargin={15}
             />
 
@@ -183,20 +336,20 @@ export function BalanceRechargeChart() {
 
             <Line
               type="monotone"
-              dataKey="value"
-              stroke={chartConfig.value.color}
+              dataKey="count"
+              stroke={chartConfig.count.color}
               strokeWidth={2}
               filter="url(#lineShadow)"
               dot={(props) => {
                 const { cx, cy, payload } = props;
-                if (payload.date === 'Jan 17' || payload.value > 2800 || payload.value < 1000) {
+                if (payload.count > maxCount * 0.8 || payload.count < minCount * 1.2) {
                   return (
                     <circle
-                      key={`dot-${payload.date}`}
+                      key={`dot-${payload.label}`}
                       cx={cx}
                       cy={cy}
                       r={6}
-                      fill={chartConfig.value.color}
+                      fill={chartConfig.count.color}
                       stroke="white"
                       strokeWidth={2}
                       filter="url(#dotShadow)"
@@ -204,11 +357,11 @@ export function BalanceRechargeChart() {
                   );
                 }
 
-                return <g key={`dot-${payload.date}`} />;
+                return <g key={`dot-${payload.label}`} />;
               }}
               activeDot={{
                 r: 6,
-                fill: chartConfig.value.color,
+                fill: chartConfig.count.color,
                 stroke: 'white',
                 strokeWidth: 2,
                 filter: 'url(#dotShadow)',

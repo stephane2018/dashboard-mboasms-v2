@@ -6,8 +6,24 @@ export type MainStatistics = {
   rechargeCount: number
 }
 
+export type RechargeTimelineData = {
+  label: string
+  count: number
+}
+
+export type Period = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
+export type RechargeStatus = 'VALIDE' | 'REFUSE' | 'ANNULE' | 'PENDING' | 'DEMAND'
+
 export type StatisticsQueryParams = {
   enterpriseId: string
+  startDate?: string
+  endDate?: string
+}
+
+export type RechargeTimelineParams = {
+  enterpriseId: string
+  period: Period
+  status?: RechargeStatus
   startDate?: string
   endDate?: string
 }

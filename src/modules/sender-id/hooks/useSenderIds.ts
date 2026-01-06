@@ -8,43 +8,64 @@ import type { PaginatedSenderIds, SenderIdQueryParams } from "../types"
 type UseSenderIdsOptions = {
   enterpriseId?: string
   autoLoad?: boolean
+  loadAll?: boolean
 } & SenderIdQueryParams
 
 export function useSenderIds(options: UseSenderIdsOptions = {}) {
   const { user } = useAuthContext()
   const enterpriseId = options.enterpriseId || user?.companyId || ""
   const autoLoad = options.autoLoad ?? true
+  const loadAll = options.loadAll ?? false
 
   const [data, setData] = useState<PaginatedSenderIds | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadSenderIds = useCallback(async (params?: SenderIdQueryParams) => {
-    if (!enterpriseId) return
-
     setIsLoading(true)
     setError(null)
     try {
-      const result = await senderIdService.getSenderIdsByEnterprise(enterpriseId, {
-        status: params?.status || options.status,
-        page: params?.page ?? options.page,
-        size: params?.size ?? options.size,
-      })
+      let result: PaginatedSenderIds
+
+      if (loadAll) {
+        console.log("[useSenderIds] Loading all sender IDs")
+        result = await senderIdService.getAllSenderIds({
+          status: params?.status || options.status,
+          page: params?.page ?? options.page,
+          size: params?.size ?? options.size,
+        })
+      } else {
+        if (!enterpriseId) {
+          console.warn("Cannot load sender IDs: enterpriseId is not available")
+          setError("Enterprise ID non disponible")
+          setIsLoading(false)
+          return
+        }
+
+        console.log("[useSenderIds] Loading sender IDs for enterprise:", enterpriseId)
+        result = await senderIdService.getSenderIdsByEnterprise(enterpriseId, {
+          status: params?.status || options.status,
+          page: params?.page ?? options.page,
+          size: params?.size ?? options.size,
+        })
+      }
+
       setData(result)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading sender IDs:", err)
-      setError("Erreur lors du chargement des Sender IDs")
+      const errorMessage = err?.message || err?.error || "Erreur lors du chargement des Sender IDs"
+      setError(errorMessage)
       setData(null)
     } finally {
       setIsLoading(false)
     }
-  }, [enterpriseId, options.status, options.page, options.size])
+  }, [enterpriseId, loadAll, options.status, options.page, options.size])
 
   useEffect(() => {
-    if (autoLoad && enterpriseId) {
+    if (autoLoad && (enterpriseId || loadAll)) {
       loadSenderIds()
     }
-  }, [autoLoad, enterpriseId, loadSenderIds])
+  }, [autoLoad, enterpriseId, loadAll, loadSenderIds])
 
   return {
     data,

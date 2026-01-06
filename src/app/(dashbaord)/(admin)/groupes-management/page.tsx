@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Input } from "@/shared/ui/input"
@@ -64,6 +65,7 @@ function GroupCardsSkeleton() {
 }
 
 export default function AdminGroupesPage() {
+  const router = useRouter()
   const [groups, setGroups] = useState<(Group & { enterpriseFull?: EnterpriseType })[]>([])
   const [enterprises, setEnterprises] = useState<EnterpriseType[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -200,6 +202,11 @@ export default function AdminGroupesPage() {
       loadGroups()
     }
   }, [enterprises])
+
+  const handleGroupClick = (groupId: string) => {
+    // Navigate to group contacts page (using contacts-view to avoid route conflicts)
+    router.push(`/groupes-management/${groupId}/contacts-view`)
+  }
 
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) {
@@ -456,7 +463,7 @@ export default function AdminGroupesPage() {
                       "cursor-pointer border transition-all duration-200 hover:shadow-sm",
                       isSelected && "border-primary ring-2 ring-primary/20"
                     )}
-                    onClick={() => setSelectedGroupId(g.id)}
+                    onClick={() => handleGroupClick(g.id)}
                   >
                     <CardHeader className="space-y-0.5 pb-2">
                       <div className="flex items-center justify-between gap-2">

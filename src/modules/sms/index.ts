@@ -11,3 +11,8 @@ export type {
     SummarySectionProps, 
     ActionsSectionProps 
 } from './components/types'
+
+// Contact message services and hooks
+export { contactMessageService } from './services/contact-message.service'
+export { useSendToContact, useSendToGroup } from './hooks/useContactMessage'
+export type { SendToContactPayload, SendToGroupPayload } from './services/contact-message.service'

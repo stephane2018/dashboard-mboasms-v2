@@ -31,7 +31,10 @@ export function useGroups(options: UseGroupsOptions = {}) {
 
     // Load groups
     const loadGroups = useCallback(async () => {
-        if (!fetchAll && mode === "enterprise" && !enterpriseId) return
+        if (!fetchAll && mode === "enterprise" && !enterpriseId) {
+            console.warn("Cannot load groups: enterpriseId is not available")
+            return
+        }
         setIsLoading(true)
         setError(null)
         try {
@@ -39,14 +42,20 @@ export function useGroups(options: UseGroupsOptions = {}) {
                 ? await getGroups()
                 : await getGroupByEnterprise(enterpriseId)
             setGroups(Array.isArray(data) ? data : [])
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error loading groups:", err)
+
+            // Extract error message properly
+            const errorMessage = err?.data?.message || err?.message || err?.error || "Erreur lors du chargement des groupes"
+            const errorStatus = err?.status || err?.response?.status
+
             // Ne pas afficher d'erreur si les API n'existent pas encore
-            if (err instanceof Error && err.message.includes('404')) {
+            if (errorStatus === 404 || errorMessage.includes('404')) {
                 console.log("Group API not implemented yet - skipping group loading")
                 setGroups([])
             } else {
-                setError("Erreur lors du chargement des groupes")
+                console.error("Group loading failed with error:", errorMessage)
+                setError(errorMessage)
                 setGroups([])
             }
         } finally {

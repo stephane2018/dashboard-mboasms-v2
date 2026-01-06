@@ -29,7 +29,7 @@ export function SummarySection({
                         <div className={`text-4xl font-bold ${hasInsufficientBalance ? 'text-red-500' : 'text-primary'}`}>
                             {userBalance.toLocaleString()}
                         </div>
-                        <p className="text-sm text-muted-foreground">SMS disponibles</p>
+                        <p className="text-sm text-muted-foreground">SMS disponibles (Crédit entreprise)</p>
 
                         {totalSmsToSend > 0 && (
                             <div className="pt-3 border-t space-y-2">

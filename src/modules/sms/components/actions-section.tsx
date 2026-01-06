@@ -21,7 +21,7 @@ export function ActionsSection({
                 <div className="space-y-3">
                     <Button
                         onClick={onSend}
-                        disabled={isSending || !message.trim() || phoneEntries.length === 0 || validRecipientsCount === 0 || hasInsufficientBalance}
+                        // disabled={isSending || !message.trim() || phoneEntries.length === 0 || validRecipientsCount === 0 || hasInsufficientBalance}
                         className="w-full h-12 bg-primary hover:bg-primary/90"
                         size="lg"
                     >

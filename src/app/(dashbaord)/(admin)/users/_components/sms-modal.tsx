@@ -13,6 +13,9 @@ import { Maximize2, CloseCircle, Sms } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { PhoneNumberInput, type PhoneEntry } from "@/shared/common/phone-number-input"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
+import { useSendToContact } from "@/modules/sms/hooks/useContactMessage"
+import { useAuthContext } from "@/core/providers"
+import { toast } from "sonner"
 
 interface SMSModalProps {
   isOpen: boolean
@@ -48,14 +51,63 @@ export function SMSModal({
   const [password, setPassword] = useState("")
   const [isMaximized, setIsMaximized] = useState(false)
   const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
-
-  // Initialize phone entries from selected contacts when modal opens
+  
+  const { sendToContact, isLoading: isSending } = useSendToContact()
+  const { user } = useAuthContext()
+  
+  // Convert contacts to phone entries when they change
   useEffect(() => {
-    if (isOpen && selectedContacts.length > 0) {
-      const entries = selectedContacts.map(contactToPhoneEntry)
-      setPhoneEntries(entries)
+    const entries = selectedContacts.map(contactToPhoneEntry)
+    setPhoneEntries(entries)
+  }, [selectedContacts])
+
+  // Calculate SMS statistics
+  const smsCount = useMemo(() => {
+    if (!message) return 0
+    // Simple SMS count calculation (160 chars per SMS)
+    return Math.ceil(message.length / 160)
+  }, [message])
+
+  const validPhoneNumbers = useMemo(() => {
+    return phoneEntries
+      .filter(entry => entry.isValid)
+      .map(entry => entry.phoneNumber)
+  }, [phoneEntries])
+
+  const handleSend = async () => {
+    if (!message.trim()) {
+      toast.error("Veuillez entrer un message")
+      return
     }
-  }, [isOpen, selectedContacts])
+
+    if (validPhoneNumbers.length === 0) {
+      toast.error("Aucun numéro de téléphone valide")
+      return
+    }
+
+    // If single contact, use the new service
+    if (selectedContacts.length === 1) {
+      const contact = selectedContacts[0]
+      try {
+        await sendToContact(contact.id, {
+          message,
+          enterpriseId: user?.companyId || "",
+          contacts: contact.id,
+          senderId: "default", // You might want to get this from user context
+          msisdn: contact.phoneNumber || "",
+          smsCount,
+        })
+        onClose()
+        setMessage("")
+        setPassword("")
+      } catch (error) {
+        // Error is already handled by the hook
+      }
+    } else {
+      // For multiple contacts, use the existing handler
+      onSend(message, password, validPhoneNumbers)
+    }
+  }
 
   // Reset state when modal closes
   useEffect(() => {
@@ -77,25 +129,6 @@ export function SMSModal({
     const regularChars = message.length - specialCharCount
     return regularChars + specialCharCount * 2
   }, [message, specialCharCount])
-
-  const handleSend = () => {
-    if (!message.trim()) {
-      return
-    }
-
-    // Get valid phone numbers
-    const validPhoneNumbers = phoneEntries
-      .filter(e => e.isValid)
-      .map(e => e.phoneNumber)
-
-    if (validPhoneNumbers.length === 0) {
-      return
-    }
-
-    onSend(message, password, validPhoneNumbers)
-    setMessage("")
-    setPassword("")
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -195,11 +228,11 @@ export function SMSModal({
           </Button>
           <Button
             onClick={handleSend}
-            disabled={isLoading || !message.trim() || phoneEntries.filter(e => e.isValid).length === 0}
+            disabled={isSending || isLoading || !message.trim() || phoneEntries.filter(e => e.isValid).length === 0}
             className="flex-1 bg-pink-600 hover:bg-pink-700"
           >
             <Sms size={16} variant="Bulk" color="currentColor" className="mr-2" />
-            Envoyer
+            {isSending ? "Envoi en cours..." : "Envoyer"}
           </Button>
         </div>
       </DialogContent>

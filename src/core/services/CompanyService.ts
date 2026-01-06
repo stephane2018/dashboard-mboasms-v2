@@ -126,7 +126,7 @@ export const deleteCompany = async (id: string): Promise<void> => {
 
 export const creditEnterprise = async (enterpriseId: string, payload: CreditEnterprisePayload): Promise<void> => {
   try {
-    await httpClient.post(`/api/v1/enterprise/credit/${enterpriseId}`, {
+    await httpClient.post(`/api/v1/recharge/${enterpriseId}/creditercompte/`, {
       qteMessage: payload.qteMessage,
     });
   } catch (error) {
