@@ -74,4 +74,16 @@ export const contactService = {
       return Promise.reject(refractHttpError(error));
     }
   },
+
+  /**
+   * Delete a contact
+   * DELETE /api/v1/contact/{contactId}
+   */
+  async deleteContact(contactId: string, enterpriseId: string) {
+    try {
+      return await httpClient.delete(`/api/v1/contact/${contactId}`);
+    } catch (error) {
+      return Promise.reject(refractHttpError(error));
+    }
+  },
 };

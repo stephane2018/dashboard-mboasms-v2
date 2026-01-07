@@ -1,1 +1,1 @@
-export { useGroups } from "./use-groups"
+export { useGroups, useDeleteContactFromGroup } from "./use-groups"

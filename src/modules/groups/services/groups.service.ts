@@ -77,6 +77,20 @@ export const groupsService = {
     }
   },
 
+  /**
+   * Delete a contact from a group
+   * DELETE /api/v1/group/deleteContact/{groupId}
+   */
+  async deleteContactFromGroup(groupId: string, contactId: string): Promise<any> {
+    try {
+      return await httpClient.delete(`/api/v1/group/deleteContact/${groupId}`, {
+        contactId
+      } as any)
+    } catch (error) {
+      return Promise.reject(refractHttpError(error))
+    }
+  },
+
   async addContactsToGroup(groupId: string, contactIds: string[]): Promise<Group> {
     try {
       return await httpClient.put<Group>(`/api/v1/group/addContact/${groupId}`, {
