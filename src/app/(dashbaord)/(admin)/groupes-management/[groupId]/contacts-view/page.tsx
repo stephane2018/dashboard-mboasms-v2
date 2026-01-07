@@ -117,19 +117,25 @@ export default function GroupContactsViewPage() {
   const handleConfirmDelete = async () => {
     if (!contactToDelete || !user?.companyId) return
 
+    // Optimistic update: remove from local state immediately
+    const contactToRemove = contactToDelete
+    setContacts(prev => prev.filter(c => c.id !== contactToRemove.id))
+    setDeleteDialogOpen(false)
+    setContactToDelete(null)
+
     try {
-      // Delete contact from group (not from the system)
-      await deleteContactFromGroup(groupId, contactToDelete.id)
-      toast.success(`Contact "${contactToDelete.firstname} ${contactToDelete.lastname}" retiré du groupe`)
+      // Delete contact from group in background
+      await deleteContactFromGroup(groupId, contactToRemove.id)
+      toast.success(`Contact "${contactToRemove.firstname} ${contactToRemove.lastname}" retiré du groupe`)
 
-      setDeleteDialogOpen(false)
-      setContactToDelete(null)
-
-      // Refresh contacts list
-      await loadContacts()
+      // Background refresh to sync with server
+      loadContacts()
     } catch (error) {
       console.error("Error deleting contact from group:", error)
       toast.error("Erreur lors de la suppression du contact du groupe")
+
+      // Rollback: restore the contact on error
+      setContacts(prev => [...prev, contactToRemove])
     }
   }
 
@@ -142,18 +148,25 @@ export default function GroupContactsViewPage() {
     if (selectedContacts.length === 0) return
 
     setIsAddingContacts(true)
+
+    // Optimistic update: add contacts to local state immediately
+    setContacts(prev => [...prev, ...selectedContacts])
+    setIsAddContactModalOpen(false)
+    toast.success(`${selectedContacts.length} contact(s) ajouté(s) au groupe`)
+
     try {
       const contactIds = selectedContacts.map(c => c.id)
       await groupsService.addContactsToGroup(groupId, contactIds)
 
-      toast.success(`${selectedContacts.length} contact(s) ajouté(s) au groupe`)
-      setIsAddContactModalOpen(false)
-
-      // Refresh contacts list
-      await loadContacts()
+      // Background refresh to sync with server
+      loadContacts()
     } catch (error) {
       console.error("Error adding contacts to group:", error)
       toast.error("Erreur lors de l'ajout des contacts au groupe")
+
+      // Rollback: remove the contacts on error
+      const addedIds = new Set(selectedContacts.map(c => c.id))
+      setContacts(prev => prev.filter(c => !addedIds.has(c.id)))
     } finally {
       setIsAddingContacts(false)
     }
