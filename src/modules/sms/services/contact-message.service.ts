@@ -1,4 +1,5 @@
 import { httpClient } from '@/core/lib/http-client';
+import { refractHttpError } from '@/core/utils/http-error';
 
 export interface SendToContactPayload {
   message: string;
@@ -23,8 +24,13 @@ export const contactMessageService = {
    * POST /api/v1/message/{idContact}/sendMessageToContact
    */
   async sendToContact(idContact: string, payload: SendToContactPayload) {
-    const response = await httpClient.post(`/api/v1/message/${idContact}/sendMessageToContact`, payload as unknown as Record<string, unknown>);
-    return response as unknown;
+    try {
+      const response = await httpClient.post<any>(`/api/v1/message/${idContact}/sendMessageToContact`, payload as unknown as Record<string, unknown>);
+      console.log(response);
+      return response;
+    } catch (error) {
+      return Promise.reject(refractHttpError(error));
+    }
   },
 
   /**
@@ -32,7 +38,12 @@ export const contactMessageService = {
    * POST /api/v1/message/sendMessageToGroup
    */
   async sendToGroup(payload: SendToGroupPayload) {
-    const response = await httpClient.post('/api/v1/message/sendMessageToGroup', payload as unknown as Record<string, unknown>);
-    return response as unknown;
+    try {
+      const response = await httpClient.post<any>('/api/v1/message/sendMessageToGroup', payload as unknown as Record<string, unknown>);
+      console.log(response);
+      return response;
+    } catch (error) {
+      return Promise.reject(refractHttpError(error));
+    }
   },
 };

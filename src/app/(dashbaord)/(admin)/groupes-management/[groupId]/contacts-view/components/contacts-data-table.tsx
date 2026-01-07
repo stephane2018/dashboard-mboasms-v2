@@ -3,6 +3,7 @@
 import { DataTable } from "@/shared/common/data-table/table"
 import { getContactsColumns } from "./contacts-table"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import { Skeleton } from "@/shared/ui/skeleton"
 
 interface ContactsDataTableProps {
   data: any[]
@@ -13,22 +14,36 @@ interface ContactsDataTableProps {
   onSendMessage: (contact: EnterpriseContactResponseType) => void
 }
 
-export function ContactsDataTable({
-  data,
-  isLoading = false,
-  enterpriseId,
-  onUpdate,
-  onDelete,
-  onSendMessage
-}: ContactsDataTableProps) {
+export function ContactsDataTable({ data, isLoading = false, enterpriseId, onUpdate, onDelete, onSendMessage }: ContactsDataTableProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="border rounded-lg p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        {/* Table Header Skeleton */}
+        <div className="flex items-center gap-4 pb-3 border-b">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        {/* Table Rows Skeleton */}
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-3 border-b last:border-b-0">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-8 rounded" />
+              <Skeleton className="h-8 w-8 rounded" />
+              <Skeleton className="h-8 w-8 rounded" />
+            </div>
           </div>
         ))}
       </div>
