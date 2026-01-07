@@ -80,12 +80,15 @@ export const groupsService = {
   /**
    * Delete a contact from a group
    * DELETE /api/v1/group/deleteContact/{groupId}
+   * Body: { "listContactid": ["contactId"] }
    */
   async deleteContactFromGroup(groupId: string, contactId: string): Promise<any> {
     try {
       return await httpClient.delete(`/api/v1/group/deleteContact/${groupId}`, {
-        listContactid: [contactId]
-      } as any)
+        data: {
+          listContactid: [contactId]
+        }
+      })
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }
