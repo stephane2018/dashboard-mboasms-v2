@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useCountries } from '../hooks/useCountries';
+import { useCountries } from '@/core/hooks';
 import {
   Select,
   SelectContent,

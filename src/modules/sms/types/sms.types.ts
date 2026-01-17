@@ -5,9 +5,10 @@ export interface SmsTransaction {
 }
 
 export interface SendMessageParams {
-  phoneNumber: string[]
   message: string
   senderId: string
+  enterpriseId: string
+  phoneNumbers: string
 }
 
 export interface SendMessageResponse {

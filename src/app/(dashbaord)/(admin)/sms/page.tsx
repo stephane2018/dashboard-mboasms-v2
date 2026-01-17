@@ -12,7 +12,6 @@ import type { EnterpriseContactResponseType as ContactType } from "@/core/models
 import { useSettingsStore } from "@/core/stores"
 import { useUserStore } from "@/core/stores/userStore"
 import { useSMSStore } from "@/core/stores/smsStore"
-import { useMainStatistics } from "@/modules/statistics/hooks"
 import { updateUserSenderId } from "@/core/services/client.service"
 // Import modular components
 import {
@@ -22,7 +21,8 @@ import {
     SummarySection,
     ActionsSection,
 } from "@/modules/sms"
-import { useSendMessage } from "@/modules/sms/hooks/useSendMessage"
+import { useSendMessage } from "@/core/hooks/useSendMessage"
+import { useMainStatistics } from "@/core/hooks"
 
 // Default temporary sender ID
 const DEFAULT_TEMP_SENDER_ID = "infos"
@@ -297,9 +297,10 @@ export default function SMSPage() {
             if (mtnNumbers.length > 0) {
                 console.log("📡 Sending MTN SMS...")
                 const response = await sendMessage({
-                    phoneNumber: mtnNumbers,
+                    phoneNumbers: mtnNumbers.toString(),
                     message,
-                    senderId: "infos"
+                    senderId: "infos",
+                    enterpriseId: user?.id || ""
                 })
                 mtnSent = response.mtnSent || mtnNumbers.length
                 console.log("✅ MTN Response:", response)
@@ -309,9 +310,10 @@ export default function SMSPage() {
             if (otherNumbers.length > 0) {
                 console.log("📱 Sending other operators SMS...")
                 const response = await sendMessage({
-                    phoneNumber: otherNumbers,
+                    phoneNumbers: otherNumbers.toString(),
                     message,
-                    senderId: activeSenderId
+                    senderId: activeSenderId,
+                    enterpriseId: user?.id || ""
                 })
                 othersSent = response.othersSent || otherNumbers.length
                 console.log("✅ Others Response:", response)

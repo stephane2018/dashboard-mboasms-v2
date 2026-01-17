@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useAuthContext } from "@/core/providers"
-import { senderIdService } from "../services"
-import type { PaginatedSenderIds, SenderIdQueryParams } from "../types"
+import { senderIdService } from "@/core/services/sender-id.service"
+import type { PaginatedSenderIds, SenderIdQueryParams } from "@/modules/sender-id/types"
 
 type UseSenderIdsOptions = {
   enterpriseId?: string

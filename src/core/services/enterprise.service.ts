@@ -10,3 +10,5 @@ export const getEnterprises = async (): Promise<EnterpriseType[]> => {
         return Promise.reject(refractHttpError(error));
     }
 };
+
+// export const getEntreprise=async () : 

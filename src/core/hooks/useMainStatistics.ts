@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useAuthContext } from "@/core/providers"
-import { statisticsService } from "../services"
-import type { MainStatistics } from "../types"
+import { statisticsService } from "@/core/services/statistics.service"
+import type { MainStatistics } from "@/modules/statistics/types"
 
 type UseMainStatisticsOptions = {
   enterpriseId?: string

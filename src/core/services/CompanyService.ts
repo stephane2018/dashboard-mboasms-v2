@@ -6,8 +6,8 @@ import {
   EnterpriseType,
   PaginatedCompaniesResponseType,
   UserType,
-} from '../models';
-import { EnterpriseContactResponseType } from '../models/contact';
+} from '@/core/models';
+import { EnterpriseContactResponseType } from '@/core/models/contact';
 
 export interface CreditEnterprisePayload {
   qteMessage: number;

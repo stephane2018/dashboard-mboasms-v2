@@ -8,7 +8,7 @@ export interface SendToContactPayload {
   senderId: string;
   msisdn: string;
   smsCount: number;
-}
+} 
 
 export interface SendToGroupPayload {
   groupId: string;

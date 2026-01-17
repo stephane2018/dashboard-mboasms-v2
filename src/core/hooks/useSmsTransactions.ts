@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { smsService } from '../services/sms.service';
+import { smsService } from '@/core/services/sms.service';
 
 export function useSmsTransactions() {
   return useQuery({

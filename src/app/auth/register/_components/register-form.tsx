@@ -12,7 +12,7 @@ import { Step1Personal } from './step-1-personal';
 import { Step2Enterprise } from './step-2-enterprise';
 import { Step3SmsConfig } from './step-3-sms-config';
 import { StepIndicator } from './step-indicator';
-import { useRegister } from '@/modules/auth/hooks';
+import { useRegister } from '@/core/hooks';
 
 type FormData = RegisterFormData;
 

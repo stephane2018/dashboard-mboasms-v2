@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { senderIdService } from "../services"
+import { senderIdService } from "@/core/services/sender-id.service"
 import type {
   SenderId,
   PaginatedSenderIds,
@@ -10,7 +10,7 @@ import type {
   UpdateSenderIdInput,
   UpdateSenderIdStatusInput,
   SenderIdQueryParams,
-} from "../types"
+} from "@/modules/sender-id/types"
 
 // Query keys for cache management
 export const senderIdKeys = {

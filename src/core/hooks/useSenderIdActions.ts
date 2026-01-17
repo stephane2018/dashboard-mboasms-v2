@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { senderIdService } from "../services"
+import { senderIdService } from "@/core/services/sender-id.service"
 import type {
   CreateSenderIdInput,
   UpdateSenderIdInput,
   UpdateSenderIdStatusInput,
-} from "../types"
+} from "@/modules/sender-id/types"
 
 export function useSenderIdActions() {
   const [isCreating, setIsCreating] = useState(false)

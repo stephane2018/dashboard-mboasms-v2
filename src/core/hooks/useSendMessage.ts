@@ -1,8 +1,8 @@
 "use client"
 
 import { useMutation } from "@tanstack/react-query"
-import { sendSMS } from "../services/sms.service"
-import type { SendMessageParams, SendMessageResponse } from "../types/sms.types"
+import { sendSMS } from "@/core/services/sms.service"
+import type { SendMessageParams, SendMessageResponse } from "@/modules/sms/types/sms.types"
 
 /**
  * Hook to handle SMS sending with React Query mutation

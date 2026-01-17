@@ -1,6 +1,6 @@
 import { httpClient } from "@/core/lib/http-client"
 import { refractHttpError } from "@/core/utils/http-error"
-import type { Group, CreateGroupInput } from "../types"
+import type { Group, CreateGroupInput } from "@/modules/groups/types"
 
 const normalizeGroupsResponse = (payload: unknown): Group[] => {
   if (!payload) return []

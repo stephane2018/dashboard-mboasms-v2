@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation"
 import { login } from "@/core/services/auth.service"
 import { toast } from "sonner"
 import { getDefaultDashboardUrl } from "@/core/utils/role.utils"
-import { LoginCredentials } from "../types/auth.types"
+import { LoginCredentials } from "@/core/types/auth.types"
 
 export function useLogin() {
   const router = useRouter()

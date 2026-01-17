@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useAuthContext } from "@/core/providers"
-import { groupsService } from "../services"
-import type { Group } from "../types"
+import { groupsService } from "@/core/services/groups.service"
+import type { Group } from "@/modules/groups/types"
 
 export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean } = {}) {
   const { user } = useAuthContext()

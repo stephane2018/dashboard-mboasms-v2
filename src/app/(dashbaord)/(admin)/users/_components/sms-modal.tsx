@@ -13,7 +13,7 @@ import { Maximize2, CloseCircle, Sms } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { PhoneNumberInput, type PhoneEntry } from "@/shared/common/phone-number-input"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
-import { useSendToContact } from "@/modules/sms/hooks/useContactMessage"
+import { useSendToContact } from "@/core/hooks/useContactMessage"
 import { useAuthContext } from "@/core/providers"
 import { toast } from "sonner"
 

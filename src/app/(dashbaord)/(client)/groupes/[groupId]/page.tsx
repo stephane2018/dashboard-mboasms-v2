@@ -18,8 +18,8 @@ import {
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { toast } from "sonner"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
-import { useGroups } from "@/modules/groups/hooks"
-import { groupsService } from "@/modules/groups/services"
+import { useGroups } from "@/core/hooks"
+import { groupsService } from "@/core/services/groups.service"
 import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
 import { AddCircle } from "iconsax-react"
 

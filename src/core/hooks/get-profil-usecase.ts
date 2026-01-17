@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { loginQueryKey } from "../config/querykey";
-import { getProfile } from "../services/auth.service";
+import { loginQueryKey } from "@/core/config/querykey";
+import { getProfile } from "@/core/services/auth.service";
 
 export const useGetProfile = (enabled = true) =>
   useQuery({

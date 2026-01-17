@@ -1,8 +1,8 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
-import { SendMessageRequestType, SendMessageResponseType, GetMessageResponseType } from '../models';
-import type { MessageHistoryType } from '../models/history';
-import type { PaginatedResponse } from '../models/common';
+import { SendMessageRequestType, SendMessageResponseType, GetMessageResponseType } from '@/core/models';
+import type { MessageHistoryType } from '@/core/models/history';
+import type { PaginatedResponse } from '@/core/models/common';
 
 export interface SendMessageToGroupPayload {
   groupId: string;

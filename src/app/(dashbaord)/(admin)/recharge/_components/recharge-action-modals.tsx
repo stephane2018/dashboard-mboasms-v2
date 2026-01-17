@@ -40,7 +40,7 @@ export function ValidateRechargeModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
-            <TickCircle size={24} variant="Bulk" className="text-green-600" />
+            <TickCircle size={24} variant="Bulk" color="currentColor" className="text-green-600" />
             Valider la demande de recharge
           </DialogTitle>
           <DialogDescription>
@@ -93,12 +93,12 @@ export function ValidateRechargeModal({
           <Button onClick={onConfirm} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" color="currentColor" />
                 Validation...
               </>
             ) : (
               <>
-                <TickCircle size={18} variant="Bulk" className="mr-2" />
+                <TickCircle size={18} color="currentColor" className="mr-2" />
                 Valider la demande
               </>
             )}

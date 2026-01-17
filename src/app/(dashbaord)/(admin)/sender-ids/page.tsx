@@ -2,14 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { DataTable } from "@/shared/common/data-table/table"
-import {
-  useGetSenderIdsByEnterprise,
-  useCreateSenderId,
-  useUpdateSenderId,
-  useUpdateSenderIdStatus,
-  useDeleteSenderId,
-  useGetAllSenderIds,
-} from "@/modules/sender-id/hooks"
+
 import { useAuthContext } from "@/core/providers"
 import { MessageText, Add } from "iconsax-react"
 import { createColumns } from "./columns"
@@ -20,6 +13,7 @@ import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/co
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
+import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useUpdateSenderId, useUpdateSenderIdStatus } from "@/core/hooks"
 
 export default function SenderIdsPage() {
   const { user } = useAuthContext()

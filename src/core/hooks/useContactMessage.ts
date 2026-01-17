@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { contactMessageService } from '../services/contact-message.service';
-import type { SendToContactPayload, SendToGroupPayload } from '../services/contact-message.service';
+import { contactMessageService } from '@/core/services/contact-message.service';
+import type { SendToContactPayload, SendToGroupPayload } from '@/core/services/contact-message.service';
 
 export function useSendToContact() {
   const [isLoading, setIsLoading] = useState(false);

@@ -13,6 +13,6 @@ export type {
 } from './components/types'
 
 // Contact message services and hooks
-export { contactMessageService } from './services/contact-message.service'
-export { useSendToContact, useSendToGroup } from './hooks/useContactMessage'
-export type { SendToContactPayload, SendToGroupPayload } from './services/contact-message.service'
+export { contactMessageService } from '@/core/services/contact-message.service'
+export { useSendToContact, useSendToGroup } from '@/core/hooks'
+export type { SendToContactPayload, SendToGroupPayload } from '@/core/services/contact-message.service'

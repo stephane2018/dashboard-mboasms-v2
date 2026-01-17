@@ -1,174 +1,158 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import {
-    getAllContacts,
-    getContactsByEnterprisePage,
-    getContactById,
-    createContact,
-    updateContact,
-    deleteContact,
-    importContacts,
-    getAllContactsByEnterprise
-} from "@/core/services/contact.service";
-import {
-    CreateContactRequestType,
-    UpdateContactRequestType,
-    EnterpriseContactResponseType,
-    PaginatedEnterpriseContactsResponseType
-} from "@/core/models/contact-new";
-import { invalidateContactQueries } from "@/core/utils/query-invalidation";
+import { useState, useCallback } from 'react';
+import { contactService } from '@/core/services/contact.service';
+import type { ContactFilters } from '@/core/services/contact.service';
+import type { EnterpriseContactResponseType } from '@/core/models/contact-new';
 
-// Query keys for cache management
-export const contactKeys = {
-    all: ['contacts'] as const,
-    lists: () => [...contactKeys.all, 'list'] as const,
-    list: (filters: string) => [...contactKeys.lists(), { filters }] as const,
-    details: () => [...contactKeys.all, 'detail'] as const,
-    detail: (id: string) => [...contactKeys.details(), id] as const,
-    byEnterprise: (enterpriseId: string, page: number, size: number) =>
-        [...contactKeys.all, 'enterprise', enterpriseId, page, size] as const,
-};
+export function useContactsByEnterprise() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-/**
- * Hook to get all contacts
- */
-export function useGetAllContacts() {
-    return useQuery<EnterpriseContactResponseType[], Error>({
-        queryKey: contactKeys.lists(),
-        queryFn: getAllContacts,
-    });
+  const getContacts = useCallback(async (enterpriseId: string, filters?: ContactFilters) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await contactService.getContactsByEnterprise(enterpriseId, filters);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la récupération des contacts';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    getContacts,
+    isLoading,
+    error,
+    clearError,
+  };
 }
 
-export function useGetAllContactsByEnterprise(enterpriseId: string) {
-    return useQuery<EnterpriseContactResponseType[], Error>({
-        queryKey: contactKeys.lists(),
-        queryFn: () => getAllContactsByEnterprise(enterpriseId),
+export function useContactsByGroup() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    });
+  const getGroupContacts = useCallback(async (groupId: string, enterpriseId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await contactService.getContactsByGroup(groupId, enterpriseId);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la récupération des contacts du groupe';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    getGroupContacts,
+    isLoading,
+    error,
+    clearError,
+  };
 }
 
-/**
- * Hook to get paginated contacts by enterprise
- */
-export function useGetContactsByEnterprise(
-    enterpriseId: string,
-    page: number = 0,
-    size: number = 10,
-    enabled: boolean = true
-) {
-    return useQuery<PaginatedEnterpriseContactsResponseType, Error>({
-        queryKey: contactKeys.byEnterprise(enterpriseId, page, size),
-        queryFn: () => getContactsByEnterprisePage(enterpriseId, page, size),
-        enabled: enabled && !!enterpriseId,
-    });
-}
-
-/**
- * Hook to get a single contact by ID
- */
-export function useGetContactById(id: string, enabled: boolean = true) {
-    return useQuery<EnterpriseContactResponseType, Error>({
-        queryKey: contactKeys.detail(id),
-        queryFn: () => getContactById(id),
-        enabled: enabled && !!id,
-    });
-}
-
-/**
- * Hook to create a new contact
- */
 export function useCreateContact() {
-    const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return useMutation({
-        mutationFn: (data: CreateContactRequestType) => createContact(data),
-        onSuccess: (data) => {
-            toast.success("Contact créé", {
-                description: `${data.firstname} ${data.lastname} a été ajouté avec succès`,
-            });
-            // Invalidate contacts based on user role
-            invalidateContactQueries(queryClient);
-        },
-        onError: (error: any) => {
-            const errorMessage = error?.message || "Erreur lors de la création du contact";
-            toast.error("Erreur", {
-                description: errorMessage,
-            });
-        },
-    });
+  const createContact = useCallback(async (data: Partial<EnterpriseContactResponseType>) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await contactService.createContact(data);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la création du contact';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    createContact,
+    isLoading,
+    error,
+    clearError,
+  };
 }
 
-/**
- * Hook to update an existing contact
- */
 export function useUpdateContact() {
-    const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: Partial<UpdateContactRequestType> }) =>
-            updateContact(id, data),
-        onSuccess: (data, variables) => {
-            toast.success("Contact mis à jour", {
-                description: `${data.firstname} ${data.lastname} a été modifié avec succès`,
-            });
-            // Invalidate contacts based on user role
-            invalidateContactQueries(queryClient, variables.id);
-        },
-        onError: (error: any) => {
-            const errorMessage = error?.message || "Erreur lors de la mise à jour du contact";
-            toast.error("Erreur", {
-                description: errorMessage,
-            });
-        },
-    });
+  const updateContact = useCallback(async (id: string, data: Partial<EnterpriseContactResponseType>) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await contactService.updateContact(id, data);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la mise à jour du contact';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    updateContact,
+    isLoading,
+    error,
+    clearError,
+  };
 }
 
-/**
- * Hook to delete a contact
- */
 export function useDeleteContact() {
-    const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    return useMutation({
-        mutationFn: (contactId: string) => deleteContact(contactId),
-        onSuccess: () => {
-            toast.success("Contact supprimé", {
-                description: "Le contact a été supprimé avec succès",
-            });
-            // Invalidate contacts based on user role
-            invalidateContactQueries(queryClient);
-        },
-        onError: (error: any) => {
-            const errorMessage = error?.message || "Erreur lors de la suppression du contact";
-            toast.error("Erreur", {
-                description: errorMessage,
-            });
-        },
-    });
+  const deleteContact = useCallback(async (id: string, enterpriseId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await contactService.deleteContact(id, enterpriseId);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la suppression du contact';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return {
+    deleteContact,
+    isLoading,
+    error,
+    clearError,
+  };
 }
 
-/**
- * Hook to import contacts from file
- */
-export function useImportContacts() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ file, enterpriseId }: { file: File; enterpriseId: string }) =>
-            importContacts(file, enterpriseId),
-        onSuccess: (data) => {
-            const importedCount = data?.importedCount || 0;
-            toast.success("Import réussi", {
-                description: `${importedCount} contact(s) importé(s) avec succès`,
-            });
-            // Invalidate contacts based on user role
-            invalidateContactQueries(queryClient);
-        },
-        onError: (error: any) => {
-            const errorMessage = error?.message || "Erreur lors de l'import des contacts";
-            toast.error("Erreur d'import", {
-                description: errorMessage,
-            });
-        },
-    });
-}
+// Alias for consistency
+export const useGetContactsByEnterprise = useContactsByEnterprise;
+export const useGetAllContactsByEnterprise = useContactsByEnterprise;

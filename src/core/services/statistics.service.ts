@@ -1,6 +1,6 @@
 import { httpClient } from "@/core/lib/http-client"
 import { refractHttpError } from "@/core/utils/http-error"
-import type { MainStatistics, StatisticsQueryParams, RechargeTimelineParams, RechargeTimelineData } from "../types"
+import type { MainStatistics, StatisticsQueryParams, RechargeTimelineParams, RechargeTimelineData } from "@/modules/statistics/types"
 
 export const statisticsService = {
   async getMainStatistics(params: StatisticsQueryParams): Promise<MainStatistics> {

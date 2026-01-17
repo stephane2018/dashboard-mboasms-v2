@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { countryService } from '../../../core/services/country.service';
+import { countryService } from '@/core/services/country.service';
 
 interface UseCountriesOptions {
   page?: number;

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts';
-import { useSmsTransactions } from '../hooks/useSmsTransactions';
+import { useSmsTransactions } from '@/core/hooks';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
   ChartContainer,

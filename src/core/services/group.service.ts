@@ -1,6 +1,6 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
-import { AddContactsToGroupType, CreateGroupType, GroupType } from '../models/groups';
+import { AddContactsToGroupType, CreateGroupType, GroupType } from '@/core/models/groups';
 
 type UpdateGroupInput = Partial<CreateGroupType> & { enterpriseId?: string }
 

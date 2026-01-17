@@ -18,8 +18,8 @@ import { SmsTransactionChart } from "@/modules/sms/components/sms-transaction-ch
 import { GlobalSmsCard } from "./components/global-sms-card";
 import { BalanceRechargeChart } from "./components/balance-recharge-chart";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { useMainStatistics } from "@/modules/statistics/hooks";
 import type { MainStatistics } from "@/modules/statistics/types";
+import { useMainStatistics } from "@/core/hooks";
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('fr-FR').format(num);

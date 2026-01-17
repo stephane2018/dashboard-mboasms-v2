@@ -7,7 +7,7 @@ import type {
   UpdateSenderIdInput,
   UpdateSenderIdStatusInput,
   SenderIdQueryParams,
-} from "../types"
+} from "@/modules/sender-id/types"
 
 /**
  * Sender ID Service

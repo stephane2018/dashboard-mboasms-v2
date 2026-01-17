@@ -16,10 +16,10 @@ import {
 } from '@/shared/ui/chart';
 import { TrendingUp, Calendar as CalendarIcon, Filter } from 'lucide-react';
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
-import { useRechargeTimeline } from '@/modules/statistics/hooks';
 import type { Period, RechargeStatus } from '@/modules/statistics/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useRechargeTimeline } from '@/core/hooks';
 
 const chartConfig = {
   count: {

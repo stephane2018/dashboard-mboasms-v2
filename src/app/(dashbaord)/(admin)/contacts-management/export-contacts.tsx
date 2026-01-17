@@ -24,7 +24,7 @@ export function ExportContacts() {
       let allContacts: EnterpriseContactResponseType[] = [];
       for (let i = 0; i < numPages; i++) {
         const data = await getPaginatedAllContacts(i, pageSize);
-        allContacts = [...allContacts, ...data.content];
+        allContacts = [...allContacts, ...(data as any).content];
       }
 
       const worksheet = XLSX.utils.json_to_sheet(allContacts.map(contact => ({

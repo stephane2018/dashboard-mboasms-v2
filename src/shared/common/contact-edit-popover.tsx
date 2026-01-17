@@ -20,7 +20,7 @@ import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Edit2, TickCircle, CloseCircle, Warning2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
-import { updateContact } from "@/core/services/contact.service"
+import { useUpdateContact } from "@/core/hooks"
 import { getPhoneValidationStatus, checkPhoneValidation } from "@/core/utils/phone-validation"
 import { GroupSelectWithCreate } from "@/shared/common/group-select-with-create"
 import { toast } from "sonner"
@@ -53,7 +53,7 @@ export function ContactEditPopover({
     children,
 }: ContactEditPopoverProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [isUpdating, setIsUpdating] = useState(false)
+    const { updateContact, isUpdating, error } = useUpdateContact()
 
     const [formData, setFormData] = useState<FormData>({
         firstName: contact.firstname || "",

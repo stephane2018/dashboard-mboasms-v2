@@ -295,7 +295,7 @@ export function SMSConfirmationModal({
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        disabled={isLoading || hasInsufficientBalance}
+                        // disabled={isLoading || hasInsufficientBalance}
                         className="flex-1 sm:flex-none sm:min-w-[140px]"
                     >
                         {isLoading ? (

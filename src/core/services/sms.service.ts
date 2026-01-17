@@ -1,6 +1,6 @@
 import { httpClient } from '@/core/lib/http-client'
 import { refractHttpError } from '@/core/utils/http-error'
-import type { SmsTransaction, SendMessageParams, SendMessageResponse } from '../types/sms.types'
+import type { SmsTransaction, SendMessageParams, SendMessageResponse } from '@/modules/sms/types/sms.types'
 
 // Mock data for the last 30 days
 const generateMockData = (): SmsTransaction[] => {

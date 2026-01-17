@@ -26,7 +26,7 @@ export function ContactStats() {
   const { data: contacts, isLoading } = useAllContacts();
 
   const stats = useMemo(() => {
-    if (!contacts) return { total: 0, valid: 0, invalid: 0, byOperator: {} };
+    if (!contacts || !Array.isArray(contacts)) return { total: 0, valid: 0, invalid: 0, byOperator: {} };
 
     const byOperator: { [key: string]: number } = {};
     let valid = 0;

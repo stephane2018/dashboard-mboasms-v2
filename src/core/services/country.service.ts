@@ -1,7 +1,7 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
 import type { Country } from '../../modules/countries/types/country.types';
-import type { PaginatedResponse } from '../models/common';
+import type { PaginatedResponse } from '@/core/models/common';
 
 interface CountryResponse {
   data?: Country[];

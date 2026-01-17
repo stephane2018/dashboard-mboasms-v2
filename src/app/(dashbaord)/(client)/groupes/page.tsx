@@ -16,8 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
 import { toast } from "sonner"
-import { useGroups } from "@/modules/groups/hooks"
-import { groupsService } from "@/modules/groups/services"
+import { useGroups } from "@/core/hooks"
+import { groupsService } from "@/core/services/groups.service"
 
 export default function GroupesPage() {
   const { groups, isLoading, enterpriseId, loadGroups, setGroups } = useGroups()

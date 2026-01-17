@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useAuthContext } from "@/core/providers"
-import { statisticsService } from "../services"
-import type { RechargeTimelineData, RechargeTimelineParams, Period, RechargeStatus } from "../types"
+import { statisticsService } from "@/core/services/statistics.service"
+import type { RechargeTimelineData, RechargeTimelineParams, Period, RechargeStatus } from "@/modules/statistics/types"
 
 type UseRechargeTimelineOptions = {
   enterpriseId?: string
