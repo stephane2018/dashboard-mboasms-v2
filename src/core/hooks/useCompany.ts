@@ -12,6 +12,7 @@ import {
   creditEnterprise,
   getEnterpriseDetails,
   type CreditEnterprisePayload,
+  getCompagnieConnectedDetails,
 } from "@/core/services/CompanyService"
 import type { EnterpriseType, PaginatedCompaniesResponseType, CreateCompanyRequestType, AddUserToEnterpriseRequestType } from "@/core/models/company"
 
@@ -28,6 +29,13 @@ export function useCompanies() {
   return useQuery<EnterpriseType[], Error>({
     queryKey: companyKeys.lists(),
     queryFn: getCompanies,
+  })
+}
+
+export function UseGetConnectedCompagnieData(enterpriseId: string){
+   return useQuery<EnterpriseType, Error>({
+    queryKey: companyKeys.detail(enterpriseId),
+    queryFn: () => getCompagnieConnectedDetails(enterpriseId),
   })
 }
 

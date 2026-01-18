@@ -11,7 +11,6 @@ export * from '@/core/config/enum';
 
 // Entity types (new clean structure)
 export * from './user';
-export * from './enterprise';
 
 export * from './country';
 export * from './pricing';

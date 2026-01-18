@@ -11,8 +11,10 @@ import type { EnterpriseContactResponseType as ContactNewType } from "@/core/mod
 import type { EnterpriseContactResponseType as ContactType } from "@/core/models/contact"
 import { useSettingsStore } from "@/core/stores"
 import { useUserStore } from "@/core/stores/userStore"
+import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { useSMSStore } from "@/core/stores/smsStore"
 import { updateUserSenderId } from "@/core/services/client.service"
+import { useGetSenderIdById, useGetSenderIdsByEnterprise } from "@/core/hooks/useSenderIdsQuery"
 // Import modular components
 import {
     RecipientsSection,
@@ -22,7 +24,7 @@ import {
     ActionsSection,
 } from "@/modules/sms"
 import { useSendMessage } from "@/core/hooks/useSendMessage"
-import { useMainStatistics } from "@/core/hooks"
+import { UseGetConnectedCompagnieData, useMainStatistics } from "@/core/hooks"
 
 // Default temporary sender ID
 const DEFAULT_TEMP_SENDER_ID = "infos"
@@ -62,6 +64,12 @@ export default function SMSPage() {
 
     // Get user from store
     const { user, updateUser } = useUserStore()
+    const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
+  
+
+    const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
+        user?.companyId || "")
+    console.log("senderIdsData", senderIdsData)
 
     // SMS sending hook
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
@@ -70,6 +78,10 @@ export default function SMSPage() {
     const userSenderId = user?.smsSenderId || ""
     const isSenderIdVerified = user?.isSenderIdVerified ?? false
     const hasPrimarySenderId = !!userSenderId
+
+    // Get enterprise SMS credit from enterprise data
+    const enterpriseBalance = enterprise?.smsCredit || 0
+    const userBalance = enterpriseBalance // Use enterprise balance instead of statistics
 
     // Sender ID preferences from settings store
     const {
@@ -89,10 +101,6 @@ export default function SMSPage() {
         }
         return temporarySenderId || DEFAULT_TEMP_SENDER_ID
     }, [hasPrimarySenderId, isSenderIdVerified, useTemporarySenderId, userSenderId, temporarySenderId])
-
-    // Get user enterprise SMS credit from statistics
-    const { statistics } = useMainStatistics()
-    const userBalance = statistics?.smsCredit || 0
 
     // Handle prefilled contacts from URL params
     useEffect(() => {
@@ -200,6 +208,14 @@ export default function SMSPage() {
 
     // Check if balance is sufficient
     const hasInsufficientBalance = remainingBalance < 0
+
+    // Calculate operator counts for modal display
+    const { mtnNumbers, otherNumbers } = useMemo(() => {
+        return separatePhoneNumbersByOperator(phoneEntries)
+    }, [phoneEntries])
+    
+    const mtnCount = mtnNumbers.length
+    const otherOperatorsCount = otherNumbers.length
 
     // Convert contact from contact-new type to contact type for compatibility
     const convertContactToPhoneEntry = (contact: ContactNewType | ContactType): PhoneEntry => {
@@ -333,6 +349,9 @@ export default function SMSPage() {
             
             toast.success(successMessage)
             
+            // Refetch enterprise data to update SMS balance
+            refetchEnterprise()
+            
             console.log("🧹 Cleaning up...")
             setMessage("")
             setPhoneEntries([])
@@ -437,6 +456,8 @@ export default function SMSPage() {
                         isSavingSenderId={isSavingSenderId}
                         newSenderIdInput={newSenderIdInput}
                         showSenderIdInput={showSenderIdInput}
+                        senderIds={senderIdsData || []}
+                        isLoadingSenderIds={isLoadingSenderIds}
                         onToggleTempSenderId={handleToggleTempSenderId}
                         onActivateTempSenderId={handleActivateTempSenderId}
                         onSetTemporarySenderId={setTemporarySenderId}
@@ -489,6 +510,8 @@ export default function SMSPage() {
                 currentBalance={userBalance}
                 remainingBalance={remainingBalance}
                 hasInsufficientBalance={hasInsufficientBalance}
+                mtnCount={mtnCount}
+                otherOperatorsCount={otherOperatorsCount}
             />
         </div>
     )

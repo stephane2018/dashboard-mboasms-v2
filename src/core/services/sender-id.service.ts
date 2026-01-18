@@ -74,9 +74,9 @@ export const senderIdService = {
     }
   },
 
-  async getSenderIdById(id: string): Promise<SenderId> {
+  async getSenderIdById(id: string): Promise<SenderId[]> {
     try {
-      return await httpClient.get<SenderId>(`/api/v1/sender-ids/${id}`)
+      return await httpClient.get<SenderId[]>(`/api/v1/sender-ids/enterprise/${id}`)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }

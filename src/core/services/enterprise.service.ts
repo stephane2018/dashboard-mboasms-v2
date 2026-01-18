@@ -11,4 +11,4 @@ export const getEnterprises = async (): Promise<EnterpriseType[]> => {
     }
 };
 
-// export const getEntreprise=async () : 
+// export const getEntreprise=async () :

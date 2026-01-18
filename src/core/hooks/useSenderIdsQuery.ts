@@ -51,7 +51,7 @@ export function useGetSenderIdsByEnterprise(
  * Hook to get a single sender ID by ID
  */
 export function useGetSenderIdById(id: string, enabled: boolean = true) {
-  return useQuery<SenderId, Error>({
+  return useQuery<SenderId[], Error>({
     queryKey: senderIdKeys.detail(id),
     queryFn: () => senderIdService.getSenderIdById(id),
     enabled: enabled && !!id,

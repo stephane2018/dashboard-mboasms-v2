@@ -21,3 +21,4 @@ export { useSendMessage, useMessageHistory, useAllMessageHistory, useSearchMessa
 export * from './usePricing'
 export * from './useRecharge'
 export * from './useMediaQuery'
+export * from './useActivePlans'

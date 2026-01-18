@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useActivePlans } from "@/core/hooks"
 import {
     Dialog,
     DialogContent,
@@ -38,7 +39,6 @@ interface CreateRechargeModalProps {
     isOpen: boolean
     onClose: () => void
     onSubmit: (data: RechargeFormData) => Promise<void>
-    activePlans: PricingPlanType[]
     isLoading?: boolean
 }
 
@@ -62,9 +62,9 @@ export function CreateRechargeModal({
     isOpen,
     onClose,
     onSubmit,
-    activePlans,
     isLoading = false
 }: CreateRechargeModalProps) {
+    const { data: activePlans = [] } = useActivePlans()
     const [smsQuantity, setSmsQuantity] = useState(100)
     const [paymentMethod, setPaymentMethod] = useState<string>("")
     const [phoneNumber, setPhoneNumber] = useState("")

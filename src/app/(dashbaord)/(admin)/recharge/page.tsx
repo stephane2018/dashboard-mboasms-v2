@@ -17,7 +17,7 @@ import { RechargeFilters, type RechargeFilters as RechargeFiltersType } from "./
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
 import { ValidateRechargeModal, RefuseRechargeModal, CreditAccountModal } from "./_components/recharge-action-modals"
 import { useRecharge } from "@/core/hooks/useRecharge"
-import { useQuery } from "@tanstack/react-query"
+import { useActivePlans } from "@/core/hooks"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
@@ -44,15 +44,6 @@ export default function RechargePage() {
     status: "all",
     startDate: undefined,
     endDate: undefined,
-  })
-
-  // Fetch active pricing plans
-  const { data: activePlansData, isLoading: isLoadingPlans } = useQuery<PricingPlanType[]>({
-    queryKey: ["pricing-plans", "active"],
-    queryFn: async () => {
-      const response = await getActivePlans()
-      return response
-    },
   })
 
   const allRecharges = rechargesQuery.data ?? []
@@ -241,7 +232,7 @@ export default function RechargePage() {
     )
   }
 
-  const isLoading = isLoadingRecharges || isLoadingPlans
+  const isLoading = isLoadingRecharges 
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -328,7 +319,6 @@ export default function RechargePage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateRecharge}
-        activePlans={activePlansData || []}
         isLoading={createRechargeMutation.isPending}
       />
 

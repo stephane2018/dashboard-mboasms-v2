@@ -36,6 +36,16 @@ export const getCompaniesPaginated = async (page: number = 0, size: number = 10)
   }
 };
 
+export const getCompagnieConnectedDetails = async (enterpriseId: string): Promise<EnterpriseType> => {
+  try {
+    const response = await httpClient.get<EnterpriseType>(`/api/v1/enterprise/${enterpriseId}?userId=${enterpriseId}`);
+    console.log(response);
+    return response;
+  } catch (error) {
+    return Promise.reject(refractHttpError(error));
+  }
+};
+
 export const createCompany = async (company: CreateCompanyRequestType): Promise<EnterpriseType> => {
   try {
     const response = await httpClient.post<EnterpriseType>('/api/v1/enterprise', company as Record<string, any>);
@@ -133,3 +143,5 @@ export const creditEnterprise = async (enterpriseId: string, payload: CreditEnte
     return Promise.reject(refractHttpError(error));
   }
 };
+
+

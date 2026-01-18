@@ -1,6 +1,7 @@
 import { PhoneEntry } from "@/shared/common/phone-number-input"
 import type { EnterpriseContactResponseType as ContactNewType } from "@/core/models/contact-new"
 import type { EnterpriseContactResponseType as ContactType } from "@/core/models/contact"
+import type { SenderId } from "@/modules/sender-id/types"
 
 export interface RecipientsSectionProps {
     phoneEntries: PhoneEntry[]
@@ -35,6 +36,8 @@ export interface SenderIdSectionProps {
     isSavingSenderId: boolean
     newSenderIdInput: string
     showSenderIdInput: boolean
+    senderIds: SenderId[]
+    isLoadingSenderIds: boolean
     onToggleTempSenderId: () => void
     onActivateTempSenderId: () => void
     onSetTemporarySenderId: (senderId: string) => void

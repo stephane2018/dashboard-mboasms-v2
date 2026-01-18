@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/sha
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { UserTag, TickCircle, InfoCircle, Warning2, Edit, CloseCircle } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { SenderIdSectionProps } from "./types"
@@ -18,6 +19,8 @@ export function SenderIdSection({
     isSavingSenderId,
     newSenderIdInput,
     showSenderIdInput,
+    senderIds,
+    isLoadingSenderIds,
     onToggleTempSenderId,
     onActivateTempSenderId,
     onSetTemporarySenderId,
@@ -74,6 +77,31 @@ export function SenderIdSection({
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* Enterprise Sender IDs Dropdown */}
+                {senderIds.length > 0 && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Sender ID de l'entreprise</label>
+                        <Select value={activeSenderId} onValueChange={onSetTemporarySenderId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner un Sender ID" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {senderIds.map((senderId) => (
+                                    <SelectItem key={senderId.id} value={senderId.name}>
+                                        {senderId.name} {senderId.description && `(${senderId.description})`}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {isLoadingSenderIds && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Chargement des Sender IDs...
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {hasPrimarySenderId && !useTemporarySenderId ? (
                     /* Primary Sender ID display */
                     <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -101,17 +129,31 @@ export function SenderIdSection({
 
                         {!hasPrimarySenderId && (
                             <>
-                                <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                                    <Warning2 size={20} color="currentColor" variant="Bulk" className="text-amber-600 shrink-0 mt-0.5" />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                                            Aucun Sender ID permanent configuré
-                                        </p>
-                                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                                            Utilisez le Sender ID temporaire "infos" ou définissez votre propre Sender ID.
-                                        </p>
+                                {(temporarySenderId && senderIds.length === 0) ? (
+                                    <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                                        <Warning2 size={20} color="currentColor" variant="Bulk" className="text-amber-600 shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                                                Aucun Sender ID permanent configuré
+                                            </p>
+                                            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                                                Utilisez le Sender ID temporaire "infos" ou définissez votre propre Sender ID.
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                                        <Warning2 size={20} color="currentColor" variant="Bulk" className="text-amber-600 shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                                                Aucun Sender ID permanent configuré
+                                            </p>
+                                            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                                                Configurez un Sender ID permanent ou utilisez un Sender ID temporaire.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Quick activate button */}
                                 {!temporarySenderId && (
