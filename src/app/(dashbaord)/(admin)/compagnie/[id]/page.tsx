@@ -32,7 +32,9 @@ export default function CompanyDetailsPage() {
   const { data: historyPage, isLoading: isHistoryLoading } = useMessageHistory(enterpriseId, 0, 200, !!enterpriseId)
   const { groups, isLoading: isGroupsLoading } = useGroups({ enterpriseId })
   const { mutate: creditEnterprise, isPending: isCrediting } = useCreditEnterprise()
-
+  
+  console.log(historyPage);
+  
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)

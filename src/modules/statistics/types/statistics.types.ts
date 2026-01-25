@@ -27,3 +27,15 @@ export type RechargeTimelineParams = {
   startDate?: string
   endDate?: string
 }
+
+export type MessageTimelineData = {
+  label: string
+  count: number
+}
+
+export type MessageTimelineParams = {
+  enterpriseId: string
+  period?: Period
+  startDate?: string
+  endDate?: string
+}

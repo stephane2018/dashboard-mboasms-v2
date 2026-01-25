@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
@@ -51,9 +51,17 @@ export default function UsersListPage() {
   const [contactsToDelete, setContactsToDelete] = useState<EnterpriseContactResponseType[]>([])
 
   // Fetch contacts with pagination
-  const { data, isLoading } = useGetAllContactsByEnterprise(user?.companyId!)
+  const { getContacts, isLoading } = useGetAllContactsByEnterprise()
+  const [data, setData] = useState<EnterpriseContactResponseType[]>([])
+  
+  // Load contacts when component mounts
+  useEffect(() => {
+    if (user?.companyId) {
+      getContacts(user.companyId).then(setData).catch(console.error)
+    }
+  }, [user?.companyId, getContacts])
   console.log(data)
-  const { mutate: deleteContact, isPending: isDeleting } = useDeleteContact()
+  const { deleteContact, isLoading: isDeleting } = useDeleteContact()
 
   const allContacts = data || []
   const totalElements = data?.length || 0
@@ -109,15 +117,16 @@ export default function UsersListPage() {
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    if (!contactToDelete) return
+  const confirmDelete = async () => {
+    if (!contactToDelete || !user?.companyId) return
 
-    deleteContact(contactToDelete.id, {
-      onSuccess: () => {
-        setIsDeleteDialogOpen(false)
-        setContactToDelete(null)
-      },
-    })
+    try {
+      await deleteContact(contactToDelete.id, user.companyId)
+      setIsDeleteDialogOpen(false)
+      setContactToDelete(null)
+    } catch (error) {
+      console.error('Error deleting contact:', error)
+    }
   }
 
   const handleSendSMS = (contacts: EnterpriseContactResponseType[]) => {
@@ -175,32 +184,29 @@ export default function UsersListPage() {
     setIsBulkDeleteDialogOpen(true)
   }
 
-  const confirmBulkDelete = () => {
-    // Delete all selected contacts
-    const deletePromises = contactsToDelete.map(contact => 
-      new Promise<void>((resolve, reject) => {
-        deleteContact(contact.id, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error),
-        })
-      })
-    )
+  const confirmBulkDelete = async () => {
+    if (!user?.companyId) return
 
-    Promise.all(deletePromises)
-      .then(() => {
-        toast.success("Contacts supprimés", {
-          description: `${contactsToDelete.length} contact(s) supprimé(s) avec succès`,
-        })
-        setSelectedContacts([]) // Clear selection after successful deletion
-        setIsBulkDeleteDialogOpen(false)
-        setContactsToDelete([])
+    try {
+      // Delete all selected contacts
+      const deletePromises = contactsToDelete.map(contact => 
+        deleteContact(contact.id, user.companyId!)
+      )
+
+      await Promise.all(deletePromises)
+      
+      toast.success("Contacts supprimés", {
+        description: `${contactsToDelete.length} contact(s) supprimé(s) avec succès`,
       })
-      .catch((error) => {
-        toast.error("Erreur lors de la suppression", {
-          description: "Une erreur est survenue lors de la suppression des contacts",
-        })
-        console.error("Bulk delete error:", error)
+      setSelectedContacts([]) // Clear selection after successful deletion
+      setIsBulkDeleteDialogOpen(false)
+      setContactsToDelete([])
+    } catch (error) {
+      console.error('Error deleting contacts:', error)
+      toast.error("Erreur lors de la suppression", {
+        description: "Une erreur est survenue lors de la suppression des contacts",
       })
+    }
   }
 
   const handleExport = (format: "csv" | "excel" | "json") => {

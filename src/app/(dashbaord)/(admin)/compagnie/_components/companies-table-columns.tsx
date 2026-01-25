@@ -13,6 +13,70 @@ import {
 import type { EnterpriseType } from "@/core/models/company"
 import { useRouter } from "next/navigation"
 import { useUserStore } from "@/core/stores/userStore"
+import { useLoginAs } from "@/core/hooks/useLogin"
+
+// Component for actions cell to use hooks
+function ActionsCell({ company, onAddUser, onCredit, onDelete }: { 
+  company: EnterpriseType
+  onAddUser: (company: EnterpriseType) => void
+  onCredit: (company: EnterpriseType) => void
+  onDelete: (company: EnterpriseType) => void
+}) {
+  const router = useRouter()
+  const setActingCompany = useUserStore((s) => s.setActingCompany)
+  const { user } = useUserStore()
+  const loginAsMutation = useLoginAs()
+
+  const handleImpersonate = () => {
+    if (company.emailEnterprise) {
+      loginAsMutation.mutate(company.emailEnterprise)
+    }
+  }
+
+  // Check if current user email is the same as company email
+  const isSameUser = user?.email === company.emailEnterprise
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Ouvrir le menu</span>
+          <More className="h-4 w-4 " variant="Bulk" color="currentColor" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => router.push(`/compagnie/${company.id}`)}>
+          <Eye className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
+          Voir détails
+        </DropdownMenuItem>
+        {!isSameUser && company.emailEnterprise && (
+          <DropdownMenuItem 
+            onClick={handleImpersonate} 
+            disabled={loginAsMutation.isPending}
+          >
+            <Login className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
+            Se connecter en tant que
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onAddUser(company)}>
+          <UserAdd className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
+          Ajouter un utilisateur
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onCredit(company)}>
+          <Wallet className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
+          Ajouter du crédit
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onDelete(company)} className="text-red-600">
+          <Trash className="mr-2 h-4 w-4 text-red-600" variant="Bulk" color="currentColor" />
+          Supprimer
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 interface CompaniesTableColumnsProps {
   onAddUser: (company: EnterpriseType) => void
@@ -82,48 +146,13 @@ export function getColumnsWithRouter(
       enableHiding: false,
       cell: ({ row }) => {
         const company = row.original
-        const setActingCompany = useUserStore((s) => s.setActingCompany)
-        const handleImpersonate = () => {
-          setActingCompany({ id: company.id, name: company.socialRaison || "" })
-          sessionStorage.setItem("actingCompanyId", company.id)
-          sessionStorage.setItem("actingCompanyName", company.socialRaison || "")
-          router.push("/dashboard")
-        }
-
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Ouvrir le menu</span>
-                <More className="h-4 w-4 " variant="Bulk" color="currentColor" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => router.push(`/compagnie/${company.id}`)}>
-                <Eye className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-                Voir détails
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleImpersonate}>
-                <Login className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-                Se connecter en tant que
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onAddUser(company)}>
-                <UserAdd className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-                Ajouter un utilisateur
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onCredit(company)}>
-                <Wallet className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-                Ajouter du crédit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onDelete(company)} className="text-red-600">
-                <Trash className="mr-2 h-4 w-4 text-red-600" variant="Bulk" color="currentColor" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ActionsCell 
+            company={company}
+            onAddUser={onAddUser}
+            onCredit={onCredit}
+            onDelete={onDelete}
+          />
         )
       },
     },

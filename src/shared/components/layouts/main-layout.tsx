@@ -35,6 +35,7 @@ import {
 import { useUserStore } from "@/core/stores/userStore"
 import { useEffect } from "react"
 import { Info } from "lucide-react"
+import { ImpersonationBanner } from "@/shared/components/impersonation-banner"
 import {
   Home2,
   Logout,
@@ -200,6 +201,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
+          <ImpersonationBanner />
           {actingCompanyId && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary shadow-sm">
               <div className="flex items-center gap-2">

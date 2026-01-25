@@ -23,11 +23,14 @@ interface UserStore {
   isHydrated: boolean;
   actingCompanyId?: string;
   actingCompanyName?: string;
+  isImpersonating: boolean;
+  originalUser?: User;
   setUser: (user: User) => void;
   clearUser: () => void;
   updateUser: (userData: Partial<User>) => void;
   setActingCompany: (company: { id: string; name: string }) => void;
   clearActingCompany: () => void;
+  setImpersonating: (isImpersonating: boolean, originalUser?: User) => void;
   isAdmin: () => boolean;
   isSuperAdmin: () => boolean;
   isRegularUser: () => boolean;
@@ -42,8 +45,13 @@ export const useUserStore = create<UserStore>()(
       isHydrated: false,
       actingCompanyId: undefined,
       actingCompanyName: undefined,
+      isImpersonating: false,
+      originalUser: undefined,
 
-      setUser: (user: User) => set({ user, isAuthenticated: true }),
+      setUser: (user: User) => {
+        console.log(' setUser called with:', user)
+        set({ user, isAuthenticated: true })
+      },
 
       clearUser: () =>
         set({
@@ -51,6 +59,8 @@ export const useUserStore = create<UserStore>()(
           isAuthenticated: false,
           actingCompanyId: undefined,
           actingCompanyName: undefined,
+          isImpersonating: false,
+          originalUser: undefined,
         }),
 
       updateUser: (userData: Partial<User>) =>
@@ -70,9 +80,15 @@ export const useUserStore = create<UserStore>()(
           actingCompanyName: undefined,
         }),
 
+      setImpersonating: (isImpersonating: boolean, originalUser?: User) =>
+        set({
+          isImpersonating,
+          originalUser: isImpersonating ? originalUser : undefined,
+        }),
+
       isAdmin: () => {
         const { user } = get();
-        return user?.role === Role.ADMIN || user?.role === Role.SUPER_ADMIN;
+        return user?.role === Role.ADMIN || user?.role === Role.ADMIN_USER || user?.role === Role.SUPER_ADMIN;
       },
 
       isSuperAdmin: () => {
@@ -90,7 +106,10 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'user-storage',
       onRehydrateStorage: () => (state) => {
+        console.log('User store rehydrating, state:', state)
         if (state) {
+          console.log('User store hydrated, user:', state.user)
+          console.log('User store hydrated, user role:', state.user?.role)
           state.isHydrated = true;
         }
       },

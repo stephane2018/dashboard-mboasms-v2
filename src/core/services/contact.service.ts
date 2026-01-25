@@ -14,7 +14,7 @@ export const contactService = {
    * Get all contacts for an enterprise
    * GET /api/v1/contact/all/{enterpriseId}
    */
-  async getContactsByEnterprise(enterpriseId: string, filters?: ContactFilters) {
+  async getContactsByEnterprise(enterpriseId: string, filters?: ContactFilters): Promise<EnterpriseContactResponseType[]> {
     try {
       const params = new URLSearchParams();
 
@@ -33,7 +33,7 @@ export const contactService = {
         : `/api/v1/contact/all/${enterpriseId}`;
 
       const response = await httpClient.get(url);
-      return response as unknown;
+      return response as EnterpriseContactResponseType[];
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }

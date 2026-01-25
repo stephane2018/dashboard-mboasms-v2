@@ -1,15 +1,22 @@
 import { Role } from "@/core/config/enum"
 import { useUserStore } from "@/core/stores"
 
-export type UserRole = "ADMIN" | "MANAGER" | "SELLER" | "SUPER_ADMIN" | "USER"
+export type UserRole = "ADMIN" | "ADMIN_USER" | "MANAGER" | "SELLER" | "SUPER_ADMIN" | "USER"
 
 export const normalizeRole = (backendRole: string): UserRole => {
+  if (!backendRole) {
+    return 'USER' // Default to USER if role is undefined/null
+  }
+  
   const roleLower = backendRole.toLowerCase().trim()
 
   const roleMap: Record<string, UserRole> = {
     'admin': 'ADMIN',
     'administrateur': 'ADMIN',
     'administrator': 'ADMIN',
+    'admin_user': 'ADMIN_USER',
+    'admin-user': 'ADMIN_USER',
+    'adminuser': 'ADMIN_USER',
     'manager': 'MANAGER',
     'gestionnaire': 'MANAGER',
     'seller': 'SELLER',
@@ -54,7 +61,7 @@ export const hasRole = (allowedRoles: UserRole[]): boolean => {
 
 export const isAdmin = (): boolean => {
   const role = getUserRole()
-  return role === Role.ADMIN || role === Role.SUPER_ADMIN
+  return role === Role.ADMIN || role === Role.ADMIN_USER || role === Role.SUPER_ADMIN
 }
 
 export const isSuperAdmin = (): boolean => {
@@ -70,6 +77,7 @@ export const getDefaultDashboardUrl = (): string => {
 
   switch (role) {
     case Role.ADMIN:
+    case Role.ADMIN_USER:
     case Role.SUPER_ADMIN:
       return "/dashboard"
     case Role.USER:

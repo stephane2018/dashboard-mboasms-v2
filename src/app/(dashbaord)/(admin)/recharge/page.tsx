@@ -52,7 +52,7 @@ export default function RechargePage() {
 
   // Filter recharges based on search term and filters
   const filteredRecharges = useMemo(() => {
-    let filtered = allRecharges
+    let filtered = allRecharges.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     // Apply search term filter
     if (searchTerm) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useAuthContext } from "@/core/providers"
 import { statisticsService } from "@/core/services/statistics.service"
 import type { MainStatistics } from "@/modules/statistics/types"
@@ -9,50 +9,34 @@ type UseMainStatisticsOptions = {
   enterpriseId?: string
   startDate?: string
   endDate?: string
-  autoLoad?: boolean
+  enabled?: boolean
 }
 
 export function useMainStatistics(options: UseMainStatisticsOptions = {}) {
   const { user } = useAuthContext()
   const enterpriseId = options.enterpriseId || user?.companyId || ""
-  const autoLoad = options.autoLoad ?? true
+  const enabled = options.enabled ?? true
 
-  const [statistics, setStatistics] = useState<MainStatistics | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadStatistics = useCallback(async () => {
-    if (!enterpriseId) return
-
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await statisticsService.getMainStatistics({
+  const query = useQuery<MainStatistics>({
+    queryKey: ['mainStatistics', enterpriseId, options.startDate, options.endDate],
+    queryFn: async () => {
+      return await statisticsService.getMainStatistics({
         enterpriseId,
         startDate: options.startDate,
         endDate: options.endDate,
       })
-      setStatistics(data)
-    } catch (err) {
-      console.error("Error loading statistics:", err)
-      setError("Erreur lors du chargement des statistiques")
-      setStatistics(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [enterpriseId, options.startDate, options.endDate])
-
-  useEffect(() => {
-    if (autoLoad && enterpriseId) {
-      loadStatistics()
-    }
-  }, [autoLoad, enterpriseId, loadStatistics])
+    },
+    enabled: enabled && !!enterpriseId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  })
 
   return {
-    statistics,
-    isLoading,
-    error,
+    statistics: query.data || null,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    error: query.error ? "Erreur lors du chargement des statistiques" : null,
     enterpriseId,
-    loadStatistics,
+    refetch: query.refetch,
   }
 }

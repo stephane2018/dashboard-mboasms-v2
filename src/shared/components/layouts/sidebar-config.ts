@@ -50,76 +50,77 @@ export interface RoleBasedNavSection extends NavSection {
 export const navigationConfig: RoleBasedNavSection[] = [
     {
         title: 'Admin',
-        roles: [Role.ADMIN, Role.SUPER_ADMIN],
+        roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
         items: [
             {
                 title: 'Tableau de bord',
                 url: '/dashboard',
                 icon: Category,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Users List',
                 url: '/users',
                 icon: People,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Contacts',
                 url: '/contacts-management',
                 icon: People,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Companies',
                 url: '/compagnie',
                 icon: Building,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.SUPER_ADMIN],
             },
             {
                 title: 'SMS',
                 url: '/sms',
                 icon: Sms,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Sender IDs',
                 url: '/sender-ids',
                 icon: MessageText,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
              {
                 title: 'Groupes',
                 url: '/groupes-management',
                 icon: Element3,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Recharge',
                 url: '/recharge',
                 icon: WalletMoney,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
                 title: 'Terms & Conditions',
                 url: '/termes-and-condition',
                 icon: DocumentText,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.SUPER_ADMIN],
             },
             {
                 title: 'Pricing',
                 url: '/pricing',
                 icon: MoneyRecive,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.SUPER_ADMIN],
             },
             {
                 title: 'Historique',
                 url: '/historique-plateforme',
                 icon: Clock,
-                roles: [Role.ADMIN, Role.SUPER_ADMIN],
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
         ],
     },
+   
     {
         title: 'Menu',
         roles: [Role.USER],
@@ -169,13 +170,13 @@ export const secondaryNavConfig: RoleBasedNavItem[] = [
         title: 'Settings',
         url: '/settings',
         icon: Setting2,
-        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER],
+        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER, Role.ADMIN_USER],
     },
     {
         title: 'Support',
         url: '/support',
         icon: Lifebuoy,
-        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER],
+        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER, Role.ADMIN_USER],
     },
 ]
 
@@ -194,13 +195,14 @@ export const getDashboardConfig = (userRole: UserRole) => {
         title: 'Dashboard',
         url: '/dashboard',
         icon: Category,
-        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER] as UserRole[],
+        roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.ADMIN_USER, Role.USER] as UserRole[],
     }
 }
 
 export const getNameOfDashboard = (role: UserRole): string => {
     const roleNames: Record<UserRole, string> = {
         [Role.ADMIN]: 'Administration',
+        [Role.ADMIN_USER]: 'Administration',
         [Role.USER]: 'Client Dashboard',
         [Role.SUPER_ADMIN]: 'Super Admin',
     }

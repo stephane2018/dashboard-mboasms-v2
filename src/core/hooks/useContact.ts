@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getPaginatedAllContacts, getAllContacts, importContacts } from "@/core/services/contact.service";
 import type { PaginatedEnterpriseContactsResponseType, EnterpriseContactResponseType } from "@/core/models/contact-new";
+import type { ApiResponse } from "@/core/models/common";
 
 export const contactKeys = {
   all: ["contacts"] as const,
@@ -12,21 +13,28 @@ export const contactKeys = {
 export function useContacts(page: number = 0, size: number = 10) {
   return useQuery<PaginatedEnterpriseContactsResponseType, Error>({
     queryKey: contactKeys.list(page, size),
-    queryFn: () => getPaginatedAllContacts(page, size),
+    queryFn: async (): Promise<PaginatedEnterpriseContactsResponseType> => {
+      const response = await getPaginatedAllContacts(page, size) as ApiResponse<PaginatedEnterpriseContactsResponseType>;
+      // Handle the ApiResponse wrapper - the actual paginated data is in the data property
+      return response.data || response as PaginatedEnterpriseContactsResponseType;
+    },
   });
 }
 
 export function useAllContacts() {
   return useQuery<EnterpriseContactResponseType[], Error>({
     queryKey: contactKeys.lists(),
-    queryFn: getAllContacts,
+    queryFn: async (): Promise<EnterpriseContactResponseType[]> => {
+      const response = await getAllContacts() as ApiResponse<EnterpriseContactResponseType[]>;
+      return response.data || response as EnterpriseContactResponseType[];
+    },
   });
 }
 
 export function useImportContacts() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ file, enterpriseId }: { file: File; enterpriseId: string }) => importContacts(file, enterpriseId),
+    mutationFn: (file: File) => importContacts(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: contactKeys.all });
       toast.success("Contacts importés avec succès.");

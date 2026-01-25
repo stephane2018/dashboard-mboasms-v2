@@ -23,3 +23,7 @@ export async function getProfile() {
 export async function logout() {
   return await httpClient.post('/api/v1/auth/logout');
 }
+
+export async function loginAsUser(userEmail: string) {
+  return await httpClient.post(`/api/v1/auth/login-as-user/${userEmail}`, {});
+}

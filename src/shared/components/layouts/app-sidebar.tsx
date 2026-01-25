@@ -21,17 +21,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
 import {
   getDashboardConfig,
   getNameOfDashboard,
-  getUserRole,
   navigationConfig,
   secondaryNavConfig,
   type RoleBasedNavItem,
 } from './sidebar-config'
 import Image from 'next/image'
+import { useUserStore } from '@/core/stores/userStore'
+import { Role } from '@/core/config/enum'
 
 // Main Component
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const userRole = getUserRole()
+  const { user } = useUserStore()
+  const userRole = user?.role || Role.USER
   const { state } = useSidebar()
 
   const dashboardConfig = React.useMemo(() => getDashboardConfig(userRole), [userRole])
