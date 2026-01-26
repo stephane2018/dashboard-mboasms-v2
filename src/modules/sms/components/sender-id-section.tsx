@@ -81,7 +81,7 @@ export function SenderIdSection({
                 {senderIds.length > 0 && (
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Sender ID de l'entreprise</label>
-                        <Select value={activeSenderId} onValueChange={onSetTemporarySenderId}>
+                        <Select value={activeSenderId || undefined} onValueChange={onSetTemporarySenderId}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Sélectionner un Sender ID" />
                             </SelectTrigger>

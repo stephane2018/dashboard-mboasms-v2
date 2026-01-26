@@ -46,9 +46,12 @@ interface PhoneNumberInputProps {
 // Utility: Generate unique ID
 const generateId = () => `phone_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-// Utility: Clean phone number (remove spaces, dashes, etc.)
+// Utility: Clean phone number (remove all spaces, dashes, etc.)
 const cleanPhoneNumber = (phone: string): string => {
-    return phone.replace(/[\s\-\(\)\.]/g, "").trim()
+    // Remove all types of whitespace (including non-breaking spaces), dashes, parentheses, dots
+    return phone
+        .replace(/[\s\u00A0\u2000-\u200B\u202F\u205F\u3000\-\(\)\.]/g, "")
+        .trim()
 }
 
 // Utility: Detect if text looks like a phone number
@@ -324,8 +327,8 @@ export function PhoneNumberInput({
         const text = e.clipboardData.getData("text")
         if (!text) return
 
-        // Check if multiple numbers might be pasted
-        const hasDelimiters = /[\n\r,;|\t]/.test(text)
+        // Check if multiple numbers might be pasted or if text contains spaces
+        const hasDelimiters = /[\n\r,;|\t\s]/.test(text)
 
         if (hasDelimiters) {
             e.preventDefault()
@@ -339,7 +342,8 @@ export function PhoneNumberInput({
             if (phones.length > 0) {
                 const existingNumbers = new Set(entries.map(e => e.phoneNumber))
                 const newEntries = phones
-                    .filter(p => !existingNumbers.has(p))
+                    .map(p => cleanPhoneNumber(p)) // Clean each phone number
+                    .filter(p => p && !existingNumbers.has(p))
                     .map(p => createPhoneEntry(p))
 
                 if (newEntries.length > 0) {
@@ -356,7 +360,8 @@ export function PhoneNumberInput({
     const handleImportPhones = useCallback((phones: string[]) => {
         const existingNumbers = new Set(entries.map(e => e.phoneNumber))
         const newEntries = phones
-            .filter(p => !existingNumbers.has(p))
+            .map(p => cleanPhoneNumber(p)) // Clean each phone number
+            .filter(p => p && !existingNumbers.has(p))
             .map(p => createPhoneEntry(p))
 
         if (newEntries.length > 0) {

@@ -8,6 +8,7 @@ import { ActionsDropdown } from "@/shared/common/data-table/actions-dropdown"
 import type { SenderId, SenderIdStatus } from "@/modules/sender-id/types"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import { Role } from "@/core/config/enum"
 
 const statusColors: Record<SenderIdStatus, "default" | "secondary" | "destructive"> = {
   EN_ATTENTE: "default",
@@ -25,9 +26,10 @@ interface ColumnsProps {
   onEdit: (senderId: SenderId) => void
   onDelete: (senderId: SenderId) => void
   onChangeStatus: (senderId: SenderId) => void
+  userRole?: Role
 }
 
-export const createColumns = ({ onEdit, onDelete, onChangeStatus }: ColumnsProps): ColumnDef<SenderId>[] => [
+export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: ColumnsProps): ColumnDef<SenderId>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Nom" label="Nom" />,
@@ -81,28 +83,27 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus }: ColumnsProps
     cell: ({ row }) => {
       const senderId = row.original
 
-      return (
-        <ActionsDropdown
-          items={[
-            {
-              icon: Edit2,
-              label: "Modifier",
-              onClick: () => onEdit(senderId),
-            },
-            {
-              icon: RefreshCcw,
-              label: "Changer le statut",
-              onClick: () => onChangeStatus(senderId),
-            },
-            {
-              icon: Trash2,
-              label: "Supprimer",
-              className: "text-destructive",
-              onClick: () => onDelete(senderId),
-            },
-          ]}
-        />
-      )
+      const actions = [
+        {
+          icon: Edit2,
+          label: "Modifier",
+          onClick: () => onEdit(senderId),
+        },
+        // Only SUPER_ADMIN can change status
+        ...(userRole === Role.SUPER_ADMIN ? [{
+          icon: RefreshCcw,
+          label: "Changer le statut",
+          onClick: () => onChangeStatus(senderId),
+        }] : []),
+        {
+          icon: Trash2,
+          label: "Supprimer",
+          className: "text-destructive",
+          onClick: () => onDelete(senderId),
+        },
+      ]
+
+      return <ActionsDropdown items={actions} />
     },
     meta: {
       className: "w-20",
