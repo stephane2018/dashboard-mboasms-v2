@@ -133,12 +133,22 @@ export class HttpClient {
   }
 
   private withAuthorization() {
-    this.interceptors.request.use((config) => {
+    this.interceptors.request.use(async (config) => {
       const requestConfig = { ...config } as InternalAxiosRequestConfig & CustomAxiosRequestConfig;
 
       // Skip token if useToken is explicitly set to false
       if (requestConfig.useToken === false) {
         return requestConfig;
+      }
+
+      // Check if token should be refreshed proactively before making the request
+      if (tokenManager.shouldRefreshToken() && !this.isRefreshing) {
+        try {
+          await this.handleTokenRefresh();
+        } catch {
+          // If proactive refresh fails, continue with current token
+          // The response interceptor will handle 401/403 errors
+        }
       }
 
       const token = tokenManager.getToken();
@@ -173,7 +183,7 @@ export class HttpClient {
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (UNAUTHORIZED_STATUS_NUMBERS.includes(error.response?.status as number) && !originalRequest._retry) {
           if (this.isRefreshing) {
             // Queue the request if refresh is in progress
             return new Promise(resolve => {
