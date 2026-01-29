@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/shared/ui/button"
+import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -208,9 +209,14 @@ export const getColumns = ({
         const Icon = config.icon
 
         return (
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${config.borderStyle} ${config.borderColor} ${config.bgColor}`}>
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
+            config.borderStyle,
+            config.borderColor,
+            config.bgColor
+          )}>
             <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
-            <span className={`text-xs font-medium ${config.textColor}`}>
+            <span className={cn("text-xs font-medium", config.textColor)}>
               {config.label}
             </span>
           </div>
@@ -235,9 +241,14 @@ export const getColumns = ({
         const Icon = config.icon
 
         return (
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${config.borderStyle} ${config.borderColor} ${config.bgColor}`}>
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
+            config.borderStyle,
+            config.borderColor,
+            config.bgColor
+          )}>
             <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
-            <span className={`text-xs font-medium ${config.textColor}`}>
+            <span className={cn("text-xs font-medium", config.textColor)}>
               {config.label}
             </span>
           </div>
