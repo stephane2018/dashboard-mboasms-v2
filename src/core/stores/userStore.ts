@@ -110,7 +110,7 @@ export const useUserStore = create<UserStore>()(
         if (state) {
           console.log('User store hydrated, user:', state.user)
           console.log('User store hydrated, user role:', state.user?.role)
-          state.isHydrated = true;
+          state.setHydrated(true);
         }
       },
     }

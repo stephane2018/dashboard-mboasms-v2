@@ -20,6 +20,7 @@ interface CountrySelectProps {
 
 export function CountrySelect({ value, onChange }: CountrySelectProps) {
   const { data: countries, isLoading, isError } = useCountries();
+  console.log(countries);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCountries = useMemo(() => {
@@ -62,7 +63,7 @@ export function CountrySelect({ value, onChange }: CountrySelectProps) {
         <div className="max-h-[240px] overflow-y-auto">
           {filteredCountries.length > 0 ? (
             filteredCountries.map(country => (
-              <SelectItem key={country.id} value={country.code}>
+              <SelectItem key={country.id} value={country.id}>
                 {country.nom}
               </SelectItem>
             ))

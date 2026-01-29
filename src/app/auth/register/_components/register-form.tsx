@@ -75,7 +75,7 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-xl p-8 text-white">
+    <div className="w-full max-w-xl  text-white">
       <h2 className="text-3xl font-bold mb-2 text-white">Créez votre compte</h2>
       <p className="text-gray-400 mb-8">Remplissez les informations ci-dessous pour commencer</p>
       <StepIndicator currentStep={step} totalSteps={steps.length} stepNames={steps.map(s => s.name)} />

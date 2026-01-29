@@ -64,60 +64,74 @@ export function useContactsByGroup() {
 }
 
 export function useCreateContact() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createContact = useCallback(async (data: Partial<EnterpriseContactResponseType>) => {
-    setIsLoading(true);
+  const mutate = useCallback((
+    data: Partial<EnterpriseContactResponseType>,
+    options?: { onSuccess?: () => void; onError?: (error: any) => void }
+  ) => {
+    setIsPending(true);
     setError(null);
 
-    try {
-      const result = await contactService.createContact(data);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la création du contact';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    contactService.createContact(data)
+      .then((result) => {
+        options?.onSuccess?.();
+        return result;
+      })
+      .catch((err: any) => {
+        const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la création du contact';
+        setError(errorMessage);
+        options?.onError?.(err);
+      })
+      .finally(() => {
+        setIsPending(false);
+      });
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
   return {
-    createContact,
-    isLoading,
+    mutate,
+    isPending,
+    isLoading: isPending,
     error,
     clearError,
   };
 }
 
 export function useUpdateContact() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateContact = useCallback(async (id: string, data: Partial<EnterpriseContactResponseType>) => {
-    setIsLoading(true);
+  const mutate = useCallback((
+    params: { id: string; data: Partial<EnterpriseContactResponseType> },
+    options?: { onSuccess?: () => void; onError?: (error: any) => void }
+  ) => {
+    setIsPending(true);
     setError(null);
 
-    try {
-      const result = await contactService.updateContact(id, data);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la mise à jour du contact';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    contactService.updateContact(params.id, params.data)
+      .then((result) => {
+        options?.onSuccess?.();
+        return result;
+      })
+      .catch((err: any) => {
+        const errorMessage = err?.response?.data?.message || err?.message || 'Erreur lors de la mise à jour du contact';
+        setError(errorMessage);
+        options?.onError?.(err);
+      })
+      .finally(() => {
+        setIsPending(false);
+      });
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
   return {
-    updateContact,
-    isLoading,
+    mutate,
+    isPending,
+    isLoading: isPending,
     error,
     clearError,
   };

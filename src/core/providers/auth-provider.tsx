@@ -1,9 +1,10 @@
 "use client"
 
-import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext } from "react";
+import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState } from "react";
 import { httpClient } from "../lib/http-client";
 import { tokenManager } from "../lib/token-manager./token-manager";
 import { useUserStore } from "../stores";
+import { getProfile } from "../services/auth.service";
 import type { Role } from "../config/enum";
 
 interface User {
@@ -34,6 +35,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const { user, isAuthenticated, setUser, clearUser: clearUserStore } = useUserStore();
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const clearUser = useCallback(() => {
     // Clear tokens
@@ -65,17 +67,75 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
   }, [clearUser]);
 
+  // Fetch profile if token exists but user is not in store
+  // Use a separate state to track if we've attempted to fetch
+  const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
+
+  useEffect(() => {
+    // Run only on client-side after mount
+    const fetchUserProfile = async () => {
+      const token = tokenManager.getToken();
+
+      console.log("[AuthProvider] fetchUserProfile check:", {
+        hasToken: !!token,
+        hasUser: !!user,
+        hasFetchedProfile,
+        tokenExpired: token ? tokenManager.isTokenExpired() : null,
+      });
+
+      // Skip if we already have a user or already attempted fetch
+      if (user || hasFetchedProfile) {
+        console.log("[AuthProvider] Skipping fetch - already have user or already fetched");
+        return;
+      }
+
+      // No token = no fetch needed
+      if (!token) {
+        console.log("[AuthProvider] No token found");
+        setHasFetchedProfile(true);
+        return;
+      }
+
+      // Check if token is expired
+      if (tokenManager.isTokenExpired()) {
+        console.log("[AuthProvider] Token expired, clearing user");
+        clearUser();
+        setHasFetchedProfile(true);
+        return;
+      }
+
+      console.log("[AuthProvider] Fetching profile...");
+      setIsLoadingProfile(true);
+      try {
+        const profileData = await getProfile() as User | null;
+        console.log("[AuthProvider] Profile data received:", profileData);
+        if (profileData && profileData.id && profileData.email) {
+          setUser(profileData);
+          console.log("[AuthProvider] User set successfully");
+        }
+      } catch (error) {
+        console.error("[AuthProvider] Failed to fetch user profile:", error);
+        clearUser();
+      } finally {
+        setIsLoadingProfile(false);
+        setHasFetchedProfile(true);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user, hasFetchedProfile, setUser, clearUser]);
+
   const providerValue = useMemo(
     () => ({
       user,
       isConnected: isAuthenticated,
-      isLoadingProfile: false,
+      isLoadingProfile,
       updateUser,
       clearUser,
       getRole: () => user?.role || null,
       getUserInfo: () => user,
     }),
-    [user, isAuthenticated, updateUser, clearUser]
+    [user, isAuthenticated, isLoadingProfile, updateUser, clearUser]
   );
 
   return <AuthContext.Provider value={providerValue}>{children}</AuthContext.Provider>;

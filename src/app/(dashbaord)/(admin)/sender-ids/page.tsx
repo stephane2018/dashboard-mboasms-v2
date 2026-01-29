@@ -47,14 +47,8 @@ export default function SenderIdsPage() {
                           (error as any)?.message ||
                           "Erreur lors du chargement des Sender IDs"
 
-      // Check if it's a 403 error
-      if ((error as any)?.response?.status === 403) {
-        toast.warning("Fonctionnalité en développement", {
-          description: "Les endpoints Sender ID ne sont pas encore disponibles sur le backend. La page est prête à être utilisée une fois les endpoints implémentés."
-        })
-      } else {
         toast.error(errorMessage)
-      }
+      
     }
   }, [error])
 
