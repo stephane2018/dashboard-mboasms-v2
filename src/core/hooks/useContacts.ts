@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { contactService } from '@/core/services/contact.service';
 import type { ContactFilters } from '@/core/services/contact.service';
-import type { EnterpriseContactResponseType } from '@/core/models/contact-new';
+import type { CreateContactRequestType, UpdateContactRequestType } from '@/core/models/contact-new';
 
 export function useContactsByEnterprise() {
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +68,7 @@ export function useCreateContact() {
   const [error, setError] = useState<string | null>(null);
 
   const mutate = useCallback((
-    data: Partial<EnterpriseContactResponseType>,
+    data: CreateContactRequestType,
     options?: { onSuccess?: () => void; onError?: (error: any) => void }
   ) => {
     setIsPending(true);
@@ -105,7 +105,7 @@ export function useUpdateContact() {
   const [error, setError] = useState<string | null>(null);
 
   const mutate = useCallback((
-    params: { id: string; data: Partial<EnterpriseContactResponseType> },
+    params: { id: string; data: Partial<UpdateContactRequestType> },
     options?: { onSuccess?: () => void; onError?: (error: any) => void }
   ) => {
     setIsPending(true);

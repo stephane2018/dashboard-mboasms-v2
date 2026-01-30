@@ -1,5 +1,5 @@
 import { httpClient } from '@/core/lib/http-client';
-import type { EnterpriseContactResponseType } from '@/core/models/contact-new';
+import type { EnterpriseContactResponseType, CreateContactRequestType, UpdateContactRequestType } from '@/core/models/contact-new';
 import { groupsService } from '@/core/services/groups.service';
 import { refractHttpError } from '@/core/utils/http-error';
 
@@ -91,9 +91,9 @@ export const contactService = {
    * Create a new contact
    * POST /api/v1/contact
    */
-  async createContact(data: Partial<EnterpriseContactResponseType>) {
+  async createContact(data: CreateContactRequestType) {
     try {
-      return await httpClient.post('/api/v1/contact', data);
+      return await httpClient.post('/api/v1/contact', data as unknown as Record<string, unknown>);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }
@@ -101,11 +101,11 @@ export const contactService = {
 
   /**
    * Update a contact
-   * PUT /api/v1/contact/{contactId}
+   * PUT /api/v1/contact/{contactId}?id={contactId}
    */
-  async updateContact(contactId: string, data: Partial<EnterpriseContactResponseType>) {
+  async updateContact(contactId: string, data: Partial<UpdateContactRequestType>) {
     try {
-      return await httpClient.put(`/api/v1/contact/${contactId}`, data);
+      return await httpClient.put(`/api/v1/contact/${contactId}?id=${contactId}`, data as unknown as Record<string, unknown>);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }

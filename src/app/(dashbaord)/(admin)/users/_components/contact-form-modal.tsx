@@ -50,6 +50,7 @@ interface ContactFormModalProps {
     onClose: () => void
     contact?: EnterpriseContactResponseType | null
     enterpriseId: string
+    onSuccess?: () => void
 }
 
 export function ContactFormModal({
@@ -57,6 +58,7 @@ export function ContactFormModal({
     onClose,
     contact,
     enterpriseId,
+    onSuccess,
 }: ContactFormModalProps) {
     const isEditMode = !!contact
     const { mutate: createContact, isPending: isCreating } = useCreateContact()
@@ -105,8 +107,13 @@ export function ContactFormModal({
                 {
                     id: contact.id,
                     data: {
-                        ...data,
                         id: contact.id,
+                        firstname: data.firstName,
+                        lastname: data.lastName,
+                        email: data.email,
+                        phoneNumber: data.phoneNumber,
+                        country: data.country,
+                        city: data.city,
                         enterpriseId,
                     },
                 },
@@ -114,19 +121,27 @@ export function ContactFormModal({
                     onSuccess: () => {
                         onClose()
                         form.reset()
+                        onSuccess?.()
                     },
                 }
             )
         } else {
             createContact(
                 {
-                    ...data,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    country: data.country,
+                    city: data.city,
+                    gender: data.gender,
                     enterpriseId,
                 },
                 {
                     onSuccess: () => {
                         onClose()
                         form.reset()
+                        onSuccess?.()
                     },
                 }
             )

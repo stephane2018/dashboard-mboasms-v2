@@ -53,12 +53,17 @@ export default function UsersListPage() {
   // Fetch contacts with pagination
   const { getContacts, isLoading } = useGetAllContactsByEnterprise()
   const [data, setData] = useState<EnterpriseContactResponseType[]>([])
-  
-  // Load contacts when component mounts
-  useEffect(() => {
+
+  // Function to refresh contacts list
+  const refreshContacts = () => {
     if (user?.companyId) {
       getContacts(user.companyId).then(setData).catch(console.error)
     }
+  }
+
+  // Load contacts when component mounts
+  useEffect(() => {
+    refreshContacts()
   }, [user?.companyId, getContacts])
   console.log(data)
   const { deleteContact, isLoading: isDeleting } = useDeleteContact()
@@ -124,6 +129,7 @@ export default function UsersListPage() {
       await deleteContact(contactToDelete.id, user.companyId)
       setIsDeleteDialogOpen(false)
       setContactToDelete(null)
+      refreshContacts()
     } catch (error) {
       console.error('Error deleting contact:', error)
     }
@@ -189,18 +195,19 @@ export default function UsersListPage() {
 
     try {
       // Delete all selected contacts
-      const deletePromises = contactsToDelete.map(contact => 
+      const deletePromises = contactsToDelete.map(contact =>
         deleteContact(contact.id, user.companyId!)
       )
 
       await Promise.all(deletePromises)
-      
+
       toast.success("Contacts supprimés", {
         description: `${contactsToDelete.length} contact(s) supprimé(s) avec succès`,
       })
       setSelectedContacts([]) // Clear selection after successful deletion
       setIsBulkDeleteDialogOpen(false)
       setContactsToDelete([])
+      refreshContacts()
     } catch (error) {
       console.error('Error deleting contacts:', error)
       toast.error("Erreur lors de la suppression", {
@@ -382,6 +389,7 @@ export default function UsersListPage() {
         onClose={() => setIsFormModalOpen(false)}
         contact={selectedContact}
         enterpriseId={user?.companyId!}
+        onSuccess={refreshContacts}
       />
 
       {/* Delete Confirmation Dialog */}
