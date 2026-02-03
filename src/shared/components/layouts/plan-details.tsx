@@ -5,27 +5,23 @@ import { Card, CardContent } from '@/shared/ui/card'
 import { useSidebar } from '@/shared/ui/sidebar'
 import { useUserStore } from '@/core/stores/userStore'
 import { UseGetConnectedCompagnieData, useRecharge } from '@/core/hooks'
-import { Alert, AlertDescription } from '@/shared/ui/alert'
-import { Warning2, InfoCircle } from 'iconsax-react'
 import { useState } from 'react'
 import { CreateRechargeModal, type RechargeFormData } from '@/shared/common/create-recharge-modal'
 import { createRecharge } from '@/core/services/recharge.service'
 import { toast } from 'sonner'
-import Link from 'next/link'
 
 export function PlanDetails() {
   const { state } = useSidebar()
   const { user } = useUserStore()
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
 
+  // Get enterprise data to fetch smsCredit - hooks must be called before any conditional returns
+  const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
+  const { rechargesQuery } = useRecharge()
+
   if (!user || state === 'collapsed') {
     return null
   }
-
-  // Get enterprise data to fetch smsCredit
-  const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
-  const { rechargesQuery } = useRecharge()
-  console.log(rechargesQuery.data)
   
   // Get enterprise recharges to find the most recent one
   const recharges = rechargesQuery?.data ?? []
@@ -33,20 +29,12 @@ export function PlanDetails() {
   // Find the most recent validated recharge
   const mostRecentRecharge = recharges?.filter(r => r.status === 'VALIDE')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-  console.log(mostRecentRecharge)
-  // Calculate max SMS from active plans
-  const maxRechargeSMS = recharges?.length > 0 
-    ? Math.max(...recharges?.map(r => r.qteMessage)) 
-    : 1000000
 
-      console.log(mostRecentRecharge)
-  
   // Use enterprise smsCredit instead of user smsBalance
   const smsBalance = enterprise?.smsCredit ?? 0
   const smsQuota = mostRecentRecharge?.qteMessage ?? 0
   const planName = user.planName ?? 'Plan Business'
   const usagePercent = smsQuota > 0 ? Math.max(0, Math.min(100, 100 - (smsBalance / smsQuota) * 100)) : 100
-  console.log(Math.min(100, (smsBalance / smsQuota) * 100))
   
   // Determine low balance warning level
   const getLowBalanceWarning = () => {
