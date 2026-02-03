@@ -14,6 +14,8 @@ import {
 import type { SendMessageRequestType, SendMessageResponseType } from "@/core/models"
 import type { MessageHistoryType } from "@/core/models/history"
 import type { PaginatedResponse } from "@/core/models/common"
+import { useUserStore } from "@/core/stores/userStore"
+import { Role } from "@/core/config/enum"
 
 export const messageKeys = {
   all: ["messages"] as const,
@@ -33,10 +35,18 @@ export function useMessageHistory(enterpriseId: string, page: number = 0, size: 
 }
 
 export function useAllMessageHistory(page: number = 0, size: number = 10, enabled: boolean = true) {
+  const user = useUserStore((state) => state.user);
+  const isAdminUser = user?.role === Role.ADMIN_USER;
+  const enterpriseId = user?.companyId;
+
   return useQuery<PaginatedResponse<MessageHistoryType>, Error>({
-    queryKey: messageKeys.allHistory(page, size),
-    queryFn: () => getAllMessageHistory(page, size),
-    enabled,
+    queryKey: isAdminUser && enterpriseId
+      ? messageKeys.history(enterpriseId, page, size)
+      : messageKeys.allHistory(page, size),
+    queryFn: () => isAdminUser && enterpriseId
+      ? getMessageHistory(enterpriseId, page, size)
+      : getAllMessageHistory(page, size),
+    enabled: enabled && !!user,
   });
 }
 

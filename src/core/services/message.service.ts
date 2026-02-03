@@ -54,10 +54,9 @@ export const sendMessageToGroup = async (payload: SendMessageToGroupPayload): Pr
 export const getMessageHistory = async (enterpriseId: string, page: number = 0, size: number = 10): Promise<PaginatedResponse<MessageHistoryType>> => {
     try {
         const response = await httpClient.get<PaginatedResponse<MessageHistoryType>>(
-            `/api/v1/message/${enterpriseId}/paginate`,
+            `/api/v1/message/enterprise/${enterpriseId}`,
             { params: { page, size } }
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

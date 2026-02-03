@@ -184,7 +184,7 @@ export default function AdminGroupesPage() {
       
       // If ADMIN_USER, load groups for their enterprise only
       if (isAdminUser && user?.companyId) {
-        data = await httpClient.get<Group[] | Record<string, unknown>>(`/api/v1/group/enterprise/${user.companyId}`)
+        data = await httpClient.get<Group[] | Record<string, unknown>>(`/api/v1/group/all/${user.companyId}`)
       } else {
         // SUPER_ADMIN loads all groups
         data = await httpClient.get<Group[] | Record<string, unknown>>("/api/v1/group/all")
