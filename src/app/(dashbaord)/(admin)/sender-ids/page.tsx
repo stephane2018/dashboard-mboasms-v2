@@ -153,7 +153,7 @@ export default function SenderIdsPage() {
         initialState={{
           pagination,
         }}
-        emptyMessage="Aucun Sender ID trouvé. Les endpoints backend (/api/v1/sender-ids) doivent être implémentés pour afficher les données."
+        emptyMessage="Aucun Sender ID trouvé."
       />
 
       <CreateSenderIdDialog

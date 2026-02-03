@@ -154,7 +154,7 @@ export function BalanceRechargeChart() {
 
           <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
             <SelectTrigger>
-              <Calendar className="w-4 h-4 mr-2" />
+              <CalendarIcon className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Période" />
             </SelectTrigger>
             <SelectContent>
