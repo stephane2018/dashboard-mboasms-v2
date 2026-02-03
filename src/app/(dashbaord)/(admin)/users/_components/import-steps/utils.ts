@@ -47,14 +47,28 @@ export function parseCSV(content: string): string[][] {
   })
 }
 
-// Parse Excel file (requires xlsx library)
+// Parse Excel file using secure exceljs library
 export async function parseExcel(file: File): Promise<string[][]> {
   try {
-    const { read, utils } = await import("xlsx")
+    const ExcelJS = await import("exceljs")
+    const workbook = new ExcelJS.default.Workbook()
     const arrayBuffer = await file.arrayBuffer()
-    const workbook = read(arrayBuffer)
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-    const data = utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+    await workbook.xlsx.load(arrayBuffer)
+
+    const worksheet = workbook.worksheets[0]
+    if (!worksheet) {
+      throw new Error("No worksheet found in file")
+    }
+
+    const data: string[][] = []
+    worksheet.eachRow((row) => {
+      const rowData: string[] = []
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        rowData[colNumber - 1] = String(cell.value || "")
+      })
+      data.push(rowData)
+    })
+
     return data
   } catch (error) {
     console.error("Error parsing Excel file:", error)

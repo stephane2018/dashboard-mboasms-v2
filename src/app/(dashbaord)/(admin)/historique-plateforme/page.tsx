@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { DataTable } from "@/shared/common/data-table"
 import { useAllMessageHistory, useMessageHistory, useSearchMessagesByPhoneNumber } from "@/core/hooks/useMessage";
 import { useEnterprises } from "@/core/hooks/useEnterprise"
+import { useUserStore } from "@/core/stores/userStore"
 import { Input } from "@/shared/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import type { MessageHistoryType } from "@/core/models/history"
@@ -12,7 +13,9 @@ import { toast } from "sonner"
 import type { PaginationState } from "@tanstack/react-table"
 
 export default function HistoriquePage() {
-  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
+  const { user } = useUserStore()
+  const isAdminUser = user?.role === "ADMIN_USER"
+  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>(isAdminUser && user?.companyId ? user.companyId : "all")
   const [searchPhoneNumber, setSearchPhoneNumber] = useState("")
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
@@ -89,7 +92,7 @@ export default function HistoriquePage() {
             onChange={(e) => setSearchPhoneNumber(e.target.value)}
             className="max-w-sm"
           />
-          <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
+          <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={isAdminUser}>
             <SelectTrigger className="w-[280px]">
               <SelectValue placeholder="Toutes les entreprises" />
             </SelectTrigger>

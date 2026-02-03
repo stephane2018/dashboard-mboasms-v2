@@ -1,11 +1,14 @@
 "use client"
 
-import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState } from "react";
+import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState, useRef } from "react";
 import { httpClient } from "../lib/http-client";
 import { tokenManager } from "../lib/token-manager./token-manager";
 import { useUserStore } from "../stores";
 import { getProfile } from "../services/auth.service";
 import type { Role } from "../config/enum";
+
+// Check token expiration every minute
+const TOKEN_CHECK_INTERVAL = 60 * 1000;
 
 interface User {
   id: string;
@@ -15,6 +18,40 @@ interface User {
   avatar?: string;
   phone?: string;
   companyId?: string;
+}
+
+// API profile response may have firstName/lastName instead of name
+interface ProfileApiResponse {
+  id: string;
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  role: Role;
+  avatar?: string;
+  phone?: string;
+  companyId?: string;
+  userEnterprise?: {
+    id: string;
+  };
+}
+
+// Map API response to User format
+function mapProfileToUser(profile: ProfileApiResponse): User {
+  // Build name from firstName + lastName if name is not provided
+  const name = profile.name ||
+    [profile.firstName, profile.lastName].filter(Boolean).join(' ') ||
+    'Utilisateur';
+
+  return {
+    id: profile.id,
+    email: profile.email,
+    name,
+    role: profile.role,
+    avatar: profile.avatar,
+    phone: profile.phone,
+    companyId: profile.companyId || profile.userEnterprise?.id,
+  };
 }
 
 interface AuthContextType {
@@ -34,8 +71,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
-  const { user, isAuthenticated, setUser, clearUser: clearUserStore } = useUserStore();
+  const { user, isAuthenticated, setUser, clearUser: clearUserStore, isHydrated } = useUserStore();
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
+  const tokenCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearUser = useCallback(() => {
     // Clear tokens
@@ -57,6 +96,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     }
   }, [setUser, clearUser]);
 
+  // Register interceptor for unauthorized responses
   useEffect(() => {
     const interceptorId = httpClient.catchUnauthorizedResponse(clearUser);
 
@@ -67,12 +107,59 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
   }, [clearUser]);
 
-  // Fetch profile if token exists but user is not in store
-  // Use a separate state to track if we've attempted to fetch
-  const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
-
+  // Continuous token expiration monitoring
+  // This runs every minute to check if the token has expired
   useEffect(() => {
-    // Run only on client-side after mount
+    const checkTokenExpiration = () => {
+      const token = tokenManager.getToken();
+
+      if (!token) {
+        // No token, nothing to monitor
+        return;
+      }
+
+      if (tokenManager.isTokenExpired()) {
+        console.log("[AuthProvider] Token expired during monitoring, clearing user");
+        clearUser();
+        return;
+      }
+
+      // Log time remaining for debugging
+      const timeUntilExpiry = tokenManager.getTimeUntilExpiry();
+      if (timeUntilExpiry !== null) {
+        const minutesRemaining = Math.floor(timeUntilExpiry / 1000 / 60);
+        console.log(`[AuthProvider] Token expires in ${minutesRemaining} minutes`);
+      }
+    };
+
+    // Only start monitoring if user is authenticated
+    if (isAuthenticated && user) {
+      // Check immediately
+      checkTokenExpiration();
+
+      // Set up interval for continuous checking
+      tokenCheckIntervalRef.current = setInterval(checkTokenExpiration, TOKEN_CHECK_INTERVAL);
+
+      console.log("[AuthProvider] Token expiration monitoring started");
+    }
+
+    return () => {
+      if (tokenCheckIntervalRef.current) {
+        clearInterval(tokenCheckIntervalRef.current);
+        tokenCheckIntervalRef.current = null;
+        console.log("[AuthProvider] Token expiration monitoring stopped");
+      }
+    };
+  }, [isAuthenticated, user, clearUser]);
+
+  // Fetch profile if token exists but user is not in store
+  useEffect(() => {
+    // Wait for store to be hydrated before making decisions
+    if (!isHydrated) {
+      console.log("[AuthProvider] Waiting for store hydration...");
+      return;
+    }
+
     const fetchUserProfile = async () => {
       const token = tokenManager.getToken();
 
@@ -80,6 +167,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         hasToken: !!token,
         hasUser: !!user,
         hasFetchedProfile,
+        isHydrated,
         tokenExpired: token ? tokenManager.isTokenExpired() : null,
       });
 
@@ -107,11 +195,17 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       console.log("[AuthProvider] Fetching profile...");
       setIsLoadingProfile(true);
       try {
-        const profileData = await getProfile() as User | null;
+        const profileData = await getProfile() as ProfileApiResponse | null;
         console.log("[AuthProvider] Profile data received:", profileData);
         if (profileData && profileData.id && profileData.email) {
-          setUser(profileData);
+          const mappedUser = mapProfileToUser(profileData);
+          console.log("[AuthProvider] Mapped user data:", mappedUser);
+          setUser(mappedUser);
           console.log("[AuthProvider] User set successfully");
+        } else {
+          // Profile fetch returned invalid data, clear user
+          console.log("[AuthProvider] Invalid profile data, clearing user");
+          clearUser();
         }
       } catch (error) {
         console.error("[AuthProvider] Failed to fetch user profile:", error);
@@ -123,7 +217,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
 
     fetchUserProfile();
-  }, [user, hasFetchedProfile, setUser, clearUser]);
+  }, [isHydrated, user, hasFetchedProfile, setUser, clearUser]);
 
   const providerValue = useMemo(
     () => ({

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Role } from '@/core/config/enum';
+import { tokenManager } from '@/core/lib/token-manager./token-manager';
 
 interface User {
   id: string;
@@ -110,6 +111,15 @@ export const useUserStore = create<UserStore>()(
         if (state) {
           console.log('User store hydrated, user:', state.user)
           console.log('User store hydrated, user role:', state.user?.role)
+
+          // Validate token on rehydration - if token is expired, clear user data
+          // This prevents stale user data from being loaded when the token is no longer valid
+          const token = tokenManager.getToken();
+          if (state.user && (!token || tokenManager.isTokenExpired())) {
+            console.log('User store: Token expired or missing on rehydration, clearing user')
+            state.clearUser();
+          }
+
           state.setHydrated(true);
         }
       },

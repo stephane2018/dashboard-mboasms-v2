@@ -26,12 +26,12 @@ export function ImportContacts() {
 
   const handleImport = () => {
     if (file && selectedEnterpriseId) {
-      importContacts({ file, enterpriseId: selectedEnterpriseId }, {
-      onSuccess: () => {
-        setIsOpen(false);
-        setFile(null);
-      }
-    });
+      importContacts(file, {
+        onSuccess: () => {
+          setIsOpen(false);
+          setFile(null);
+        }
+      });
     }
   };
 

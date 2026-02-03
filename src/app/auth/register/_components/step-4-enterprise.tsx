@@ -3,7 +3,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shar
 import { Input } from '@/shared/ui/input';
 import { Building, Category, Receipt, Sms, Call } from 'iconsax-react';
 
-export function Step2Enterprise() {
+export function Step4Enterprise() {
   const { control } = useFormContext();
 
   return (

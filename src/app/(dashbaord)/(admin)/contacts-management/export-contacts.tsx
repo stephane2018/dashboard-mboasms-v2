@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { getPaginatedAllContacts } from '@/core/services/contact.service';
 import { Button } from '@/shared/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/shared/ui/dialog';
@@ -24,10 +25,10 @@ export function ExportContacts() {
       let allContacts: EnterpriseContactResponseType[] = [];
       for (let i = 0; i < numPages; i++) {
         const data = await getPaginatedAllContacts(i, pageSize);
-        allContacts = [...allContacts, ...(data as any).content];
+        allContacts = [...allContacts, ...(data as { content: EnterpriseContactResponseType[] }).content];
       }
 
-      const worksheet = XLSX.utils.json_to_sheet(allContacts.map(contact => ({
+      const contactsData = allContacts.map(contact => ({
         FirstName: contact.firstname,
         LastName: contact.lastname,
         Email: contact.email,
@@ -35,28 +36,76 @@ export function ExportContacts() {
         Enterprise: contact.enterprise?.socialRaison || 'N/A',
         Country: contact.country,
         Archived: contact.archived ? 'Yes' : 'No',
-      })));
+      }));
 
       if (fileType === 'xlsx') {
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Contacts');
-        XLSX.writeFile(workbook, 'contacts.xlsx');
+        // Use exceljs for secure Excel export
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'MboaSMS';
+        workbook.created = new Date();
+
+        const worksheet = workbook.addWorksheet('Contacts');
+
+        // Add headers
+        const headers = ['FirstName', 'LastName', 'Email', 'PhoneNumber', 'Enterprise', 'Country', 'Archived'];
+        const headerRow = worksheet.addRow(headers);
+        headerRow.font = { bold: true };
+        headerRow.eachCell((cell) => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' }
+          };
+        });
+
+        // Add data rows
+        contactsData.forEach(contact => {
+          worksheet.addRow([
+            contact.FirstName,
+            contact.LastName,
+            contact.Email,
+            contact.PhoneNumber,
+            contact.Enterprise,
+            contact.Country,
+            contact.Archived,
+          ]);
+        });
+
+        // Auto-fit columns
+        worksheet.columns.forEach(column => {
+          column.width = 15;
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        saveAs(blob, 'contacts.xlsx');
       } else {
-        const csv = XLSX.utils.sheet_to_csv(worksheet);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'contacts.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // CSV export
+        const headers = ['FirstName', 'LastName', 'Email', 'PhoneNumber', 'Enterprise', 'Country', 'Archived'];
+        const csvContent = [
+          headers.join(','),
+          ...contactsData.map(contact =>
+            [
+              contact.FirstName,
+              contact.LastName,
+              contact.Email,
+              contact.PhoneNumber,
+              contact.Enterprise,
+              contact.Country,
+              contact.Archived,
+            ].map(value => `"${String(value || '').replace(/"/g, '""')}"`).join(',')
+          )
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'contacts.csv');
       }
 
       toast.success('Contacts exported successfully!');
       setIsOpen(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to export contacts.');
     } finally {
       setIsLoading(false);

@@ -10,11 +10,34 @@ import { getCompagnieConnectedDetails } from "@/core/services/CompanyService"
 import { Role } from "@/core/config/enum"
 import { tokenManager } from "@/core/lib/token-manager./token-manager"
 
-interface LoginResponse {
-  user: {
+// API login response - may have firstName/lastName or nested user object
+interface LoginApiResponse {
+  token: string
+  refreshToken: string
+  id?: string
+  email?: string
+  firstName?: string
+  lastName?: string
+  name?: string
+  role?: Role
+  avatar?: string
+  phone?: string
+  companyId?: string
+  userEnterprise?: {
+    id: string
+  }
+  smsSenderId?: string
+  isSenderIdVerified?: boolean
+  smsBalance?: number
+  smsQuota?: number
+  planName?: string
+  // Alternative: nested user object
+  user?: {
     id: string
     email: string
-    name: string
+    name?: string
+    firstName?: string
+    lastName?: string
     role: Role
     avatar?: string
     phone?: string
@@ -25,7 +48,32 @@ interface LoginResponse {
     smsQuota?: number
     planName?: string
   }
-  token?: string
+}
+
+// Map login response to User format
+function mapLoginResponseToUser(response: LoginApiResponse) {
+  // Check if user data is nested or at root level
+  const userData = response.user || response
+
+  // Build name from firstName + lastName if name is not provided
+  const name = userData.name ||
+    [userData.firstName, userData.lastName].filter(Boolean).join(' ') ||
+    'Utilisateur'
+
+  return {
+    id: userData.id || '',
+    email: userData.email || '',
+    name,
+    role: userData.role as Role,
+    avatar: userData.avatar,
+    phone: userData.phone,
+    companyId: userData.companyId || response.userEnterprise?.id,
+    smsSenderId: userData.smsSenderId,
+    isSenderIdVerified: userData.isSenderIdVerified,
+    smsBalance: userData.smsBalance,
+    smsQuota: userData.smsQuota,
+    planName: userData.planName,
+  }
 }
 
 export function useLogin() {
@@ -33,20 +81,24 @@ export function useLogin() {
   const { setUser } = useUserStore()
   const { setEnterprise } = useEnterpriseStore()
 
-  return useMutation<LoginResponse, Error, LoginCredentials>({
-    mutationFn: (credentials: LoginCredentials) => login(credentials) as Promise<LoginResponse>,
+  return useMutation<LoginApiResponse, Error, LoginCredentials>({
+    mutationFn: (credentials: LoginCredentials) => login(credentials) as Promise<LoginApiResponse>,
     onSuccess: async (response, variables) => {
-      console.log(response)
+      console.log("[useLogin] API response:", response)
+
+      // Map API response to user format
+      const mappedUser = mapLoginResponseToUser(response)
+      console.log("[useLogin] Mapped user:", mappedUser)
 
       // Save user data to store
-      if (response.user) {
-        setUser(response.user)
+      if (mappedUser.id && mappedUser.email) {
+        setUser(mappedUser)
       }
 
       // Fetch and save enterprise data if user has a company
-      if (response.user?.companyId) {
+      if (mappedUser.companyId) {
         try {
-          const enterpriseData = await getCompagnieConnectedDetails(response.user.companyId)
+          const enterpriseData = await getCompagnieConnectedDetails(mappedUser.companyId)
           setEnterprise(enterpriseData)
         } catch (error) {
           console.error("Failed to fetch enterprise data:", error)
@@ -59,7 +111,7 @@ export function useLogin() {
       }
 
       toast.success("Connexion réussie", {
-        description: "Bienvenue sur Caisse Post",
+        description: "Bienvenue sur MboaSMS",
       })
 
       // Redirect based on user role

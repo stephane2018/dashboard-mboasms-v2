@@ -28,7 +28,7 @@ import { ContactsDataTable } from "./components/contacts-data-table"
 import { SMSModal } from "@/app/(dashbaord)/(admin)/users/_components/sms-modal"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
-import * as XLSX from 'xlsx'
+import { exportToExcelSecure } from "@/shared/utils/excel-secure.utils"
 
 export default function GroupContactsViewPage() {
   const router = useRouter()
@@ -172,7 +172,7 @@ export default function GroupContactsViewPage() {
     }
   }
 
-  const handleExportContacts = () => {
+  const handleExportContacts = async () => {
     if (filteredContacts.length === 0) {
       toast.error("Aucun contact à exporter")
       return
@@ -190,22 +190,19 @@ export default function GroupContactsViewPage() {
         Ville: contact.city || '',
         Genre: contact.gender || '',
         Archivé: contact.archived ? 'Oui' : 'Non',
-        Statut: (contact as any)?.enabled ? 'Actif' : 'Inactif',
+        Statut: (contact as { enabled?: boolean })?.enabled ? 'Actif' : 'Inactif',
       }))
-
-      // Create worksheet
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-
-      // Create workbook
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Contacts')
 
       // Generate filename with group name and date
       const date = new Date().toISOString().split('T')[0]
-      const filename = `contacts_${groupInfo?.name || groupId}_${date}.xlsx`
+      const filename = `contacts_${groupInfo?.name || groupId}_${date}`
 
-      // Download file
-      XLSX.writeFile(workbook, filename)
+      // Use secure Excel export
+      await exportToExcelSecure({
+        fileName: filename,
+        sheetName: 'Contacts',
+        data: exportData,
+      })
 
       toast.success(`${filteredContacts.length} contact(s) exporté(s)`)
     } catch (error) {

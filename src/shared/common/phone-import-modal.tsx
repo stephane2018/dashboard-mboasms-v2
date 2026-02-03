@@ -22,7 +22,7 @@ import {
 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import * as XLSX from "xlsx"
+import { readExcelAsArrays } from "@/shared/utils/excel-secure.utils"
 import { type PhoneEntry } from "./phone-number-input"
 
 // Utility functions (copied from phone-number-input.tsx)
@@ -141,22 +141,18 @@ export function PhoneImportModal({
             let extractedPhones: string[] = []
 
             if (type === "excel") {
-                // Read Excel file
-                const data = await file.arrayBuffer()
-                const workbook = XLSX.read(data, { type: 'array' })
-                const firstSheetName = workbook.SheetNames[0]
-                const worksheet = workbook.Sheets[firstSheetName]
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
+                // Read Excel file using secure exceljs wrapper
+                const jsonData = await readExcelAsArrays(file)
 
                 const phones: string[] = []
 
                 if (jsonData.length > 0) {
-                    const headerRow = jsonData[0]
+                    const headerRow = jsonData[0] as unknown[]
                     let phoneColumnIndex = -1
 
                     // Find phone column by header
                     for (let i = 0; i < headerRow.length; i++) {
-                        const header = String(headerRow[i]).toLowerCase()
+                        const header = String(headerRow[i] || '').toLowerCase()
                         if (isPhoneColumnName(header)) {
                             phoneColumnIndex = i
                             break
@@ -165,7 +161,7 @@ export function PhoneImportModal({
 
                     if (phoneColumnIndex >= 0) {
                         for (let i = 1; i < jsonData.length; i++) {
-                            const row = jsonData[i]
+                            const row = jsonData[i] as unknown[]
                             if (row[phoneColumnIndex]) {
                                 const cleaned = cleanPhoneNumber(String(row[phoneColumnIndex]))
                                 if (looksLikePhoneNumber(cleaned)) {
@@ -175,12 +171,13 @@ export function PhoneImportModal({
                         }
                     } else {
                         // Score each column
-                        const numColumns = Math.max(...jsonData.map(row => row.length))
+                        const numColumns = Math.max(...jsonData.map(row => (row as unknown[]).length))
                         const columnScores: number[] = Array(numColumns).fill(0)
 
                         for (let col = 0; col < numColumns; col++) {
                             for (const row of jsonData) {
-                                if (row[col] && looksLikePhoneNumber(String(row[col]))) {
+                                const rowArr = row as unknown[]
+                                if (rowArr[col] && looksLikePhoneNumber(String(rowArr[col]))) {
                                     columnScores[col]++
                                 }
                             }
@@ -190,8 +187,9 @@ export function PhoneImportModal({
 
                         if (columnScores[bestColumn] > 0) {
                             for (const row of jsonData) {
-                                if (row[bestColumn]) {
-                                    const cleaned = cleanPhoneNumber(String(row[bestColumn]))
+                                const rowArr = row as unknown[]
+                                if (rowArr[bestColumn]) {
+                                    const cleaned = cleanPhoneNumber(String(rowArr[bestColumn]))
                                     if (looksLikePhoneNumber(cleaned)) {
                                         phones.push(cleaned)
                                     }

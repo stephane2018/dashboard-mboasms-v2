@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/shared/ui/badge"
 import { toast } from "sonner"
 import { httpClient } from "@/core/lib/http-client"
+import { useUserStore } from "@/core/stores/userStore"
 import type { Group } from "@/modules/groups/types"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import type { EnterpriseType } from "@/core/models/enterprise"
@@ -66,10 +67,12 @@ function GroupCardsSkeleton() {
 
 export default function AdminGroupesPage() {
   const router = useRouter()
+  const { user } = useUserStore()
+  const isAdminUser = user?.role === "ADMIN_USER"
   const [groups, setGroups] = useState<(Group & { enterpriseFull?: EnterpriseType })[]>([])
   const [enterprises, setEnterprises] = useState<EnterpriseType[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
+  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>(isAdminUser && user?.companyId ? user.companyId : "all")
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(10)
@@ -177,7 +180,16 @@ export default function AdminGroupesPage() {
   const loadGroups = async () => {
     setIsLoading(true)
     try {
-      const data = await httpClient.get<Group[] | Record<string, unknown>>("/api/v1/group/all")
+      let data: Group[] | Record<string, unknown>
+      
+      // If ADMIN_USER, load groups for their enterprise only
+      if (isAdminUser && user?.companyId) {
+        data = await httpClient.get<Group[] | Record<string, unknown>>(`/api/v1/group/enterprise/${user.companyId}`)
+      } else {
+        // SUPER_ADMIN loads all groups
+        data = await httpClient.get<Group[] | Record<string, unknown>>("/api/v1/group/all")
+      }
+      
       const parsedGroups = normalizeGroupsResponse(data)
       const groupsWithFullEnterprise = parsedGroups.map((g) => ({
         ...g,
@@ -213,9 +225,15 @@ export default function AdminGroupesPage() {
       toast.error("Le nom est requis")
       return
     }
-    if (!newGroupEnterpriseId) {
-      toast.error("L'entreprise est requise")
-      return
+    
+    let enterpriseId = newGroupEnterpriseId
+    if (!enterpriseId) {
+      if (isAdminUser && user?.companyId) {
+        enterpriseId = user.companyId
+      } else {
+        toast.error("L'entreprise est requise")
+        return
+      }
     }
 
     setIsCreating(true)
@@ -223,10 +241,10 @@ export default function AdminGroupesPage() {
       const created = await httpClient.post<Group>("/api/v1/group/save", {
         name: newGroupName.trim(),
         code: (newGroupCode || newGroupName).toLowerCase().replace(/\s+/g, "_"),
-        enterpriseId: newGroupEnterpriseId,
+        enterpriseId: enterpriseId,
       })
 
-      const enterpriseFull = enterprises.find((e) => e.id === newGroupEnterpriseId)
+      const enterpriseFull = enterprises.find((e) => e.id === enterpriseId)
       setGroups((prev) => [
         ...prev,
         { ...created, enterpriseFull },
@@ -388,7 +406,7 @@ export default function AdminGroupesPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <p className="text-sm font-medium mb-2">Filtrer par entreprise</p>
-            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
+            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={isAdminUser}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Toutes les entreprises" />
               </SelectTrigger>
@@ -586,21 +604,23 @@ export default function AdminGroupesPage() {
           </AlertDialogHeader>
 
           <div className="space-y-3">
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Entreprise *</div>
-              <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une entreprise" />
-                </SelectTrigger>
-                <SelectContent>
-                  {enterprises.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.socialRaison}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!isAdminUser && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Entreprise *</div>
+                <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une entreprise" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {enterprises.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.socialRaison}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <div className="text-sm font-medium">Nom *</div>
               <Input

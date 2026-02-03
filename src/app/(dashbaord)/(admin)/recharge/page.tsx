@@ -21,6 +21,7 @@ import { useActivePlans } from "@/core/hooks"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
+  const isAdminUser = user?.role === "ADMIN_USER"
   const {
     rechargesQuery,
     createRechargeMutation,
@@ -29,7 +30,7 @@ export default function RechargePage() {
     creditAccountMutation,
   } = useRecharge({
     queryOptions: {
-      enabled: isSuperAdmin(),
+      enabled: isSuperAdmin() || isAdminUser,
     },
   })
 
@@ -46,7 +47,18 @@ export default function RechargePage() {
     endDate: undefined,
   })
 
-  const allRecharges = rechargesQuery.data ?? []
+  const allRecharges = useMemo(() => {
+    if (!rechargesQuery.data) return []
+    
+    // If ADMIN_USER, filter by their entrepriseId
+    if (isAdminUser && user?.companyId) {
+      return rechargesQuery.data.filter(recharge => recharge.enterprise?.id === user.companyId)
+    }
+    
+    // SUPER_ADMIN sees all
+    return rechargesQuery.data
+  }, [rechargesQuery.data, isAdminUser, user?.companyId])
+  
   const isLoadingRecharges = rechargesQuery.isLoading
   const totalElements = allRecharges.length
 
@@ -222,12 +234,12 @@ export default function RechargePage() {
     [isSuperAdmin]
   )
 
-  // Redirect if not super admin
-  if (!isSuperAdmin()) {
+  // Redirect if not super admin or admin user
+  if (!isSuperAdmin() && !isAdminUser) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
         <h1 className="text-2xl font-bold text-muted-foreground">Accès refusé</h1>
-        <p className="text-muted-foreground">Cette page est réservée aux super administrateurs.</p>
+        <p className="text-muted-foreground">Cette page est réservée aux administrateurs.</p>
       </div>
     )
   }

@@ -146,14 +146,14 @@ export function BalanceRechargeChart() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 items-center">
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 items-center">
+          <div className="flex items-center gap-2 col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
             <Filter className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Filtres:</span>
           </div>
-          
+
           <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger>
               <Calendar className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Période" />
             </SelectTrigger>
@@ -167,7 +167,7 @@ export function BalanceRechargeChart() {
           </Select>
 
           <Select value={status || 'all'} onValueChange={(value) => setStatus(value === 'all' ? undefined : value as RechargeStatus)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger>
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -180,86 +180,78 @@ export function BalanceRechargeChart() {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Début:</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[140px] justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP", { locale: fr }) : "Choisir une date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={(date) => {
-                    setStartDate(date);
-                    // Auto-adjust end date if it's before start date
-                    if (date && endDate && date > endDate) {
-                      setEndDate(date);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Fin:</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[140px] justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP", { locale: fr }) : "Choisir une date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={(date) => {
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !startDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "dd/MM/yy", { locale: fr }) : "Début"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={(date) => {
+                  setStartDate(date);
+                  if (date && endDate && date > endDate) {
                     setEndDate(date);
-                    // Auto-adjust start date if it's after end date
-                    if (date && startDate && date < startDate) {
-                      setStartDate(date);
-                    }
-                  }}
-                  disabled={(date) => startDate ? date < startDate : false}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+                  }
+                }}
+                autoFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "dd/MM/yy", { locale: fr }) : "Fin"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={(date) => {
+                  setEndDate(date);
+                  if (date && startDate && date < startDate) {
+                    setStartDate(date);
+                  }
+                }}
+                disabled={(date) => startDate ? date < startDate : false}
+                autoFocus
+              />
+            </PopoverContent>
+          </Popover>
 
           {(startDate || endDate) && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleClearDates}
               className="text-muted-foreground hover:text-foreground"
             >
-              Effacer dates
+              Effacer
             </Button>
           )}
 
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
             disabled={isLoading}
           >
             {isLoading ? 'Chargement...' : 'Actualiser'}

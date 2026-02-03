@@ -4,7 +4,7 @@ import { CountrySelect } from '@/modules/countries/components/country-select';
 import { Input } from '@/shared/ui/input';
 import { MessageText, Hashtag, Home, Building, Global } from 'iconsax-react';
 
-export function Step3SmsConfig() {
+export function Step5SmsConfig() {
   const { control } = useFormContext();
 
   return (

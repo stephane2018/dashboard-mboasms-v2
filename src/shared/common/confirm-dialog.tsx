@@ -1,6 +1,9 @@
+"use client";
+
 import { cn } from "@/core/lib/utils";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
+import DOMPurify from "dompurify";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -18,6 +21,18 @@ interface ConfirmDialogProps {
   };
 }
 
+// Sanitize HTML to prevent XSS attacks
+function sanitizeHtml(html: string): string {
+  if (typeof window === 'undefined') {
+    // Server-side: strip all HTML tags for safety
+    return html.replace(/<[^>]*>/g, '');
+  }
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'span'],
+    ALLOWED_ATTR: ['class'],
+  });
+}
+
 export function ConfirmDialog({ isOpen, isLoading, onDismiss, onAction, messages, className }: ConfirmDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={isLoading ? undefined : onDismiss}>
@@ -25,13 +40,13 @@ export function ConfirmDialog({ isOpen, isLoading, onDismiss, onAction, messages
         <AlertDialogHeader>
           <AlertDialogTitle
             dangerouslySetInnerHTML={{
-              __html: messages.title,
+              __html: sanitizeHtml(messages.title),
             }}
           />
           {messages.description && (
             <AlertDialogDescription
               dangerouslySetInnerHTML={{
-                __html: messages.description,
+                __html: sanitizeHtml(messages.description),
               }}
             />
           )}

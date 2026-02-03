@@ -13,10 +13,11 @@ import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/co
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
-import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useUpdateSenderId, useUpdateSenderIdStatus } from "@/core/hooks"
+import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useGetSenderIdsByEnterprise, useUpdateSenderId, useUpdateSenderIdStatus } from "@/core/hooks"
 
 export default function SenderIdsPage() {
   const { user } = useAuthContext()
+  const isAdminUser = user?.role === "ADMIN_USER"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
   const [selectedSenderId, setSelectedSenderId] = useState<SenderId | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -24,14 +25,27 @@ export default function SenderIdsPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  // React Query hooks - using enterprise-specific endpoint
-  const { data, isLoading, error } = useGetAllSenderIds(
+  // React Query hooks - using different endpoints based on role
+  const { data: allData, isLoading: isLoadingAll, error: errorAll } = useGetAllSenderIds(
     {
       page: pagination.pageIndex,
       size: pagination.pageSize,
-      
-    },
+    }
   )
+  
+  const { data: enterpriseData, isLoading: isLoadingEnterprise, error: errorEnterprise } = useGetSenderIdsByEnterprise(
+    user?.companyId || "",
+    {
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+    },
+    isAdminUser // enabled for ADMIN_USER
+  )
+  
+  // Use appropriate data based on role
+  const data = isAdminUser ? enterpriseData : allData
+  const isLoading = isAdminUser ? isLoadingEnterprise : isLoadingAll
+  const error = isAdminUser ? errorEnterprise : errorAll
   console.log("[SenderIdsPage] Data:", data)
 
   const createSenderIdMutation = useCreateSenderId()

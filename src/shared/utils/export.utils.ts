@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -11,7 +11,7 @@ import { fr } from 'date-fns/locale'
 export interface ExcelExportOptions {
   fileName?: string
   sheetName?: string
-  data: Record<string, any>[]
+  data: Record<string, unknown>[]
   columns?: string[]
   title?: string
 }
@@ -50,7 +50,7 @@ export interface PDFExportOptions {
  * })
  * ```
  */
-export const exportToExcel = (options: ExcelExportOptions): void => {
+export const exportToExcel = async (options: ExcelExportOptions): Promise<void> => {
   try {
     const {
       fileName = `export_${format(new Date(), 'yyyy-MM-dd_HHmmss')}`,
@@ -68,7 +68,7 @@ export const exportToExcel = (options: ExcelExportOptions): void => {
     let exportData = data
     if (columns && columns.length > 0) {
       exportData = data.map(row => {
-        const filteredRow: Record<string, any> = {}
+        const filteredRow: Record<string, unknown> = {}
         columns.forEach(col => {
           if (col in row) {
             filteredRow[col] = row[col]
@@ -78,49 +78,57 @@ export const exportToExcel = (options: ExcelExportOptions): void => {
       })
     }
 
-    // Créer le workbook
-    const wb = XLSX.utils.book_new()
+    // Créer le workbook avec exceljs (version sécurisée)
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'MboaSMS'
+    workbook.created = new Date()
 
-    // Créer la feuille de calcul avec les en-têtes
-    let ws: XLSX.WorkSheet
+    const worksheet = workbook.addWorksheet(sheetName)
 
+    // Get headers from first data row
+    const headers = Object.keys(exportData[0] || {})
+
+    let startRow = 1
+
+    // Add title if provided
     if (title) {
-      // Créer une feuille vide
-      ws = XLSX.utils.aoa_to_sheet([])
-
-      // Ajouter le titre
-      XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' })
-
-      // Ajouter les données avec les en-têtes à partir de la ligne 3
-      XLSX.utils.sheet_add_json(ws, exportData, {
-        origin: 'A3',
-        skipHeader: false // Assure que les en-têtes sont inclus
-      })
-
-      // Merger les cellules du titre
-      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
-      ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } }]
-
-      // Style pour le titre (en gras si possible)
-      if (ws['A1']) {
-        ws['A1'].s = {
-          font: { bold: true, sz: 14 },
-          alignment: { horizontal: 'center', vertical: 'center' }
-        }
-      }
-    } else {
-      // Sans titre, créer directement la feuille avec les données
-      ws = XLSX.utils.json_to_sheet(exportData, {
-        skipHeader: false // Assure que les en-têtes sont inclus
-      })
+      worksheet.mergeCells(1, 1, 1, headers.length)
+      const titleCell = worksheet.getCell(1, 1)
+      titleCell.value = title
+      titleCell.font = { bold: true, size: 14 }
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
+      startRow = 3
     }
 
-    // Ajouter la feuille au workbook
-    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+    // Add headers
+    const headerRow = worksheet.getRow(startRow)
+    headers.forEach((header, index) => {
+      const cell = headerRow.getCell(index + 1)
+      cell.value = header
+      cell.font = { bold: true }
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0E0E0' }
+      }
+    })
+
+    // Add data rows
+    exportData.forEach((row, rowIndex) => {
+      const dataRow = worksheet.getRow(startRow + 1 + rowIndex)
+      headers.forEach((header, colIndex) => {
+        dataRow.getCell(colIndex + 1).value = row[header] as ExcelJS.CellValue
+      })
+    })
+
+    // Auto-fit columns
+    worksheet.columns.forEach(column => {
+      column.width = 15
+    })
 
     // Générer le fichier Excel
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    const blob = new Blob([excelBuffer], {
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
 
