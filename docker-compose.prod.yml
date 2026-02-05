@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mboa-v2:latest
+    container_name: mboa-v2-app
+    restart: unless-stopped
+    
+    # Remove direct port exposure - use reverse proxy instead
+    # ports:
+    #   - "${PORT:-3000}:3000"
+    
+    environment:
+      # API Configuration
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+      
+      # App Configuration
+      - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      
+      # Environment
+      - NODE_ENV=${NODE_ENV:-production}
+      
+    # Health check for Dokploy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only filesystem enabled
+    read_only: true
+    
+    # Volumes for writable directories
+    volumes:
+      - app_cache:/app/.next/cache
+      - app_logs:/app/logs
+    
+    # Resource limits for security
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    
+    # Temporary filesystems
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+      - /var/run:noexec,nosuid,size=100m
+
+  # Reverse proxy (Traefik) - uncomment for production
+  # traefik:
+  #   image: traefik:v2.10
+  #   container_name: traefik
+  #   restart: unless-stopped
+  #   command:
+  #     - "--api.dashboard=true"
+  #     - "--providers.docker=true"
+  #     - "--entrypoints.web.address=:80"
+  #     - "--entrypoints.websecure.address=:443"
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   labels:
+  #     - "traefik.enable=true"
+
+volumes:
+  app_cache:
+    driver: local
+  app_logs:
+    driver: local

@@ -47,6 +47,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  
+  // Enable standalone output for Docker
+  output: 'standalone',
 
   // Security headers for all routes
   async headers() {
