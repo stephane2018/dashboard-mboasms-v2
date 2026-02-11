@@ -80,7 +80,7 @@ const Header = () => {
 
   const handleLoginClick = () => {
     // Redirect to dashboard login page
-    window.location.href = `${API_URL_DASHBOARD}/auth/login`;
+    window.location.href = "/auth/login";
   };
 
   const handleLogout = () => {
@@ -105,7 +105,7 @@ const Header = () => {
   };
 
   const handleGoToAdmin = () => {
-    window.open(`${API_URL_DASHBOARD}/dashboard`, '_blank');
+    window.open("/dashboard", '_blank');
   };
 
   return (
