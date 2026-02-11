@@ -23,7 +23,7 @@ import {
 } from "@/shared/ui/select"
 import { SearchNormal1, People, TickCircle, Warning2, ArrowDown2, Edit2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
-import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import type { EnterpriseContactResponseType, PaginatedEnterpriseContactsResponseType } from "@/core/models/contact-new"
 import { getContactsByEnterprisePage } from "@/core/services/contact.service"
 import { getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import { useSettingsStore } from "@/core/stores"
@@ -104,14 +104,12 @@ export function ContactSelectionModal({
 
         try {
             const response = await getContactsByEnterprisePage(
-                enterpriseId,
                 reset ? 0 : pageToLoad,
                 contactsPageSize
-            )
+            ) as PaginatedEnterpriseContactsResponseType
 
-            // Handle paginated response
             if (response && 'content' in response && Array.isArray(response.content)) {
-                const newContacts = response.content as EnterpriseContactResponseType[]
+                const newContacts = response.content
 
                 if (reset) {
                     setContacts(newContacts)
@@ -125,7 +123,7 @@ export function ContactSelectionModal({
                 setTotalElements(response.totalElements || 0)
                 setHasMore(!response.last)
             } else if (Array.isArray(response)) {
-                setContacts(response)
+                setContacts(response as EnterpriseContactResponseType[])
                 setHasMore(false)
             } else {
                 console.error("Unexpected response format:", response)

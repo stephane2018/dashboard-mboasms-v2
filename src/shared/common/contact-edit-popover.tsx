@@ -16,8 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/shared/ui/select"
-import { ScrollArea } from "@/shared/ui/scroll-area"
-import { Edit2, TickCircle, CloseCircle, Warning2 } from "iconsax-react"
+import { TickCircle, CloseCircle, Warning2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useUpdateContact } from "@/core/hooks"
@@ -53,7 +52,8 @@ export function ContactEditPopover({
     children,
 }: ContactEditPopoverProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const { updateContact, isUpdating, error } = useUpdateContact()
+    const [isUpdating, setIsUpdating] = useState(false)
+    const { mutate: updateContact } = useUpdateContact()
 
     const [formData, setFormData] = useState<FormData>({
         firstName: contact.firstname || "",
@@ -89,49 +89,51 @@ export function ContactEditPopover({
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
-    const handleSave = async () => {
+    const handleSave = () => {
         if (!isPhoneValid) {
             toast.error("Veuillez entrer un numéro de téléphone valide")
             return
         }
 
         setIsUpdating(true)
-        try {
-            const updatedData = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phoneNumber: formData.phoneNumber,
-                country: formData.country,
-                city: formData.city,
-                gender: formData.gender,
-                enterpriseId,
-                groupId: formData.groupId || undefined,
-            }
-
-            await updateContact(contact.id, updatedData)
-
-            // Update local contact
-            const updatedContact: EnterpriseContactResponseType = {
-                ...contact,
-                firstname: formData.firstName,
-                lastname: formData.lastName,
-                email: formData.email,
-                phoneNumber: formData.phoneNumber,
-                country: formData.country,
-                city: formData.city,
-                gender: formData.gender as any,
-            }
-
-            onUpdate(updatedContact)
-            toast.success("Contact mis à jour avec succès")
-            setIsOpen(false)
-        } catch (error) {
-            console.error("Error updating contact:", error)
-            toast.error("Erreur lors de la mise à jour du contact")
-        } finally {
-            setIsUpdating(false)
+        const updatedData = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            country: formData.country,
+            city: formData.city,
+            gender: formData.gender,
+            enterpriseId,
+            groupId: formData.groupId || undefined,
         }
+
+        updateContact(
+            { id: contact.id, data: updatedData },
+            {
+                onSuccess: () => {
+                    const updatedContact: EnterpriseContactResponseType = {
+                        ...contact,
+                        firstname: formData.firstName,
+                        lastname: formData.lastName,
+                        email: formData.email,
+                        phoneNumber: formData.phoneNumber,
+                        country: formData.country,
+                        city: formData.city,
+                        gender: formData.gender as any,
+                    }
+                    onUpdate(updatedContact)
+                    toast.success("Contact mis à jour avec succès")
+                    setIsOpen(false)
+                    setIsUpdating(false)
+                },
+                onError: (error) => {
+                    console.error("Error updating contact:", error)
+                    toast.error("Erreur lors de la mise à jour du contact")
+                    setIsUpdating(false)
+                },
+            }
+        )
     }
 
     return (
