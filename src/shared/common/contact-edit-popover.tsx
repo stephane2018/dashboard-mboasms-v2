@@ -141,11 +141,12 @@ export function ContactEditPopover({
                 {children}
             </PopoverTrigger>
             <PopoverContent
-                className="w-80 p-4"
+                className="w-80 p-0 max-h-[60vh] flex flex-col overflow-hidden"
                 align="end"
+                collisionPadding={16}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="space-y-4">
+                <div className="space-y-4 overflow-y-auto p-4 flex-1 min-h-0">
                     <div className="flex items-center justify-between">
                         <h4 className="font-medium text-sm">Modifier le contact</h4>
                         <Button
@@ -258,8 +259,9 @@ export function ContactEditPopover({
                         />
                     </div>
 
+                </div>
                     {/* Action buttons */}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 p-4 pt-2 border-t bg-background sticky bottom-0">
                         <Button
                             className="flex-1 h-8"
                             onClick={handleSave}
@@ -282,7 +284,6 @@ export function ContactEditPopover({
                             Annuler
                         </Button>
                     </div>
-                </div>
             </PopoverContent>
         </Popover>
     )

@@ -145,6 +145,32 @@ export const contactService = {
   },
 
   /**
+   * Get all contacts (SUPER_ADMIN only)
+   * GET /api/v1/contact/all
+   */
+  async getAllContactsSuperAdmin(filters?: ContactFilters): Promise<EnterpriseContactResponseType[]> {
+    try {
+      const params = new URLSearchParams();
+
+      if (filters?.page !== undefined) {
+        params.append('page', filters.page.toString());
+      }
+      if (filters?.size !== undefined) {
+        params.append('size', filters.size.toString());
+      }
+
+      const url = params.toString()
+        ? `/api/v1/contact/all?${params.toString()}`
+        : `/api/v1/contact/all`;
+
+      const response = await httpClient.get(url);
+      return response as EnterpriseContactResponseType[];
+    } catch (error) {
+      return Promise.reject(refractHttpError(error));
+    }
+  },
+
+  /**
    * Import contacts from file
    * POST /api/v1/contact/import
    */

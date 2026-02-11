@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useAuthContext } from "@/core/providers"
 import { senderIdService } from "@/core/services/sender-id.service"
 import type { PaginatedSenderIds, SenderIdQueryParams } from "@/modules/sender-id/types"
+import { Role } from "@/core/config/enum"
 
 type UseSenderIdsOptions = {
   enterpriseId?: string
@@ -13,9 +14,10 @@ type UseSenderIdsOptions = {
 
 export function useSenderIds(options: UseSenderIdsOptions = {}) {
   const { user } = useAuthContext()
+  const _isSuperAdmin = user?.role === Role.SUPER_ADMIN
   const enterpriseId = options.enterpriseId || user?.companyId || ""
   const autoLoad = options.autoLoad ?? true
-  const loadAll = options.loadAll ?? false
+  const loadAll = options.loadAll ?? _isSuperAdmin
 
   const [data, setData] = useState<PaginatedSenderIds | null>(null)
   const [isLoading, setIsLoading] = useState(false)

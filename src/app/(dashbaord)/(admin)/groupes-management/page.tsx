@@ -25,15 +25,11 @@ import {
 } from "@/shared/ui/select"
 import { Badge } from "@/shared/ui/badge"
 import { toast } from "sonner"
-import { httpClient } from "@/core/lib/http-client"
-import { useUserStore } from "@/core/stores/userStore"
-import type { Group } from "@/modules/groups/types"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
-import type { EnterpriseType } from "@/core/models/enterprise"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
-import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
 import { GroupTableView } from "./group-table-view"
-import { groupsService } from "@/core/services/groups.service"
+import { useGroups } from "@/core/hooks/useGroups"
+import type { GroupWithEnterprise } from "@/core/hooks/useGroups"
 import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react"
 import { People, Building, AddSquare, Trash } from "iconsax-react"
 import { cn } from "@/lib/utils"
@@ -67,12 +63,22 @@ function GroupCardsSkeleton() {
 
 export default function AdminGroupesPage() {
   const router = useRouter()
-  const { user } = useUserStore()
-  const isAdminUser = user?.role === "ADMIN_USER"
-  const [groups, setGroups] = useState<(Group & { enterpriseFull?: EnterpriseType })[]>([])
-  const [enterprises, setEnterprises] = useState<EnterpriseType[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>(isAdminUser && user?.companyId ? user.companyId : "all")
+
+  const {
+    groups,
+    enterprises,
+    isLoading,
+    isMutating,
+    _isSuperAdmin,
+    loadGroups,
+    createGroup,
+    deleteGroup,
+    addContactsToGroup,
+    removeContactFromGroup,
+    setGroups,
+  } = useGroups({ withEnterprises: true })
+
+  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(10)
@@ -83,15 +89,22 @@ export default function AdminGroupesPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false)
   const [isRemoveContactOpen, setIsRemoveContactOpen] = useState(false)
 
-  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
-  const [selectedGroupForContacts, setSelectedGroupForContacts] = useState<Group | null>(null)
+  const [groupToDelete, setGroupToDelete] = useState<GroupWithEnterprise | null>(null)
+  const [selectedGroupForContacts, setSelectedGroupForContacts] = useState<GroupWithEnterprise | null>(null)
   const [contactToRemove, setContactToRemove] = useState<{ groupId: string; contact: EnterpriseContactResponseType } | null>(null)
-  const [isCreating, setIsCreating] = useState(false)
   const [newGroupName, setNewGroupName] = useState("")
   const [newGroupCode, setNewGroupCode] = useState("")
   const [newGroupEnterpriseId, setNewGroupEnterpriseId] = useState("")
   const [contactCountFilter, setContactCountFilter] = useState<string>("")
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set())
+
+  // Set initial enterprise filter based on role (only once after user is known)
+  useEffect(() => {
+    if (!_isSuperAdmin) {
+      // Non-SUPER_ADMIN: lock to "all" since they only see their enterprise's groups anyway
+      setSelectedEnterpriseId("all")
+    }
+  }, [_isSuperAdmin])
 
   const filteredGroups = useMemo(() => {
     let filtered = groups
@@ -140,81 +153,11 @@ export default function AdminGroupesPage() {
     setSelectedContactIds(new Set())
   }, [selectedGroupId])
 
-  
+
   const handlePrevPage = () => setPage((prev) => Math.max(0, prev - 1))
   const handleNextPage = () => setPage((prev) => Math.min(totalPages - 1, prev + 1))
 
-  const loadEnterprises = async () => {
-    try {
-      const data = await httpClient.get<EnterpriseType[]>("/api/v1/enterprise/all")
-      setEnterprises(Array.isArray(data) ? data : [])
-    } catch (error) {
-      toast.error("Erreur lors du chargement des entreprises")
-    }
-  }
-
-  const normalizeGroupsResponse = (payload: unknown): Group[] => {
-    if (!payload) return []
-    if (Array.isArray(payload)) return payload as Group[]
-
-    if (typeof payload === "object") {
-      const objectPayload = payload as Record<string, unknown>
-
-      if (Array.isArray(objectPayload.groupes)) {
-        return objectPayload.groupes as Group[]
-      }
-
-      if (Array.isArray(objectPayload.data)) {
-        return normalizeGroupsResponse(objectPayload.data)
-      }
-
-      if (Array.isArray(objectPayload.content)) {
-        return objectPayload.content as Group[]
-      }
-    }
-
-    return []
-  }
-
-  const loadGroups = async () => {
-    setIsLoading(true)
-    try {
-      let data: Group[] | Record<string, unknown>
-      
-      // If ADMIN_USER, load groups for their enterprise only
-      if (isAdminUser && user?.companyId) {
-        data = await httpClient.get<Group[] | Record<string, unknown>>(`/api/v1/group/all/${user.companyId}`)
-      } else {
-        // SUPER_ADMIN loads all groups
-        data = await httpClient.get<Group[] | Record<string, unknown>>("/api/v1/group/all")
-      }
-      
-      const parsedGroups = normalizeGroupsResponse(data)
-      const groupsWithFullEnterprise = parsedGroups.map((g) => ({
-        ...g,
-        enterpriseFull: enterprises.find((e) => e.id === g.enterprise),
-      }))
-      setGroups(groupsWithFullEnterprise)
-    } catch (error) {
-      toast.error("Erreur lors du chargement des groupes")
-      setGroups([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadEnterprises()
-  }, [])
-
-  useEffect(() => {
-    if (enterprises.length > 0) {
-      loadGroups()
-    }
-  }, [enterprises])
-
   const handleGroupClick = (groupId: string) => {
-    // Navigate to group contacts page (using contacts-view to avoid route conflicts)
     router.push(`/groupes-management/${groupId}/contacts-view`)
   }
 
@@ -223,56 +166,35 @@ export default function AdminGroupesPage() {
       toast.error("Le nom est requis")
       return
     }
-    
-    let enterpriseId = newGroupEnterpriseId
-    if (!enterpriseId) {
-      if (isAdminUser && user?.companyId) {
-        enterpriseId = user.companyId
-      } else {
-        toast.error("L'entreprise est requise")
-        return
-      }
-    }
 
-    setIsCreating(true)
+    const enterpriseId = newGroupEnterpriseId || undefined
+
     try {
-      const created = await httpClient.post<Group>("/api/v1/group/save", {
+      await createGroup({
         name: newGroupName.trim(),
         code: (newGroupCode || newGroupName).toLowerCase().replace(/\s+/g, "_"),
-        enterpriseId: enterpriseId,
+        enterpriseId,
       })
-
-      const enterpriseFull = enterprises.find((e) => e.id === enterpriseId)
-      setGroups((prev) => [
-        ...prev,
-        { ...created, enterpriseFull },
-      ])
       toast.success("Groupe créé")
       setIsCreateOpen(false)
       setNewGroupName("")
       setNewGroupCode("")
       setNewGroupEnterpriseId("")
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la création du groupe")
-    } finally {
-      setIsCreating(false)
     }
   }
 
   const handleDeleteGroup = async () => {
     if (!groupToDelete?.id) return
 
-    setIsCreating(true)
     try {
-      await httpClient.delete(`/api/v1/group/${groupToDelete.id}`)
-      setGroups((prev) => prev.filter((g) => g.id !== groupToDelete.id))
+      await deleteGroup(groupToDelete.id)
       toast.success("Groupe supprimé")
       setIsDeleteOpen(false)
       setGroupToDelete(null)
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la suppression du groupe")
-    } finally {
-      setIsCreating(false)
     }
   }
 
@@ -285,52 +207,28 @@ export default function AdminGroupesPage() {
 
     const ids = selected.map((c) => c.id)
     const groupId = selectedGroupForContacts.id
-    const previousGroups = groups
-
     const toastId = toast.loading("Mise à jour du groupe…")
-    setIsCreating(true)
-    setGroups((prev) =>
-      prev.map((group) => {
-        if (group.id !== groupId) return group
-        const existingContacts = group.enterpriseContacts || []
-        const mergedContacts = [
-          ...existingContacts,
-          ...selected.filter((contact) => !existingContacts.some((existing) => existing.id === contact.id)),
-        ]
-        return {
-          ...group,
-          enterpriseContacts: mergedContacts,
-        }
-      })
-    )
 
     try {
-      await groupsService.addContactsToGroup(groupId, ids)
+      await addContactsToGroup(groupId, ids, selected)
       toast.success(`${ids.length} contact(s) ajouté(s)`, { id: toastId })
       setIsContactModalOpen(false)
       setSelectedGroupForContacts(null)
-    } catch (e) {
-      setGroups(previousGroups)
+    } catch {
       toast.error("Erreur lors de l'ajout des contacts", { id: toastId })
-    } finally {
-      setIsCreating(false)
     }
   }
 
   const handleRemoveContact = async () => {
     if (!contactToRemove) return
 
-    setIsCreating(true)
     try {
-      await groupsService.removeContactFromGroup(contactToRemove.groupId, contactToRemove.contact.id)
+      await removeContactFromGroup(contactToRemove.groupId, contactToRemove.contact.id)
       toast.success("Contact supprimé du groupe")
-      await loadGroups()
       setIsRemoveContactOpen(false)
       setContactToRemove(null)
-    } catch (e) {
+    } catch {
       toast.error("Erreur lors de la suppression du contact")
-    } finally {
-      setIsCreating(false)
     }
   }
 
@@ -338,7 +236,7 @@ export default function AdminGroupesPage() {
     try {
       await loadGroups()
       toast.success("Contact mis à jour")
-    } catch (e) {
+    } catch {
     }
   }
 
@@ -369,7 +267,7 @@ export default function AdminGroupesPage() {
     window.location.assign(`/sms?${query.toString()}`)
   }
 
-  const handleOpenAddContacts = (group: Group) => {
+  const handleOpenAddContacts = (group: GroupWithEnterprise) => {
     setSelectedGroupForContacts(group)
     setIsContactModalOpen(true)
   }
@@ -378,9 +276,13 @@ export default function AdminGroupesPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Groupes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {_isSuperAdmin ? "Groupes (Plateforme)" : "Mes groupes"}
+          </h1>
           <p className="text-muted-foreground mt-1">
-            Gérez les groupes de contacts de toutes les entreprises
+            {_isSuperAdmin
+              ? "Gérez les groupes de contacts de toutes les entreprises"
+              : "Gérez vos groupes de contacts"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -399,7 +301,7 @@ export default function AdminGroupesPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <p className="text-sm font-medium mb-2">Filtrer par entreprise</p>
-            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={isAdminUser}>
+            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={!_isSuperAdmin}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Toutes les entreprises" />
               </SelectTrigger>
@@ -519,7 +421,7 @@ export default function AdminGroupesPage() {
                             e.stopPropagation()
                             handleOpenAddContacts(g)
                           }}
-                          disabled={isCreating}
+                          disabled={isMutating}
                           className="flex-1 h-8 text-xs"
                         >
                           <AddSquare size="16" color="currentColor" variant="Bulk" className="mr-1" />
@@ -533,7 +435,7 @@ export default function AdminGroupesPage() {
                             setGroupToDelete(g)
                             setIsDeleteOpen(true)
                           }}
-                          disabled={isCreating}
+                          disabled={isMutating}
                           className="h-8 px-4 text-xs"
                         >
                           <Trash size="16" color="currentColor" variant="Bulk" className="mr-1" />
@@ -597,7 +499,7 @@ export default function AdminGroupesPage() {
           </AlertDialogHeader>
 
           <div className="space-y-3">
-            {!isAdminUser && (
+            {_isSuperAdmin && (
               <div className="space-y-2">
                 <div className="text-sm font-medium">Entreprise *</div>
                 <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
@@ -633,8 +535,8 @@ export default function AdminGroupesPage() {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCreating}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCreateGroup} disabled={isCreating}>
+            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateGroup} disabled={isMutating}>
               Créer
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -650,8 +552,8 @@ export default function AdminGroupesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCreating}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteGroup} disabled={isCreating}>
+            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteGroup} disabled={isMutating}>
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -678,8 +580,8 @@ export default function AdminGroupesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCreating}>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveContact} disabled={isCreating}>
+            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveContact} disabled={isMutating}>
               Retirer
             </AlertDialogAction>
           </AlertDialogFooter>

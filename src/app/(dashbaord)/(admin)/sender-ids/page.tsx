@@ -17,7 +17,7 @@ import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useGetSenderI
 
 export default function SenderIdsPage() {
   const { user } = useAuthContext()
-  const isAdminUser = user?.role === "ADMIN_USER"
+  const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
   const [selectedSenderId, setSelectedSenderId] = useState<SenderId | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -39,13 +39,13 @@ export default function SenderIdsPage() {
       page: pagination.pageIndex,
       size: pagination.pageSize,
     },
-    isAdminUser // enabled for ADMIN_USER
+    !_isSuperAdmin // enabled for non-SUPER_ADMIN
   )
-  
+
   // Use appropriate data based on role
-  const data = isAdminUser ? enterpriseData : allData
-  const isLoading = isAdminUser ? isLoadingEnterprise : isLoadingAll
-  const error = isAdminUser ? errorEnterprise : errorAll
+  const data = _isSuperAdmin ? allData : enterpriseData
+  const isLoading = _isSuperAdmin ? isLoadingAll : isLoadingEnterprise
+  const error = _isSuperAdmin ? errorAll : errorEnterprise
 
   const createSenderIdMutation = useCreateSenderId()
   const updateSenderIdMutation = useUpdateSenderId()
@@ -129,10 +129,14 @@ export default function SenderIdsPage() {
         <div>
           <div className="flex items-center gap-2">
             <MessageText size="32" variant="Bulk" color="currentColor" className="text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Sender IDs</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {_isSuperAdmin ? "Sender IDs (Plateforme)" : "Mes Sender IDs"}
+            </h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Gérez tous les Sender IDs de votre entreprise.
+            {_isSuperAdmin
+              ? "Gérez tous les Sender IDs de la plateforme."
+              : "Gérez les Sender IDs de votre entreprise."}
           </p>
         </div>
         <Button className="gap-2" onClick={handleCreate}>

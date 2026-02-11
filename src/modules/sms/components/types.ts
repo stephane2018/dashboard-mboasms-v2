@@ -1,13 +1,12 @@
 import { PhoneEntry } from "@/shared/common/phone-number-input"
 import type { EnterpriseContactResponseType as ContactNewType } from "@/core/models/contact-new"
-import type { EnterpriseContactResponseType as ContactType } from "@/core/models/contact"
 import type { SenderId } from "@/modules/sender-id/types"
 
 export interface RecipientsSectionProps {
     phoneEntries: PhoneEntry[]
     onPhoneEntriesChange: (entries: PhoneEntry[]) => void
     onContactsSelected: (contacts: ContactNewType[]) => void
-    onGroupsSelected: (contacts: ContactType[]) => void
+    onGroupsSelected: (contacts: ContactNewType[]) => void
     validRecipientsCount: number
     invalidRecipientsCount: number
     enterpriseId: string

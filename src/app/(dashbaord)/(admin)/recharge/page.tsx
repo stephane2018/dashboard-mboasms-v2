@@ -21,18 +21,14 @@ import { useActivePlans } from "@/core/hooks"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
-  const isAdminUser = user?.role === "ADMIN_USER"
+  const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const {
     rechargesQuery,
     createRechargeMutation,
     validateRechargeMutation,
     refuseRechargeMutation,
     creditAccountMutation,
-  } = useRecharge({
-    queryOptions: {
-      enabled: isSuperAdmin() || isAdminUser,
-    },
-  })
+  } = useRecharge()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -47,17 +43,7 @@ export default function RechargePage() {
     endDate: undefined,
   })
 
-  const allRecharges = useMemo(() => {
-    if (!rechargesQuery.data) return []
-    
-    // If ADMIN_USER, filter by their entrepriseId
-    if (isAdminUser && user?.companyId) {
-      return rechargesQuery.data.filter(recharge => recharge.enterprise?.id === user.companyId)
-    }
-    
-    // SUPER_ADMIN sees all
-    return rechargesQuery.data
-  }, [rechargesQuery.data, isAdminUser, user?.companyId])
+  const allRecharges = rechargesQuery.data || []
   
   const isLoadingRecharges = rechargesQuery.isLoading
   const totalElements = allRecharges.length
@@ -235,7 +221,7 @@ export default function RechargePage() {
   )
 
   // Redirect if not super admin or admin user
-  if (!isSuperAdmin() && !isAdminUser) {
+  if (!_isSuperAdmin && user?.role !== "ADMIN_USER") {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
         <h1 className="text-2xl font-bold text-muted-foreground">Accès refusé</h1>
@@ -251,9 +237,13 @@ export default function RechargePage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestion des recharges</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {_isSuperAdmin ? "Gestion des recharges" : "Mes recharges"}
+          </h1>
           <p className="text-muted-foreground">
-            Gérer les demandes de recharge et créditer les comptes
+            {_isSuperAdmin
+              ? "Gérer les demandes de recharge et créditer les comptes"
+              : "Suivez vos demandes de recharge"}
           </p>
         </div>
         <div className="flex items-center gap-3">

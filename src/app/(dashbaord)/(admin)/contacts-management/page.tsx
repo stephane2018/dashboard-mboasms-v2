@@ -14,7 +14,7 @@ import type { PaginationState } from "@tanstack/react-table"
 
 export default function ContactsPage() {
   const { user } = useUserStore()
-  const isAdminUser = user?.role === "ADMIN_USER"
+  const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
   // Use different hooks based on user role
@@ -26,9 +26,9 @@ export default function ContactsPage() {
   )
 
   // Determine which data to use based on role
-  const contactsData = isAdminUser ? enterpriseContactsData : allContactsData
-  const isLoading = isAdminUser ? isLoadingEnterprise : isLoadingAll
-  const isError = isAdminUser ? isErrorEnterprise : isErrorAll
+  const contactsData = _isSuperAdmin ? allContactsData : enterpriseContactsData
+  const isLoading = _isSuperAdmin ? isLoadingAll : isLoadingEnterprise
+  const isError = _isSuperAdmin ? isErrorAll : isErrorEnterprise
 
   const data = contactsData?.content || []
   const rowCount = contactsData?.totalElements || 0
@@ -47,10 +47,14 @@ export default function ContactsPage() {
         <div>
           <div className="flex items-center gap-2">
             <People size="32" variant="Bulk" color="currentColor" className="text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {_isSuperAdmin ? "Contacts (Plateforme)" : "Mes contacts"}
+            </h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Gérez tous les contacts de la plateforme.
+            {_isSuperAdmin
+              ? "Gérez tous les contacts de la plateforme."
+              : "Gérez les contacts de votre entreprise."}
           </p>
         </div>
                 <div className="flex items-center gap-2">

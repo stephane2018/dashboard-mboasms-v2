@@ -14,29 +14,35 @@ import type { PaginationState } from "@tanstack/react-table"
 
 export default function HistoriquePage() {
   const { user } = useUserStore()
-  const isAdminUser = user?.role === "ADMIN_USER"
-  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>(isAdminUser && user?.companyId ? user.companyId : "all")
+  const _isSuperAdmin = user?.role === "SUPER_ADMIN"
+  const enterpriseId = user?.companyId || ""
+  const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
   const [searchPhoneNumber, setSearchPhoneNumber] = useState("")
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
-    const { data: enterprises } = useEnterprises()
+  const { data: enterprises } = useEnterprises()
 
-    const isSearching = !!searchPhoneNumber;
-  const isFilteringByEnterprise = selectedEnterpriseId !== 'all';
+  const isSearching = !!searchPhoneNumber;
+  // SUPER_ADMIN can filter by enterprise; non-SA always uses their own enterprise
+  const isFilteringByEnterprise = _isSuperAdmin ? selectedEnterpriseId !== 'all' : true;
+  const activeEnterpriseId = _isSuperAdmin ? selectedEnterpriseId : enterpriseId;
 
+  // GET /api/v1/message (SUPER_ADMIN only, all messages paginated)
   const { data: allHistoryData, isLoading: isLoadingAll, isError: isErrorAll } = useAllMessageHistory(
     pagination.pageIndex,
     pagination.pageSize,
-    !isSearching && !isFilteringByEnterprise
+    _isSuperAdmin && !isSearching && !isFilteringByEnterprise
   );
 
+  // GET /api/v1/message/enterprise/{enterpriseId} (enterprise messages paginated)
   const { data: enterpriseHistoryData, isLoading: isLoadingEnterprise, isError: isErrorEnterprise } = useMessageHistory(
-    selectedEnterpriseId,
+    activeEnterpriseId,
     pagination.pageIndex,
     pagination.pageSize,
-    isFilteringByEnterprise && !isSearching
+    isFilteringByEnterprise && !isSearching && !!activeEnterpriseId
   );
 
+  // GET /api/v1/message/phone/{phoneNumber} (search by phone paginated)
   const { data: searchData, isLoading: isLoadingSearch, isError: isErrorSearch } = useSearchMessagesByPhoneNumber(
     searchPhoneNumber,
     pagination.pageIndex,
@@ -79,9 +85,13 @@ export default function HistoriquePage() {
             <div className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Historique des messages</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {_isSuperAdmin ? "Historique des messages" : "Mon historique"}
+            </h1>
             <p className="text-muted-foreground mt-1">
-              Consultez l'historique de tous les messages envoyés depuis la plateforme.
+              {_isSuperAdmin
+                ? "Consultez l'historique de tous les messages envoyés depuis la plateforme."
+                : "Consultez l'historique des messages envoyés par votre entreprise."}
             </p>
           </div>
         </div>
@@ -92,19 +102,21 @@ export default function HistoriquePage() {
             onChange={(e) => setSearchPhoneNumber(e.target.value)}
             className="max-w-sm"
           />
-          <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={isAdminUser}>
-            <SelectTrigger className="w-[280px]">
-              <SelectValue placeholder="Toutes les entreprises" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les entreprises</SelectItem>
-              {enterprises?.map((enterprise) => (
-                <SelectItem key={enterprise.id} value={enterprise.id}>
-                  {enterprise.socialRaison}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {_isSuperAdmin && (
+            <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Toutes les entreprises" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les entreprises</SelectItem>
+                {enterprises?.map((enterprise) => (
+                  <SelectItem key={enterprise.id} value={enterprise.id}>
+                    {enterprise.socialRaison}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
       <DataTable

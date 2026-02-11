@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
 import { useContactsByEnterprise, useDeleteContact } from "@/core/hooks/useContacts"
+import { contactService } from "@/core/services/contact.service"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { DataTable } from "@/shared/common/data-table/table"
 import { ConfirmDialog } from "@/shared/common/confirm-dialog"
@@ -33,6 +34,7 @@ export default function UsersListPage() {
     pageSize: 10,
   })
   const { user } = useAuthContext()
+  const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const { setPrefilledContacts } = useSMSStore()
 
   const [selectedContact, setSelectedContact] = useState<EnterpriseContactResponseType | null>(null)
@@ -55,7 +57,9 @@ export default function UsersListPage() {
 
   // Function to refresh contacts list
   const refreshContacts = () => {
-    if (user?.companyId) {
+    if (_isSuperAdmin) {
+      contactService.getAllContactsSuperAdmin().then(setData).catch(() => {})
+    } else if (user?.companyId) {
       getContacts(user.companyId).then(setData).catch(() => {})
     }
   }
@@ -242,9 +246,13 @@ export default function UsersListPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {_isSuperAdmin ? "Contacts (Plateforme)" : "Mes contacts"}
+          </h1>
           <p className="text-muted-foreground">
-            Manage and organize all your contacts
+            {_isSuperAdmin
+              ? "Gérez tous les contacts de la plateforme"
+              : "Gérez et organisez vos contacts"}
           </p>
         </div>
         <div className="flex items-center gap-3">

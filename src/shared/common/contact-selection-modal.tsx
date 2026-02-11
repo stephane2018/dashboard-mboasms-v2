@@ -24,7 +24,7 @@ import {
 import { SearchNormal1, People, TickCircle, Warning2, ArrowDown2, Edit2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { EnterpriseContactResponseType, PaginatedEnterpriseContactsResponseType } from "@/core/models/contact-new"
-import { getContactsByEnterprisePage } from "@/core/services/contact.service"
+import { contactService } from "@/core/services/contact.service"
 import { getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import { useSettingsStore } from "@/core/stores"
 import { useAuthContext } from "@/core/providers"
@@ -103,10 +103,10 @@ export function ContactSelectionModal({
         }
 
         try {
-            const response = await getContactsByEnterprisePage(
-                reset ? 0 : pageToLoad,
-                contactsPageSize
-            ) as PaginatedEnterpriseContactsResponseType
+            const response = await contactService.getContactsByEnterprise(
+                enterpriseId,
+                { page: reset ? 0 : pageToLoad, size: contactsPageSize }
+            ) as unknown as PaginatedEnterpriseContactsResponseType
 
             if (response && 'content' in response && Array.isArray(response.content)) {
                 const newContacts = response.content

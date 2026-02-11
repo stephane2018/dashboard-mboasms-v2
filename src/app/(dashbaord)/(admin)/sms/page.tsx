@@ -230,8 +230,8 @@ export default function SMSPage() {
         }
     }
 
-    // Convert contacts from groups (contact type) to phone entries
-    const handleGroupsSelected = (contacts: ContactType[]) => {
+    // Convert contacts from groups to phone entries
+    const handleGroupsSelected = (contacts: ContactNewType[]) => {
         const newEntries = contacts.map(convertContactToPhoneEntry)
 
         // Merge with existing entries, avoiding duplicates

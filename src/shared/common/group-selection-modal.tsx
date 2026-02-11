@@ -20,7 +20,7 @@ import {
 import { People, User, Add, CloseCircle } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { GroupType } from "@/core/models/groups"
-import type { EnterpriseContactResponseType } from "@/core/models/contact"
+import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useGroups } from "@/core/hooks/useGroups"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/core/hooks/useMediaQuery"

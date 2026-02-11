@@ -64,6 +64,19 @@ export const getClient = async (id: string): Promise<ClientResponseType> => {
     }
 };
 
+export const getClientsByEnterprisePaginated = async (
+    enterpriseId: string, page = 0, size = 10
+): Promise<ClientResponseType[]> => {
+    try {
+        const response = await httpClient.get<ClientResponseType[]>(
+            `/api/v1/auth/all/paginate/${enterpriseId}`, { params: { page, size } }
+        );
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
 /**
  * Update user's SMS Sender ID only
  * PUT /api/v1/auth/update-user/{id}

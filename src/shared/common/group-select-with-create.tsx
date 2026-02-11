@@ -23,7 +23,6 @@ import {
 } from "@/shared/ui/drawer"
 import { Add, TickCircle, Refresh2, People, ArrowRight2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
-import type { GroupType } from "@/core/models/groups"
 import { useGroups } from "@/core/hooks/useGroups"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -52,7 +51,7 @@ export function GroupSelectWithCreate({
     const {
         groups,
         isLoading,
-        isCreating,
+        isMutating: isCreating,
         createGroup,
         loadGroups,
     } = useGroups({ enterpriseId, autoLoad: false })
