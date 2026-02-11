@@ -1,1 +1,1 @@
-export * from "./sender-id.service"
+export {}

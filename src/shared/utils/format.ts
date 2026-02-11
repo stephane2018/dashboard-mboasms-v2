@@ -1,4 +1,4 @@
-const DEFAULT_CURRENCY = import.meta.env.VITE_APP_CURRENCY || 'FCFA';
+const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_CURRENCY || 'FCFA';
 
 /**
  * Format a number as currency (XOF/XAF)

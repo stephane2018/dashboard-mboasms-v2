@@ -143,7 +143,6 @@ export function CreateRechargeModal({
             await onSubmit(data)
             handleClose()
         } catch (error) {
-            console.error("Error submitting recharge:", error)
         }
     }
 

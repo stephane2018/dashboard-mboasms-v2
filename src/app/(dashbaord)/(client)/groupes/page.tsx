@@ -57,7 +57,6 @@ export default function GroupesPage() {
       setCode("")
     } catch (e) {
       toast.error("Erreur lors de la création")
-      console.error(e)
     } finally {
       setIsCreating(false)
     }

@@ -135,7 +135,6 @@ export const exportToExcel = async (options: ExcelExportOptions): Promise<void> 
     // Télécharger le fichier
     saveAs(blob, `${fileName}.xlsx`)
   } catch (error) {
-    console.error('Erreur lors de l\'export Excel:', error)
     throw error
   }
 }
@@ -289,7 +288,6 @@ export const exportToPDF = (options: PDFExportOptions): void => {
     // Sauvegarder le PDF
     doc.save(`${fileName}.pdf`)
   } catch (error) {
-    console.error('Erreur lors de l\'export PDF:', error)
     throw error
   }
 }

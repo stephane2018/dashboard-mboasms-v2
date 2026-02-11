@@ -38,7 +38,6 @@ export function useRechargeTimeline(options: UseRechargeTimelineOptions) {
       })
       setData(result)
     } catch (err) {
-      console.error("Error loading recharge timeline:", err)
       setError("Erreur lors du chargement des données de recharge")
       setData([])
     } finally {

@@ -32,7 +32,6 @@ export function useGroups(options: UseGroupsOptions = {}) {
     // Load groups
     const loadGroups = useCallback(async () => {
         if (!fetchAll && mode === "enterprise" && !enterpriseId) {
-            console.warn("Cannot load groups: enterpriseId is not available")
             return
         }
         setIsLoading(true)
@@ -43,18 +42,14 @@ export function useGroups(options: UseGroupsOptions = {}) {
                 : await getGroupByEnterprise(enterpriseId)
             setGroups(Array.isArray(data) ? data : [])
         } catch (err: any) {
-            console.error("Error loading groups:", err)
-
             // Extract error message properly
             const errorMessage = err?.data?.message || err?.message || err?.error || "Erreur lors du chargement des groupes"
             const errorStatus = err?.status || err?.response?.status
 
             // Ne pas afficher d'erreur si les API n'existent pas encore
             if (errorStatus === 404 || errorMessage.includes('404')) {
-                console.log("Group API not implemented yet - skipping group loading")
                 setGroups([])
             } else {
-                console.error("Group loading failed with error:", errorMessage)
                 setError(errorMessage)
                 setGroups([])
             }
@@ -94,7 +89,6 @@ export function useGroups(options: UseGroupsOptions = {}) {
             setGroups(prev => [...prev, newGroup])
             return newGroup
         } catch (err) {
-            console.error("Error creating group:", err)
             setError("Erreur lors de la création du groupe")
             throw err
         } finally {
@@ -118,7 +112,6 @@ export function useGroups(options: UseGroupsOptions = {}) {
             setGroups(prev => prev.map(g => g.id === groupId ? updatedGroup : g))
             return updatedGroup
         } catch (err) {
-            console.error("Error updating group:", err)
             setError("Erreur lors de la mise à jour du groupe")
             throw err
         } finally {
@@ -134,7 +127,6 @@ export function useGroups(options: UseGroupsOptions = {}) {
             await deleteGroup(groupId)
             setGroups(prev => prev.filter(g => g.id !== groupId))
         } catch (err) {
-            console.error("Error deleting group:", err)
             setError("Erreur lors de la suppression du groupe")
             throw err
         } finally {
@@ -149,7 +141,6 @@ export function useGroups(options: UseGroupsOptions = {}) {
         try {
             await addContactsToGroup(groupId, contactIds)
         } catch (err) {
-            console.error("Error adding contacts to group:", err)
             setError("Erreur lors de l'ajout des contacts au groupe")
             throw err
         } finally {

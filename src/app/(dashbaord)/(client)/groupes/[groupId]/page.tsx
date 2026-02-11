@@ -76,7 +76,6 @@ export default function GroupeDetailsPage() {
       router.push("/groupes")
     } catch (e) {
       toast.error("Erreur lors de la suppression du groupe")
-      console.error(e)
     } finally {
       setIsMutating(false)
       setIsDeleteDialogOpen(false)
@@ -88,7 +87,6 @@ export default function GroupeDetailsPage() {
       await loadGroups()
       toast.success("Contact mis à jour")
     } catch (e) {
-      console.error(e)
     }
   }
 
@@ -101,7 +99,6 @@ export default function GroupeDetailsPage() {
       await loadGroups()
     } catch (e) {
       toast.error("Erreur lors de la suppression du contact")
-      console.error(e)
     } finally {
       setIsMutating(false)
       setIsRemoveDialogOpen(false)
@@ -120,7 +117,6 @@ export default function GroupeDetailsPage() {
       await loadGroups()
     } catch (e) {
       toast.error("Erreur lors de l'ajout des contacts")
-      console.error(e)
     } finally {
       setIsMutating(false)
     }

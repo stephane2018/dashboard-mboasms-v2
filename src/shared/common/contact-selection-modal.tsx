@@ -126,11 +126,9 @@ export function ContactSelectionModal({
                 setContacts(response as EnterpriseContactResponseType[])
                 setHasMore(false)
             } else {
-                console.error("Unexpected response format:", response)
                 setContacts([])
             }
         } catch (error) {
-            console.error("Error loading contacts:", error)
             setContacts([])
         } finally {
             setIsLoading(false)

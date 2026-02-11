@@ -46,7 +46,6 @@ export default function SenderIdsPage() {
   const data = isAdminUser ? enterpriseData : allData
   const isLoading = isAdminUser ? isLoadingEnterprise : isLoadingAll
   const error = isAdminUser ? errorEnterprise : errorAll
-  console.log("[SenderIdsPage] Data:", data)
 
   const createSenderIdMutation = useCreateSenderId()
   const updateSenderIdMutation = useUpdateSenderId()
@@ -56,7 +55,6 @@ export default function SenderIdsPage() {
   // Handle errors - show warning about backend not being ready
   useEffect(() => {
     if (error) {
-      console.error("Error loading sender IDs:", error)
       const errorMessage = (error as any)?.response?.data?.message ||
                           (error as any)?.message ||
                           "Erreur lors du chargement des Sender IDs"

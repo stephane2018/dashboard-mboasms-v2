@@ -23,7 +23,6 @@ export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean }
       const data = await groupsService.getGroupsByEnterprise(enterpriseId)
       setGroups(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.error("Error loading groups:", err)
       setError("Erreur lors du chargement des groupes")
       setGroups([])
     } finally {
@@ -58,7 +57,6 @@ export function useDeleteContactFromGroup() {
       await groupsService.deleteContactFromGroup(groupId, contactId)
       return true
     } catch (err: any) {
-      console.error("Error deleting contact from group:", err)
       const errorMessage = err?.message || "Erreur lors de la suppression du contact du groupe"
       setError(errorMessage)
       throw err

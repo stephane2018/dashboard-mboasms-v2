@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui/button";
 import { MoveLeft } from "lucide-react";
-import { Link } from "react-router";
+import Link from "next/link";
 
 interface NotFoundProps {
   title?: string;
@@ -39,7 +39,7 @@ export function NotFound({ title, subtitle, shouldRedirect, redirection }: NotFo
 
           {shouldRedirect && (
             <Button asChild size="lg" className="group relative overflow-hidden">
-              <Link to={redirection?.href || "/"} className="flex items-center gap-2">
+              <Link href={redirection?.href || "/"} className="flex items-center gap-2">
                 <MoveLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                 <span>{redirection?.label || "Retour à l'accueil"}</span>
               </Link>

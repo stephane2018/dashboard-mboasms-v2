@@ -22,7 +22,6 @@ export function useSenderIdActions() {
       toast.success("Sender ID créé avec succès")
       return result
     } catch (error) {
-      console.error("Error creating sender ID:", error)
       toast.error("Erreur lors de la création du Sender ID")
       throw error
     } finally {
@@ -37,7 +36,6 @@ export function useSenderIdActions() {
       toast.success("Sender ID modifié avec succès")
       return result
     } catch (error) {
-      console.error("Error updating sender ID:", error)
       toast.error("Erreur lors de la modification du Sender ID")
       throw error
     } finally {
@@ -52,7 +50,6 @@ export function useSenderIdActions() {
       toast.success("Statut du Sender ID mis à jour avec succès")
       return result
     } catch (error) {
-      console.error("Error updating sender ID status:", error)
       toast.error("Erreur lors de la mise à jour du statut")
       throw error
     } finally {
@@ -66,7 +63,6 @@ export function useSenderIdActions() {
       await senderIdService.deleteSenderId(id)
       toast.success("Sender ID supprimé avec succès")
     } catch (error) {
-      console.error("Error deleting sender ID:", error)
       toast.error("Erreur lors de la suppression du Sender ID")
       throw error
     } finally {

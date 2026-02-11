@@ -84,11 +84,8 @@ export function useLogin() {
   return useMutation<LoginApiResponse, Error, LoginCredentials>({
     mutationFn: (credentials: LoginCredentials) => login(credentials) as Promise<LoginApiResponse>,
     onSuccess: async (response, variables) => {
-      console.log("[useLogin] API response:", response)
-
       // Map API response to user format
       const mappedUser = mapLoginResponseToUser(response)
-      console.log("[useLogin] Mapped user:", mappedUser)
 
       // Save user data to store
       if (mappedUser.id && mappedUser.email) {
@@ -101,7 +98,6 @@ export function useLogin() {
           const enterpriseData = await getCompagnieConnectedDetails(mappedUser.companyId)
           setEnterprise(enterpriseData)
         } catch (error) {
-          console.error("Failed to fetch enterprise data:", error)
         }
       }
 
@@ -119,7 +115,6 @@ export function useLogin() {
       router.replace(dashboardUrl)
     },
     onError: (error: any) => {
-      console.log(error);
       const errorMessage = error?.message || "Une erreur est survenue lors de la connexion"
       toast.error("Erreur de connexion", {
         description: errorMessage,
@@ -149,9 +144,6 @@ export function useLoginAs() {
   return useMutation<LoginAsResponse, Error, string>({
     mutationFn: (userEmail: string) => loginAsUser(userEmail) as Promise<LoginAsResponse>,
     onSuccess: async (data, userEmail) => {
-      console.log('Login-as API response:', data)
-      console.log('Login-as role:', data.role)
-
       // Ensure current user exists before impersonating
       if (!currentUser) {
         toast.error("Impossible de se connecter en tant qu'utilisateur - utilisateur actuel non trouvé")
@@ -170,14 +162,11 @@ export function useLoginAs() {
         originalTokens: currentTokens
       } as any
 
-      console.log('Storing original user with tokens:', originalUserWithTokens)
-
       // Set impersonating flag and store original user with tokens
       setImpersonating(true, originalUserWithTokens)
 
       // Set new tokens
       tokenManager.setTokens(data.token, data.refreshToken)
-      console.log(data);
 
       // Set new user data
       const userData = {
@@ -188,7 +177,6 @@ export function useLoginAs() {
         companyId: data.userEnterprise?.id,
       }
       
-      console.log('Setting user data:', userData)
       setUser(userData)
 
       // Fetch and save enterprise data if user has a company
@@ -197,7 +185,6 @@ export function useLoginAs() {
           const enterpriseData = await getCompagnieConnectedDetails(data.userEnterprise.id)
           setEnterprise(enterpriseData)
         } catch (error) {
-          console.error("Failed to fetch enterprise data:", error)
         }
       }
 
@@ -209,7 +196,6 @@ export function useLoginAs() {
       router.replace('/dashboard')
     },
     onError: (error: any) => {
-      console.log(error);
       const errorMessage = error?.message || "Une erreur est survenue lors de la connexion"
       toast.error("Erreur de connexion", {
         description: errorMessage,
@@ -247,7 +233,6 @@ export function useSwitchBack() {
             const enterpriseData = await getCompagnieConnectedDetails(originalUserData.companyId)
             setEnterprise(enterpriseData)
           } catch (error) {
-            console.error("Failed to fetch enterprise data:", error)
           }
         }
 
@@ -279,7 +264,6 @@ export function useSwitchBack() {
       }
 
     } catch (error) {
-      console.error("Error switching back:", error)
       toast.error("Erreur lors du retour à la connexion originale")
     }
   }

@@ -67,7 +67,6 @@ export function AddToGroupModal({
             onClose()
         } catch (error) {
             toast.error("Erreur lors de l'ajout au groupe")
-            console.error("Add to group error:", error)
         } finally {
             setIsSubmitting(false)
         }
@@ -96,7 +95,6 @@ export function AddToGroupModal({
             onClose()
         } catch (error) {
             toast.error("Erreur lors de la création du groupe")
-            console.error("Create group error:", error)
         } finally {
             setIsSubmitting(false)
         }

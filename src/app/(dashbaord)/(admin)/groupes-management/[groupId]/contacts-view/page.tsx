@@ -62,11 +62,9 @@ export default function GroupContactsViewPage() {
 
     try {
       const result = await contactService.getContactsByGroup(groupId, user.companyId) as any
-      console.log(result);
       setContacts(result.contacts || [])
       setGroupInfo(result.groupInfo || { name: `Groupe ${groupId}` })
     } catch (err) {
-      console.error("Error loading group contacts:", err)
       setError("Erreur lors du chargement des contacts")
       toast.error("Erreur lors du chargement des contacts")
     } finally {
@@ -131,7 +129,6 @@ export default function GroupContactsViewPage() {
       // Background refresh to sync with server
       loadContacts()
     } catch (error) {
-      console.error("Error deleting contact from group:", error)
       toast.error("Erreur lors de la suppression du contact du groupe")
 
       // Rollback: restore the contact on error
@@ -161,7 +158,6 @@ export default function GroupContactsViewPage() {
       // Background refresh to sync with server
       loadContacts()
     } catch (error) {
-      console.error("Error adding contacts to group:", error)
       toast.error("Erreur lors de l'ajout des contacts au groupe")
 
       // Rollback: remove the contacts on error
@@ -206,7 +202,6 @@ export default function GroupContactsViewPage() {
 
       toast.success(`${filteredContacts.length} contact(s) exporté(s)`)
     } catch (error) {
-      console.error("Error exporting contacts:", error)
       toast.error("Erreur lors de l'export des contacts")
     } finally {
       setIsExporting(false)
@@ -215,7 +210,6 @@ export default function GroupContactsViewPage() {
 
   // Filter contacts based on search term
   const filteredContacts = contacts.filter(contact => {
-    console.log(contact)
     if (!contact) return false
     const fullName = `${contact.firstname || ''} ${contact.lastname || ''}`.toLowerCase()
     const phone = contact.phoneNumber || ''

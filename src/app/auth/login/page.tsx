@@ -87,7 +87,6 @@ export default function LoginPage() {
     },
     onSuccess: (data) => {
       tokenManager.setTokens(data.token, data.refreshToken)
-      console.log(data);
       setUser({
         id: data.id,
         email: data.email,

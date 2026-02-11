@@ -64,12 +64,9 @@ export const senderIdService = {
       const queryString = queryParams.toString()
       const url = `/api/v1/sender-ids${queryString ? `?${queryString}` : ""}`
   
-      console.log("[SenderIdService] Fetching all sender IDs from:", url)
       const result = await httpClient.get<PaginatedSenderIds>(url)
-      console.log("[SenderIdService] Successfully fetched sender IDs:", result)
       return result
     } catch (error) {
-      console.error("[SenderIdService] Error fetching all sender IDs:", error)
       return Promise.reject(refractHttpError(error))
     }
   },
@@ -95,12 +92,9 @@ export const senderIdService = {
       const queryString = queryParams.toString()
       const url = `/api/v1/sender-ids/enterprise/${enterpriseId}${queryString ? `?${queryString}` : ""}`
 
-      console.log("[SenderIdService] Fetching sender IDs from:", url)
       const result = await httpClient.get<PaginatedSenderIds>(url)
-      console.log("[SenderIdService] Successfully fetched sender IDs:", result)
       return result
     } catch (error) {
-      console.error("[SenderIdService] Error fetching sender IDs:", error)
       return Promise.reject(refractHttpError(error))
     }
   },

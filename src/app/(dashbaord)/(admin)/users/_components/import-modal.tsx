@@ -60,7 +60,7 @@ export function ImportModal({
       await onImport(contacts)
       handleClose()
     } catch (error) {
-      console.error("Import failed:", error)
+      // Error handled silently
     } finally {
       setIsProcessing(false)
     }

@@ -69,8 +69,6 @@ export default function SMSPage() {
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
         user?.companyId || "")
-    console.log("senderIdsData", senderIdsData)
-
     // SMS sending hook
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
@@ -289,29 +287,22 @@ export default function SMSPage() {
 
     // Confirmed send action
     const handleConfirmSend = async () => {
-        console.log("🚀 handleConfirmSend START")
-        
         try {
             // Separate phone numbers by operator
             const { mtnNumbers, otherNumbers } = separatePhoneNumbersByOperator(phoneEntries)
-            console.log("📊 Phone numbers separated:", { mtnNumbers, otherNumbers })
-            
+
             const totalRecipients = mtnNumbers.length + otherNumbers.length
-            console.log("📈 Total recipients:", totalRecipients)
-            
+
             if (totalRecipients === 0) {
-                console.log("❌ No valid recipients")
                 toast.error("Aucun destinataire valide trouvé")
                 return
             }
 
             let mtnSent = 0
             let othersSent = 0
-            console.log("🔄 Starting SMS sending...")
 
             // Send to MTN numbers with "infos" sender ID
             if (mtnNumbers.length > 0) {
-                console.log("📡 Sending MTN SMS...")
                 const response = await sendMessage({
                     phoneNumbers: mtnNumbers.toString(),
                     message,
@@ -319,12 +310,10 @@ export default function SMSPage() {
                     enterpriseId: user?.id || ""
                 })
                 mtnSent = response.mtnSent || mtnNumbers.length
-                console.log("✅ MTN Response:", response)
             }
 
             // Send to other numbers with user's sender ID
             if (otherNumbers.length > 0) {
-                console.log("📱 Sending other operators SMS...")
                 const response = await sendMessage({
                     phoneNumbers: otherNumbers.toString(),
                     message,
@@ -332,34 +321,23 @@ export default function SMSPage() {
                     enterpriseId: user?.id || ""
                 })
                 othersSent = response.othersSent || otherNumbers.length
-                console.log("✅ Others Response:", response)
             }
 
-            console.log("📝 Calculating success message...")
-            console.log("📊 Data for message:", { mtnNumbers: mtnNumbers.length, otherNumbers: otherNumbers.length, mtnSent, othersSent, activeSenderId })
-            
             const successMessage = mtnNumbers.length > 0 && otherNumbers.length > 0
                 ? `SMS envoyés : ${mtnSent} MTN avec "infos" et ${othersSent} autres avec "${activeSenderId}"`
                 : mtnNumbers.length > 0
                 ? `${mtnSent} SMS MTN envoyés avec senderId "infos"`
                 : `${othersSent} SMS envoyés avec senderId "${activeSenderId}"`
 
-            console.log("💬 Success message calculated:", successMessage)
-            console.log("🍞 Showing toast...")
-            
             toast.success(successMessage)
-            
+
             // Refetch enterprise data to update SMS balance
             refetchEnterprise()
-            
-            console.log("🧹 Cleaning up...")
+
             setMessage("")
             setPhoneEntries([])
             setIsConfirmationModalOpen(false)
-            
-            console.log("✅ handleConfirmSend COMPLETE")
         } catch (error) {
-            console.error("❌ Send SMS error:", error)
             toast.error("Erreur lors de l'envoi du SMS")
         }
     }
@@ -398,7 +376,6 @@ export default function SMSPage() {
             setNewSenderIdInput("")
             toast.success("Sender ID enregistré. En attente de validation.")
         } catch (error) {
-            console.error("Error saving sender ID:", error)
             toast.error("Erreur lors de l'enregistrement du Sender ID")
         } finally {
             setIsSavingSenderId(false)

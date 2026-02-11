@@ -128,7 +128,6 @@ export function ContactEditPopover({
                     setIsUpdating(false)
                 },
                 onError: (error) => {
-                    console.error("Error updating contact:", error)
                     toast.error("Erreur lors de la mise à jour du contact")
                     setIsUpdating(false)
                 },

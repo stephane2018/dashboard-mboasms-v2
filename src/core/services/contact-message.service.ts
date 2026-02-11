@@ -26,7 +26,6 @@ export const contactMessageService = {
   async sendToContact(idContact: string, payload: SendToContactPayload) {
     try {
       const response = await httpClient.post<any>(`/api/v1/message/${idContact}/sendMessageToContact`, payload as unknown as Record<string, unknown>);
-      console.log(response);
       return response;
     } catch (error) {
       return Promise.reject(refractHttpError(error));
@@ -40,7 +39,6 @@ export const contactMessageService = {
   async sendToGroup(payload: SendToGroupPayload) {
     try {
       const response = await httpClient.post<any>('/api/v1/message/sendMessageToGroup', payload as unknown as Record<string, unknown>);
-      console.log(response);
       return response;
     } catch (error) {
       return Promise.reject(refractHttpError(error));

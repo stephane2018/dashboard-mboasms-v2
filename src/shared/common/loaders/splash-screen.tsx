@@ -18,7 +18,7 @@ export const SplashScreen = () => {
             <span className="font-proxima-nova-sc text-4xl font-medium">Q</span>uastrom-Renov
           </div> */}
 
-          <img src={logo} alt="Quastrom-Connect" className="w-56" />
+          <img src={logo.src} alt="Quastrom-Connect" className="w-56" />
 
           <div className="relative h-2.5 w-full overflow-hidden rounded-lg bg-accent md:max-w-xl xl:max-w-md">
             <div className="duration-[1500ms] absolute inset-0 h-full w-full animate-splash-progress rounded-lg bg-primary" />

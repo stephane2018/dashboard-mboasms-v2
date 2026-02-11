@@ -60,7 +60,6 @@ export const contactService = {
       const contacts = Array.isArray(allContacts)
         ? allContacts.filter((contact: any) => groupContactIds.has(contact.id))
         : [];
-      console.log(contacts);
       return {
         contacts,
         groupInfo: {

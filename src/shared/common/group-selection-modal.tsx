@@ -89,7 +89,6 @@ export function GroupSelectionModal({
             setSelectedGroupIds([])
         } catch (error) {
             toast.error("Erreur lors de la récupération des contacts")
-            console.error("Group selection error:", error)
         } finally {
             setIsSubmitting(false)
         }

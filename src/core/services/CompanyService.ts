@@ -17,7 +17,6 @@ export interface CreditEnterprisePayload {
 export const getCompanies = async (): Promise<EnterpriseType[]> => {
   try {
     const response = await httpClient.get<EnterpriseType[]>('/api/v1/enterprise/all');
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -29,7 +28,6 @@ export const getCompaniesPaginated = async (page: number = 0, size: number = 10)
     const response = await httpClient.get<EnterpriseType[]>('/api/v1/enterprise/all', {
       params: { page, size },
     });
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -39,7 +37,6 @@ export const getCompaniesPaginated = async (page: number = 0, size: number = 10)
 export const getCompagnieConnectedDetails = async (enterpriseId: string): Promise<EnterpriseType> => {
   try {
     const response = await httpClient.get<EnterpriseType>(`/api/v1/enterprise/${enterpriseId}?userId=${enterpriseId}`);
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -49,7 +46,6 @@ export const getCompagnieConnectedDetails = async (enterpriseId: string): Promis
 export const createCompany = async (company: CreateCompanyRequestType): Promise<EnterpriseType> => {
   try {
     const response = await httpClient.post<EnterpriseType>('/api/v1/enterprise', company as Record<string, any>);
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -62,7 +58,6 @@ export const addUserToEnterprise = async (enterpriseId: string, user: AddUserToE
       `/api/v1/enterprise/adduser-enterprise/${enterpriseId}`,
       user as any
     );
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -81,9 +76,7 @@ export const deleteUserFromEnterprise = async (enterpriseId: string, userId: str
 
 export const getCompanyContacts = async (enterpriseId: string, role: string): Promise<EnterpriseContactResponseType[]> => {
   try {
-    console.log('with role:', role);
     const response = await httpClient.get<EnterpriseContactResponseType[]>(`/api/v1/contact/all/${enterpriseId}`);
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -95,7 +88,6 @@ export const getUpdatedCompanyInfo = async (userId: string): Promise<EnterpriseC
     const response = await httpClient.get<EnterpriseContactResponseType[]>(`/api/v1/enterprise`, {
       params: { userId },
     });
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -107,7 +99,6 @@ export const getEnterpriseDetails = async (enterpriseId: string): Promise<Enterp
     const response = await httpClient.get<EnterpriseType>(`/api/v1/enterprise/all`, {
       params: { userId: enterpriseId },
     });
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -117,7 +108,6 @@ export const getEnterpriseDetails = async (enterpriseId: string): Promise<Enterp
 export const updateCompany = async (id: string, company: CreateCompanyRequestType): Promise<EnterpriseType> => {
   try {
     const response = await httpClient.put<EnterpriseType>(`/api/v1/enterprise/${id}`, company as Record<string, any>);
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -127,7 +117,6 @@ export const updateCompany = async (id: string, company: CreateCompanyRequestTyp
 export const deleteCompany = async (id: string): Promise<void> => {
   try {
     const response = await httpClient.delete<void>(`/api/v1/enterprise/${id}`);
-    console.log(response);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));

@@ -20,7 +20,6 @@ interface CountrySelectProps {
 
 export function CountrySelect({ value, onChange }: CountrySelectProps) {
   const { data: countries, isLoading, isError } = useCountries();
-  console.log(countries);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCountries = useMemo(() => {

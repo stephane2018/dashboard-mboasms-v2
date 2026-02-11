@@ -41,7 +41,6 @@ export const getRoleFromLocalStorage = (): UserRole | null => {
     if (!role) return null
     return normalizeRole(role)
   } catch (error) {
-    console.error("Error getting role from localStorage:", error)
     return null
   }
 }

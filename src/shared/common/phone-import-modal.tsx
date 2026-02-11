@@ -263,7 +263,6 @@ export function PhoneImportModal({
                 handleClose()
             }, 1000)
         } catch (error) {
-            console.error("Error reading file:", error)
             setError("Erreur lors de la lecture du fichier. Vérifiez le format du fichier.")
         }
 

@@ -1,15 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Public routes that don't require authentication
-  const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password', '/']
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
-
-  // Check if user has token in localStorage (this will be done client-side)
-  // For now, we'll use a simple check based on the request headers or cookies
   const token = request.cookies.get('mboasms-access-token')?.value
 
   // If trying to access dashboard routes without token

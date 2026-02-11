@@ -13,7 +13,6 @@ import {
 export const createRecharge = async (data: CreateRechargeRequestType): Promise<CreateRechargeTypeResponse> => {
     try {
         const response = await httpClient.post<CreateRechargeTypeResponse>('/api/v1/recharge/create-request', data);
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -23,7 +22,6 @@ export const createRecharge = async (data: CreateRechargeRequestType): Promise<C
 export const getRecharges = async (enterpriseId: string): Promise<RechargePageType> => {
     try {
         const response = await httpClient.get<RechargePageType>(`/api/v1/recharge/${enterpriseId}/all`);
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -33,7 +31,6 @@ export const getRecharges = async (enterpriseId: string): Promise<RechargePageTy
 export const getAllRecharges = async (): Promise<RechargeListContentType[]> => {
     try {
         const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/all`);
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -43,7 +40,6 @@ export const getAllRecharges = async (): Promise<RechargeListContentType[]> => {
 export const getRecharge = async (id: string): Promise<RechargeListContentType> => {
     try {
         const response = await httpClient.get<RechargeListContentType>(`/api/v1/recharge/${id}`);
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -53,7 +49,6 @@ export const getRecharge = async (id: string): Promise<RechargeListContentType> 
 export const updateRecharge = async (rechargeId: string, data: UpdateRechargeRequestType): Promise<RechargeListContentType> => {
     try {
         const response = await httpClient.put<RechargeListContentType>(`/api/v1/recharge/${rechargeId}/update`, data);
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -63,7 +58,6 @@ export const updateRecharge = async (rechargeId: string, data: UpdateRechargeReq
 export const validateRecharge = async (rechargeId: string): Promise<RechargeListContentType> => {
     try {
         const response = await httpClient.put<RechargeListContentType>(`/api/v1/recharge/${rechargeId}/validate`, {});
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -73,7 +67,6 @@ export const validateRecharge = async (rechargeId: string): Promise<RechargeList
 export const refuseRecharge = async (rechargeId: string): Promise<RechargeListContentType> => {
     try {
         const response = await httpClient.put<RechargeListContentType>(`/api/v1/recharge/${rechargeId}/refused`, {});
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -86,7 +79,6 @@ export const creditAccount = async (enterpriseId: string, data: CreditAccountReq
             `/api/v1/recharge/${enterpriseId}/creditercompte`,
             data
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

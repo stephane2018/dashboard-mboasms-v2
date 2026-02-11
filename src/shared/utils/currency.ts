@@ -1,6 +1,6 @@
 type NumberFormatOptions = Intl.NumberFormatOptions & { locale?: string, currency?: string };
 
-const DEFAULT_CURRENCY = import.meta.env.VITE_APP_CURRENCY || "EUR";
+const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_CURRENCY || "XAF";
 
 export const formatNumber = (number: string | number | undefined | null, options?: NumberFormatOptions) => {
   const toFormat = number ? Number(number) : 0;

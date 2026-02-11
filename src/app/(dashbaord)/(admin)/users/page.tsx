@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { PaginationState } from "@tanstack/react-table"
 import { toast } from "sonner"
-import { useGetContactsByEnterprise, useDeleteContact, useGetAllContactsByEnterprise } from "@/core/hooks/useContacts"
+import { useContactsByEnterprise, useDeleteContact } from "@/core/hooks/useContacts"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { DataTable } from "@/shared/common/data-table/table"
 import { ConfirmDialog } from "@/shared/common/confirm-dialog"
@@ -34,7 +34,6 @@ export default function UsersListPage() {
   })
   const { user } = useAuthContext()
   const { setPrefilledContacts } = useSMSStore()
-  console.log(user)
 
   const [selectedContact, setSelectedContact] = useState<EnterpriseContactResponseType | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -51,13 +50,13 @@ export default function UsersListPage() {
   const [contactsToDelete, setContactsToDelete] = useState<EnterpriseContactResponseType[]>([])
 
   // Fetch contacts with pagination
-  const { getContacts, isLoading } = useGetAllContactsByEnterprise()
+  const { getContacts, isLoading } = useContactsByEnterprise()
   const [data, setData] = useState<EnterpriseContactResponseType[]>([])
 
   // Function to refresh contacts list
   const refreshContacts = () => {
     if (user?.companyId) {
-      getContacts(user.companyId).then(setData).catch(console.error)
+      getContacts(user.companyId).then(setData).catch(() => {})
     }
   }
 
@@ -65,7 +64,6 @@ export default function UsersListPage() {
   useEffect(() => {
     refreshContacts()
   }, [user?.companyId, getContacts])
-  console.log(data)
   const { deleteContact, isLoading: isDeleting } = useDeleteContact()
 
   const allContacts = data || []
@@ -131,7 +129,6 @@ export default function UsersListPage() {
       setContactToDelete(null)
       refreshContacts()
     } catch (error) {
-      console.error('Error deleting contact:', error)
     }
   }
 
@@ -209,7 +206,6 @@ export default function UsersListPage() {
       setContactsToDelete([])
       refreshContacts()
     } catch (error) {
-      console.error('Error deleting contacts:', error)
       toast.error("Erreur lors de la suppression", {
         description: "Une erreur est survenue lors de la suppression des contacts",
       })
@@ -455,7 +451,6 @@ export default function UsersListPage() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImport={async (contacts) => {
-          console.log("Imported contacts:", contacts)
           // TODO: Handle imported contacts
         }}
       />

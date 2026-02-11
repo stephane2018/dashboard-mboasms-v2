@@ -98,7 +98,6 @@ export function CreatePricingModal({
         reader.readAsDataURL(file)
       } else {
         // Handle error - file is not an image
-        console.error('Le fichier doit être une image')
       }
     }
   }

@@ -149,7 +149,6 @@ export default function AdminGroupesPage() {
       const data = await httpClient.get<EnterpriseType[]>("/api/v1/enterprise/all")
       setEnterprises(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error("Error loading enterprises:", error)
       toast.error("Erreur lors du chargement des entreprises")
     }
   }
@@ -197,7 +196,6 @@ export default function AdminGroupesPage() {
       }))
       setGroups(groupsWithFullEnterprise)
     } catch (error) {
-      console.error("Error loading groups:", error)
       toast.error("Erreur lors du chargement des groupes")
       setGroups([])
     } finally {
@@ -255,7 +253,6 @@ export default function AdminGroupesPage() {
       setNewGroupCode("")
       setNewGroupEnterpriseId("")
     } catch (error) {
-      console.error("Error creating group:", error)
       toast.error("Erreur lors de la création du groupe")
     } finally {
       setIsCreating(false)
@@ -273,7 +270,6 @@ export default function AdminGroupesPage() {
       setIsDeleteOpen(false)
       setGroupToDelete(null)
     } catch (error) {
-      console.error("Error deleting group:", error)
       toast.error("Erreur lors de la suppression du groupe")
     } finally {
       setIsCreating(false)
@@ -316,7 +312,6 @@ export default function AdminGroupesPage() {
     } catch (e) {
       setGroups(previousGroups)
       toast.error("Erreur lors de l'ajout des contacts", { id: toastId })
-      console.error(e)
     } finally {
       setIsCreating(false)
     }
@@ -334,7 +329,6 @@ export default function AdminGroupesPage() {
       setContactToRemove(null)
     } catch (e) {
       toast.error("Erreur lors de la suppression du contact")
-      console.error(e)
     } finally {
       setIsCreating(false)
     }
@@ -345,7 +339,6 @@ export default function AdminGroupesPage() {
       await loadGroups()
       toast.success("Contact mis à jour")
     } catch (e) {
-      console.error(e)
     }
   }
 

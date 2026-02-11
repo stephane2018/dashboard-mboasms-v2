@@ -85,7 +85,6 @@ export function PlanDetails() {
       // Refetch enterprise data to update balance
       refetchEnterprise()
     } catch (error) {
-      console.error('Error creating recharge:', error)
       toast.error('Erreur lors de la création de la recharge')
     }
   }

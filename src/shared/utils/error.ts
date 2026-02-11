@@ -27,7 +27,7 @@ export const refractHttpError = (error: unknown): ErrorApiResponse => {
     }
   }
 
-  const isProduction = import.meta.env.NODE_ENV === "production";
+  const isProduction = process.env.NODE_ENV === "production";
 
   if (!isProduction) {
     console.error(title, message, error);

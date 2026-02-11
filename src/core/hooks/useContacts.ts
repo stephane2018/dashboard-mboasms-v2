@@ -166,7 +166,3 @@ export function useDeleteContact() {
     clearError,
   };
 }
-
-// Alias for consistency
-export const useGetContactsByEnterprise = useContactsByEnterprise;
-export const useGetAllContactsByEnterprise = useContactsByEnterprise;

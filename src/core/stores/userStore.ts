@@ -50,7 +50,6 @@ export const useUserStore = create<UserStore>()(
       originalUser: undefined,
 
       setUser: (user: User) => {
-        console.log(' setUser called with:', user)
         set({ user, isAuthenticated: true })
       },
 
@@ -107,16 +106,11 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'user-storage',
       onRehydrateStorage: () => (state) => {
-        console.log('User store rehydrating, state:', state)
         if (state) {
-          console.log('User store hydrated, user:', state.user)
-          console.log('User store hydrated, user role:', state.user?.role)
-
           // Validate token on rehydration - if token is expired, clear user data
           // This prevents stale user data from being loaded when the token is no longer valid
           const token = tokenManager.getToken();
           if (state.user && (!token || tokenManager.isTokenExpired())) {
-            console.log('User store: Token expired or missing on rehydration, clearing user')
             state.clearUser();
           }
 

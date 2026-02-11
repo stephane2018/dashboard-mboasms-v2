@@ -119,17 +119,10 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (tokenManager.isTokenExpired()) {
-        console.log("[AuthProvider] Token expired during monitoring, clearing user");
         clearUser();
         return;
       }
 
-      // Log time remaining for debugging
-      const timeUntilExpiry = tokenManager.getTimeUntilExpiry();
-      if (timeUntilExpiry !== null) {
-        const minutesRemaining = Math.floor(timeUntilExpiry / 1000 / 60);
-        console.log(`[AuthProvider] Token expires in ${minutesRemaining} minutes`);
-      }
     };
 
     // Only start monitoring if user is authenticated
@@ -139,15 +132,12 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
       // Set up interval for continuous checking
       tokenCheckIntervalRef.current = setInterval(checkTokenExpiration, TOKEN_CHECK_INTERVAL);
-
-      console.log("[AuthProvider] Token expiration monitoring started");
     }
 
     return () => {
       if (tokenCheckIntervalRef.current) {
         clearInterval(tokenCheckIntervalRef.current);
         tokenCheckIntervalRef.current = null;
-        console.log("[AuthProvider] Token expiration monitoring stopped");
       }
     };
   }, [isAuthenticated, user, clearUser]);
@@ -156,59 +146,41 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Wait for store to be hydrated before making decisions
     if (!isHydrated) {
-      console.log("[AuthProvider] Waiting for store hydration...");
       return;
     }
 
     const fetchUserProfile = async () => {
       const token = tokenManager.getToken();
 
-      console.log("[AuthProvider] fetchUserProfile check:", {
-        hasToken: !!token,
-        hasUser: !!user,
-        hasFetchedProfile,
-        isHydrated,
-        tokenExpired: token ? tokenManager.isTokenExpired() : null,
-      });
-
       // Skip if we already have a user or already attempted fetch
       if (user || hasFetchedProfile) {
-        console.log("[AuthProvider] Skipping fetch - already have user or already fetched");
         return;
       }
 
       // No token = no fetch needed
       if (!token) {
-        console.log("[AuthProvider] No token found");
         setHasFetchedProfile(true);
         return;
       }
 
       // Check if token is expired
       if (tokenManager.isTokenExpired()) {
-        console.log("[AuthProvider] Token expired, clearing user");
         clearUser();
         setHasFetchedProfile(true);
         return;
       }
 
-      console.log("[AuthProvider] Fetching profile...");
       setIsLoadingProfile(true);
       try {
         const profileData = await getProfile() as ProfileApiResponse | null;
-        console.log("[AuthProvider] Profile data received:", profileData);
         if (profileData && profileData.id && profileData.email) {
           const mappedUser = mapProfileToUser(profileData);
-          console.log("[AuthProvider] Mapped user data:", mappedUser);
           setUser(mappedUser);
-          console.log("[AuthProvider] User set successfully");
         } else {
           // Profile fetch returned invalid data, clear user
-          console.log("[AuthProvider] Invalid profile data, clearing user");
           clearUser();
         }
       } catch (error) {
-        console.error("[AuthProvider] Failed to fetch user profile:", error);
         clearUser();
       } finally {
         setIsLoadingProfile(false);

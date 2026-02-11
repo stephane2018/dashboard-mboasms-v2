@@ -62,7 +62,6 @@ export async function invalidateQueriesByRole(
   const userRole = getCurrentUserRole()
 
   if (!userRole) {
-    console.warn("No user role found, skipping query invalidation")
     return
   }
 
@@ -82,6 +81,7 @@ export async function invalidateQueriesByRole(
         break
 
       case Role.ADMIN:
+      case Role.ADMIN_USER:
         // Admin can see enterprise data - invalidate enterprise-level queries
         await queryClient.invalidateQueries({
           queryKey: queryKeys[entityType].lists(),
@@ -108,10 +108,9 @@ export async function invalidateQueriesByRole(
         break
 
       default:
-        console.warn(`Unknown role: ${userRole}`)
+        break
     }
   } catch (error) {
-    console.error("Error invalidating queries:", error)
     throw error
   }
 }
@@ -214,6 +213,12 @@ export function canPerformAction(
       read: true,
       update: true,
       delete: entityType !== "users", // Admins can't delete users
+    },
+    [Role.ADMIN_USER]: {
+      create: true,
+      read: true,
+      update: true,
+      delete: entityType !== "users",
     },
     [Role.USER]: {
       create: entityType === "contacts", // Users can only create contacts

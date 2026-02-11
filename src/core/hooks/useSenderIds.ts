@@ -28,7 +28,6 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
       let result: PaginatedSenderIds
 
       if (loadAll) {
-        console.log("[useSenderIds] Loading all sender IDs")
         result = await senderIdService.getAllSenderIds({
           status: params?.status || options.status,
           page: params?.page ?? options.page,
@@ -36,13 +35,11 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
         })
       } else {
         if (!enterpriseId) {
-          console.warn("Cannot load sender IDs: enterpriseId is not available")
           setError("Enterprise ID non disponible")
           setIsLoading(false)
           return
         }
 
-        console.log("[useSenderIds] Loading sender IDs for enterprise:", enterpriseId)
         result = await senderIdService.getSenderIdsByEnterprise(enterpriseId, {
           status: params?.status || options.status,
           page: params?.page ?? options.page,
@@ -52,7 +49,6 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
 
       setData(result)
     } catch (err: any) {
-      console.error("Error loading sender IDs:", err)
       const errorMessage = err?.message || err?.error || "Erreur lors du chargement des Sender IDs"
       setError(errorMessage)
       setData(null)

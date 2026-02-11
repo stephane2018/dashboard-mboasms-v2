@@ -1,4 +1,4 @@
-export const STORAGE_KEY_NAME = "caisse-post-store";
+export const STORAGE_KEY_NAME = "mboasms-store";
 export const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 export const API_URL_DASHBOARD = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 export const TOKEN_TYPE = "Bearer";

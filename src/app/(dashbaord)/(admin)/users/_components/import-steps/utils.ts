@@ -71,7 +71,6 @@ export async function parseExcel(file: File): Promise<string[][]> {
 
     return data
   } catch (error) {
-    console.error("Error parsing Excel file:", error)
     throw new Error("Impossible de lire le fichier Excel")
   }
 }

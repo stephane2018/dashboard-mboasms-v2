@@ -274,8 +274,6 @@ export const getColumns = ({
     },
   ]
 
-  console.log(isSuperAdmin)
-
   // Add actions column only for super admin
   if (isSuperAdmin) {
     columns.push({
@@ -283,8 +281,7 @@ export const getColumns = ({
       header: "Actions",
       cell: ({ row }) => {
         const recharge = row.original
-        const isPending = recharge.status === RechargeStatus.PENDING 
-        console.log(isPending)
+        const isPending = recharge.status === RechargeStatus.PENDING
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -18,7 +18,6 @@ export const sendMessage = async (data: SendMessageRequestType): Promise<SendMes
             '/api/v1/message/sendMessage',
             data as Record<string, any>
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -31,7 +30,6 @@ export const sendMessageToContact = async (contactId: string, data: SendMessageR
             `/api/v1/message/${contactId}/sendMessageToContact`,
             data as Record<string, any>
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -44,7 +42,6 @@ export const sendMessageToGroup = async (payload: SendMessageToGroupPayload): Pr
             '/api/v1/message/sendMessageToGroup',
             payload as Record<string, any>
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -69,7 +66,6 @@ export const getMessages = async (enterpriseId: string, page: number, size: numb
             `/api/v1/message/${enterpriseId}/all`,
             { params: { page, size } }
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -106,7 +102,6 @@ export const getAllMessages = async (enterpriseId: string, page: number, size: n
             `/api/v1/message/${enterpriseId}/all`,
             { params: { page, size } }
         );
-        console.log(response);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
