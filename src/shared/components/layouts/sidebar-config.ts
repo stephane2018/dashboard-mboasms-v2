@@ -13,6 +13,7 @@ import {
     Setting2,
     Lifebuoy,
     Sms,
+    TicketDiscount,
 } from 'iconsax-react'
 import { Role } from '@/core/config/enum'
 
@@ -110,6 +111,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 title: 'Pricing',
                 url: '/pricing',
                 icon: MoneyRecive,
+                roles: [Role.SUPER_ADMIN],
+            },
+            {
+                title: 'Codes promo',
+                url: '/coupons',
+                icon: TicketDiscount,
                 roles: [Role.SUPER_ADMIN],
             },
             {

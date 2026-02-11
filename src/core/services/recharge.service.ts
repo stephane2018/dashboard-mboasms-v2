@@ -19,6 +19,21 @@ export const createRecharge = async (data: CreateRechargeRequestType): Promise<C
     }
 };
 
+export const getRechargesByEnterprise = async (enterpriseId: string, page: number, size: number): Promise<RechargeListContentType[]> => {
+    try {
+        const queryParams = new URLSearchParams()
+        queryParams.append("enterpriseId", enterpriseId)
+        queryParams.append("page", page.toString())
+        queryParams.append("size", size.toString())
+
+        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/enterprise?${queryParams.toString()}`);
+        console.log(response)
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
 export const getRecharges = async (enterpriseId: string): Promise<RechargePageType> => {
     try {
         const response = await httpClient.get<RechargePageType>(`/api/v1/recharge/${enterpriseId}/all`);

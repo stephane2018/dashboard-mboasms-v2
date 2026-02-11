@@ -10,7 +10,8 @@ export enum PaymentMethod {
 export enum RechargeStatus {
     PENDING = "DEMANDE",
     VALIDATED = "VALIDATED",
-    REFUSED = "REFUSED"
+    REFUSED = "REFUSED",
+    REFUSE = "REFUSE",
 }
 export type CreateRechargeResponseType = {
     statusCode: number;
@@ -86,6 +87,38 @@ export type RechargePageType = {
     empty: boolean;
 };
 
+export type RechargePricingPlanType = {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    version: number;
+    planNameFr: string;
+    planNameEn: string;
+    descriptionEn: string;
+    descriptionFr: string;
+    minSMS: number;
+    maxSMS: number;
+    nbDaysToExpired: number;
+    smsUnitPrice: number;
+    active: boolean;
+    planCode: string;
+    illustrationImgUrl: string;
+    archived: boolean;
+};
+
+export type RechargeCouponType = {
+    id: string;
+    name: string;
+    description: string;
+    validFrom: string;
+    validTo: string;
+    code: string;
+    percentage: number;
+    userId: string | null;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type RechargeListContentType = {
     statusCode: number;
     status: string;
@@ -102,6 +135,9 @@ export type RechargeListContentType = {
     debitPhoneNumber: string;
     debitBankAccountNumber: string;
     couponCode: string;
+    pricingPlan: RechargePricingPlanType | null;
+    paymentAmount: number;
+    coupon: RechargeCouponType | null;
     archived: boolean;
 };
 

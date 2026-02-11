@@ -9,6 +9,7 @@ import {
   creditAccount,
   getAllRecharges,
   getRecharges,
+  getRechargesByEnterprise,
 } from "@/core/services/recharge.service"
 import type { CreateRechargeRequestType, RechargeListContentType } from "@/core/models/recharges"
 import type { UseQueryOptions } from "@tanstack/react-query"
@@ -16,6 +17,39 @@ import { useUserStore } from "@/core/stores/userStore"
 import { Role } from "@/core/config/enum"
 
 type CreditAccountPayload = { enterpriseId: string; qteMessage: number }
+
+const rechargeKeys = {
+  all: ["recharges"] as const,
+  enterprise: (enterpriseId: string, page: number, size: number) =>
+    ["recharges", "enterprise", enterpriseId, page, size] as const,
+}
+
+export function useEnterpriseRecharges(enterpriseId: string, page: number, size: number) {
+  const queryClient = useQueryClient()
+
+  const query = useQuery<RechargeListContentType[], Error>({
+    queryKey: rechargeKeys.enterprise(enterpriseId, page, size),
+    queryFn: () => getRechargesByEnterprise(enterpriseId, page, size),
+    enabled: !!enterpriseId,
+  })
+
+  const createRechargeMutation = useMutation({
+    mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: rechargeKeys.all })
+      toast.success("Demande de recharge créée", {
+        description: "La demande de recharge a été créée avec succès",
+      })
+    },
+    onError: (error: any) => {
+      toast.error("Erreur lors de la création", {
+        description: error?.message || "Une erreur s'est produite",
+      })
+    },
+  })
+
+  return { query, createRechargeMutation }
+}
 
 interface UseRechargeOptions {
   queryKey?: QueryKey

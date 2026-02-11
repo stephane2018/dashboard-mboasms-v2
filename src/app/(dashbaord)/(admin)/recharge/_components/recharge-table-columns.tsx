@@ -135,6 +135,15 @@ const getStatusConfig = (status: string) => {
       borderColor: "border-red-300 dark:border-red-700",
       borderStyle: "border-solid",
     },
+    [RechargeStatus.REFUSE]: {
+      label: "Refusée",
+      icon: CloseCircle,
+      bgColor: "bg-red-50 dark:bg-red-900/20",
+      textColor: "text-red-700 dark:text-red-400",
+      iconColor: "text-red-600",
+      borderColor: "border-red-300 dark:border-red-700",
+      borderStyle: "border-solid",
+    },
   }
 
   return configs[status] || {

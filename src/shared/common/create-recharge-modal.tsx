@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useActivePlans } from "@/core/hooks"
 import {
     Dialog,
@@ -34,6 +34,8 @@ import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PricingPlanType } from "@/core/models/pricing"
 import { PaymentMethod } from "@/core/models/recharges"
+import { couponService } from "@/core/services/coupon.service"
+import type { Coupon } from "@/modules/coupon/types"
 
 interface CreateRechargeModalProps {
     isOpen: boolean
@@ -70,6 +72,9 @@ export function CreateRechargeModal({
     const [phoneNumber, setPhoneNumber] = useState("")
     const [bankAccount, setBankAccount] = useState("")
     const [couponCode, setCouponCode] = useState("")
+    const [isVerifyingCoupon, setIsVerifyingCoupon] = useState(false)
+    const [verifiedCoupon, setVerifiedCoupon] = useState<Coupon | null>(null)
+    const [couponError, setCouponError] = useState("")
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     // Calculate price based on quantity and pricing plans
@@ -100,6 +105,39 @@ export function CreateRechargeModal({
             maxSMS: Math.max(...allMaxValues)
         }
     }, [activePlans])
+
+    const discountedPrice = useMemo(() => {
+        if (!verifiedCoupon || !price) return null
+        return Math.round(price * (1 - verifiedCoupon.percentage / 100))
+    }, [price, verifiedCoupon])
+
+    const handleVerifyCoupon = async () => {
+        if (!couponCode.trim()) return
+
+        setIsVerifyingCoupon(true)
+        setCouponError("")
+        setVerifiedCoupon(null)
+
+        try {
+            const coupon = await couponService.verifyCouponByCode(couponCode.trim())
+            const now = new Date()
+            if (new Date(coupon.validTo) < now) {
+                setCouponError("Code promo expiré")
+            } else {
+                setVerifiedCoupon(coupon)
+            }
+        } catch {
+            setCouponError("Code promo invalide")
+        } finally {
+            setIsVerifyingCoupon(false)
+        }
+    }
+
+    const handleClearCoupon = () => {
+        setCouponCode("")
+        setVerifiedCoupon(null)
+        setCouponError("")
+    }
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {}
@@ -152,6 +190,9 @@ export function CreateRechargeModal({
         setPhoneNumber("")
         setBankAccount("")
         setCouponCode("")
+        setVerifiedCoupon(null)
+        setCouponError("")
+        setIsVerifyingCoupon(false)
         setErrors({})
         onClose()
     }
@@ -293,14 +334,58 @@ export function CreateRechargeModal({
                     {/* Coupon Code (Optional) */}
                     <div className="space-y-2">
                         <Label htmlFor="coupon-code">Code promo (optionnel)</Label>
-                        <Input
-                            id="coupon-code"
-                            type="text"
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                            placeholder="PROMO2024"
-                            className="h-12"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="coupon-code"
+                                type="text"
+                                value={couponCode}
+                                onChange={(e) => {
+                                    setCouponCode(e.target.value.toUpperCase())
+                                    if (verifiedCoupon) {
+                                        setVerifiedCoupon(null)
+                                    }
+                                    if (couponError) {
+                                        setCouponError("")
+                                    }
+                                }}
+                                placeholder="PROMO2024"
+                                className="h-12"
+                                disabled={!!verifiedCoupon}
+                            />
+                            {verifiedCoupon ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12 shrink-0"
+                                    onClick={handleClearCoupon}
+                                >
+                                    Effacer
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12 shrink-0"
+                                    onClick={handleVerifyCoupon}
+                                    disabled={!couponCode.trim() || isVerifyingCoupon}
+                                >
+                                    {isVerifyingCoupon ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        "Vérifier"
+                                    )}
+                                </Button>
+                            )}
+                        </div>
+                        {verifiedCoupon && (
+                            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
+                                <TickCircle size={16} color="currentColor" variant="Bulk" />
+                                <span>{verifiedCoupon.name} - {verifiedCoupon.percentage}% de réduction</span>
+                            </div>
+                        )}
+                        {couponError && (
+                            <p className="text-xs text-red-500">{couponError}</p>
+                        )}
                     </div>
 
                     {/* Summary */}
@@ -316,9 +401,24 @@ export function CreateRechargeModal({
                                     <span className="text-muted-foreground">Prix unitaire</span>
                                     <span className="font-medium">{plan.smsUnitPrice} FCFA</span>
                                 </div>
+                                {verifiedCoupon && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Réduction ({verifiedCoupon.percentage}%)</span>
+                                        <span className="font-medium text-green-600">-{(price - (discountedPrice ?? price)).toLocaleString()} FCFA</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between pt-2 border-t">
                                     <span className="font-semibold">Prix total</span>
-                                    <span className="font-bold text-lg text-primary">{price.toLocaleString()} FCFA</span>
+                                    <div className="text-right">
+                                        {verifiedCoupon && discountedPrice !== null ? (
+                                            <>
+                                                <span className="line-through text-muted-foreground text-sm mr-2">{price.toLocaleString()} FCFA</span>
+                                                <span className="font-bold text-lg text-primary">{discountedPrice.toLocaleString()} FCFA</span>
+                                            </>
+                                        ) : (
+                                            <span className="font-bold text-lg text-primary">{price.toLocaleString()} FCFA</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
