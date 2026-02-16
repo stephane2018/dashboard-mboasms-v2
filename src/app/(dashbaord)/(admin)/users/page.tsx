@@ -58,9 +58,13 @@ export default function UsersListPage() {
   // Function to refresh contacts list
   const refreshContacts = () => {
     if (_isSuperAdmin) {
-      contactService.getAllContactsSuperAdmin().then(setData).catch(() => {})
+      contactService.getAllContactsSuperAdmin().then((result) => {
+        setData(Array.isArray(result) ? result : [])
+      }).catch(() => setData([]))
     } else if (user?.companyId) {
-      getContacts(user.companyId).then(setData).catch(() => {})
+      getContacts(user.companyId).then((result) => {
+        setData(Array.isArray(result) ? result : [])
+      }).catch(() => setData([]))
     }
   }
 
@@ -70,8 +74,8 @@ export default function UsersListPage() {
   }, [user?.companyId, getContacts])
   const { deleteContact, isLoading: isDeleting } = useDeleteContact()
 
-  const allContacts = data || []
-  const totalElements = data?.length || 0
+  const allContacts = Array.isArray(data) ? data : []
+  const totalElements = Array.isArray(data) ? data.length : 0
 
   // Filter contacts based on search term across multiple columns
   const filteredContacts = useMemo(() => {
