@@ -1,5 +1,16 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === 'development';
+const allowTraefik = process.env.NEXT_PUBLIC_ALLOW_TRAEFIK === 'true';
+
+const connectSrc = [
+  "'self'",
+  "https://dev.mboasms.com",
+  "https://*.mboasms.com",
+  ...(isDev ? ["http://localhost:*"] : []),
+  ...(allowTraefik ? ["https://*.traefik.me"] : []),
+].join(' ');
+
 const securityHeaders = [
   {
     key: 'X-DNS-Prefetch-Control',
@@ -37,7 +48,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://dev.mboasms.com https://*.mboasms.com",
+      `connect-src ${connectSrc}`,
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -47,7 +58,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  
+
   // Enable standalone output for Docker
   output: 'standalone',
 
