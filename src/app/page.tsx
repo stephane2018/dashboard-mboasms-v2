@@ -7,8 +7,11 @@ import { motion } from "framer-motion";
 import { ArrowRight2, Code1, MessageText1, Mobile, Global, SearchNormal1, Sms, Clock, ShieldTick, Chart2, Call, Whatsapp, DirectSend } from "iconsax-react";
 import Image from "next/image";
 import { usePricing } from "@/core/hooks/usePricing";
+import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices";
 import type { PricingPlanType } from "@/core/models/pricing";
+import type { SmsCountryPriceType } from "@/core/models/sms-country-price";
 import { useState, useMemo, lazy, Suspense } from "react";
+import Link from "next/link";
 
 // ─── Lazy-loaded heavy sections ──────────────────────────────────────────────
 
@@ -82,10 +85,7 @@ const content = {
       noPlan: "Aucun plan disponible pour le moment.",
       customSolution: "Besoin d'une solution sur mesure pour votre entreprise ?",
       contactSales: "Contacter l'equipe commerciale",
-      regionAll: "Tous",
-      regionAfrica: "Afrique",
-      regionEurope: "Europe",
-      regionAmerica: "Amerique",
+      viewAll: "Voir tous les pays",
     },
     stats: {
       title: "La confiance a l'echelle mondiale",
@@ -174,10 +174,7 @@ const content = {
       noPlan: "No plans available at the moment.",
       customSolution: "Need a custom solution for your business?",
       contactSales: "Contact sales team",
-      regionAll: "All",
-      regionAfrica: "Africa",
-      regionEurope: "Europe",
-      regionAmerica: "America",
+      viewAll: "View all countries",
     },
     stats: {
       title: "Trust at a global scale",
@@ -210,25 +207,15 @@ const content = {
   },
 };
 
-// ─── Country Pricing Data ────────────────────────────────────────────────────
+// ─── Country Flag Utility ────────────────────────────────────────────────────
 
-type Region = "all" | "africa" | "europe" | "america";
-
-const countryPricing = [
-  { code: "CM", flag: "🇨🇲", name: { fr: "Cameroun", en: "Cameroon" }, price: 23, currency: "FCFA", region: "africa" as Region, popular: true },
-  { code: "SN", flag: "🇸🇳", name: { fr: "Senegal", en: "Senegal" }, price: 25, currency: "FCFA", region: "africa" as Region },
-  { code: "CI", flag: "🇨🇮", name: { fr: "Cote d'Ivoire", en: "Ivory Coast" }, price: 25, currency: "FCFA", region: "africa" as Region },
-  { code: "NG", flag: "🇳🇬", name: { fr: "Nigeria", en: "Nigeria" }, price: 4.5, currency: "NGN", region: "africa" as Region },
-  { code: "GH", flag: "🇬🇭", name: { fr: "Ghana", en: "Ghana" }, price: 0.04, currency: "GHS", region: "africa" as Region },
-  { code: "ZA", flag: "🇿🇦", name: { fr: "Afrique du Sud", en: "South Africa" }, price: 0.35, currency: "ZAR", region: "africa" as Region },
-  { code: "MA", flag: "🇲🇦", name: { fr: "Maroc", en: "Morocco" }, price: 0.30, currency: "MAD", region: "africa" as Region },
-  { code: "TN", flag: "🇹🇳", name: { fr: "Tunisie", en: "Tunisia" }, price: 0.15, currency: "TND", region: "africa" as Region },
-  { code: "FR", flag: "🇫🇷", name: { fr: "France", en: "France" }, price: 0.065, currency: "EUR", region: "europe" as Region },
-  { code: "GB", flag: "🇬🇧", name: { fr: "Royaume-Uni", en: "United Kingdom" }, price: 0.045, currency: "GBP", region: "europe" as Region },
-  { code: "BE", flag: "🇧🇪", name: { fr: "Belgique", en: "Belgium" }, price: 0.07, currency: "EUR", region: "europe" as Region },
-  { code: "US", flag: "🇺🇸", name: { fr: "Etats-Unis", en: "United States" }, price: 0.015, currency: "USD", region: "america" as Region, cheapest: true },
-  { code: "CA", flag: "🇨🇦", name: { fr: "Canada", en: "Canada" }, price: 0.02, currency: "CAD", region: "america" as Region },
-];
+function countryCodeToFlag(code: string): string {
+  const codePoints = code
+    .toUpperCase()
+    .split("")
+    .map((c) => 0x1f1e6 + c.charCodeAt(0) - 65);
+  return String.fromCodePoint(...codePoints);
+}
 
 // ─── Globe Data ──────────────────────────────────────────────────────────────
 
@@ -326,28 +313,25 @@ export default function Home() {
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [countrySearch, setCountrySearch] = useState("");
-  const [regionFilter, setRegionFilter] = useState<Region>("all");
   const { activePlansQuery } = usePricing();
+  const countryPricesQuery = useSmsCountryPrices(0, 12);
 
   const activePlans = activePlansQuery.data || [];
   const isLoadingPlans = activePlansQuery.isLoading;
+  const countryPrices = countryPricesQuery.data?.content || [];
+  const isLoadingCountries = countryPricesQuery.isLoading;
+  const totalCountries = countryPricesQuery.data?.totalElements || 0;
   const t = content[lang];
 
   const filteredCountries = useMemo(() => {
-    let results = countryPricing;
-    if (regionFilter !== "all") {
-      results = results.filter((c) => c.region === regionFilter);
-    }
-    if (countrySearch) {
-      const search = countrySearch.toLowerCase();
-      results = results.filter(
-        (c) =>
-          c.name[lang].toLowerCase().includes(search) ||
-          c.code.toLowerCase().includes(search)
-      );
-    }
-    return results;
-  }, [countrySearch, lang, regionFilter]);
+    if (!countrySearch) return countryPrices;
+    const search = countrySearch.toLowerCase();
+    return countryPrices.filter(
+      (c) =>
+        c.countryName.toLowerCase().includes(search) ||
+        c.countryCode.toLowerCase().includes(search)
+    );
+  }, [countrySearch, countryPrices]);
 
   // Hero uses motion for the initial page load animation (worth it)
   const stagger = {
@@ -756,28 +740,6 @@ export default function Home() {
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">{t.pricing.subtitle}</p>
           </div>
 
-          {/* Region filters */}
-          <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {(["all", "africa", "europe", "america"] as Region[]).map((region) => {
-              const labels = { all: t.pricing.regionAll, africa: t.pricing.regionAfrica, europe: t.pricing.regionEurope, america: t.pricing.regionAmerica };
-              const regionIcons: Record<Region, string> = { all: "🌍", africa: "🌍", europe: "🇪🇺", america: "🌎" };
-              return (
-                <button
-                  key={region}
-                  onClick={() => setRegionFilter(region)}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    regionFilter === region
-                      ? "bg-primary text-white shadow-md shadow-primary/20"
-                      : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                  }`}
-                >
-                  <span className="text-xs">{regionIcons[region]}</span>
-                  {labels[region]}
-                </button>
-              );
-            })}
-          </div>
-
           {/* Country search */}
           <div className="max-w-md mx-auto mb-10">
             <div className="relative">
@@ -792,41 +754,51 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Country grid — plain CSS transitions instead of AnimatePresence */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-16">
-            {filteredCountries.map((country) => (
-              <div
-                key={country.code}
-                className={`group relative flex items-center justify-between p-4 rounded-xl bg-card border hover:shadow-md hover:shadow-primary/5 transition-all duration-300 cursor-default ${
-                  (country as typeof countryPricing[0] & { popular?: boolean }).popular
-                    ? "border-primary/40 ring-1 ring-primary/10"
-                    : "border-border hover:border-primary/30"
-                }`}
-              >
-                {(country as typeof countryPricing[0] & { popular?: boolean }).popular && (
-                  <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary text-white rounded-full">
-                    {lang === "fr" ? "Populaire" : "Popular"}
-                  </span>
-                )}
-                {(country as typeof countryPricing[0] & { cheapest?: boolean }).cheapest && (
-                  <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500 text-white rounded-full">
-                    {lang === "fr" ? "Meilleur prix" : "Best price"}
-                  </span>
-                )}
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{country.flag}</span>
-                  <div>
-                    <div className="font-medium text-foreground text-sm">{country.name[lang]}</div>
-                    <div className="text-xs text-muted-foreground">{country.code}</div>
+          {/* Country grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
+            {isLoadingCountries ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-card border border-border rounded-xl h-20"></div>
+                </div>
+              ))
+            ) : filteredCountries.length > 0 ? (
+              filteredCountries.map((country) => (
+                <div
+                  key={country.id}
+                  className="group flex items-center justify-between p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 cursor-default"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{countryCodeToFlag(country.countryCode)}</span>
+                    <div>
+                      <div className="font-medium text-foreground text-sm">{country.countryName}</div>
+                      <div className="text-xs text-muted-foreground">{country.countryCode}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-primary text-lg">{country.pricePerSms}</div>
+                    <div className="text-xs text-muted-foreground">{t.pricing.perSms}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold text-primary text-lg">{country.price}</div>
-                  <div className="text-xs text-muted-foreground">{country.currency} {t.pricing.perSms}</div>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-muted-foreground">{lang === "fr" ? "Aucun pays trouvé" : "No country found"}</p>
               </div>
-            ))}
+            )}
           </div>
+
+          {/* See all countries button */}
+          {totalCountries > 12 && (
+            <div className="text-center mb-16">
+              <Button variant="outline" className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 font-semibold active:scale-[0.98] transition-all duration-200" asChild>
+                <Link href="/pricing" className="flex items-center">
+                  {lang === "fr" ? `Voir tous les pays (${totalCountries})` : `View all countries (${totalCountries})`}
+                  <ArrowRight2 size="16" color="currentColor" className="ml-2" />
+                </Link>
+              </Button>
+            </div>
+          )}
 
           {/* Plans Section */}
           <div className="mt-8">
