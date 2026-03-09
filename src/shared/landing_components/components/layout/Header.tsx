@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight2, CloseCircle, User, Logout, Profile } from 'iconsax-react';
 import ScheduleCallModal from '../ScheduleCallModal';
@@ -25,9 +26,15 @@ import {
 
 const Header = () => {
   const { user, clearUser } = useUserStore();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const logoSrc = mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,7 +127,7 @@ const Header = () => {
               className="flex items-center"
             >
               <Image 
-                src="/icones/logo.svg" 
+                src={logoSrc} 
                 alt="MboaSMS Logo" 
                 width={120} 
                 height={40} 
@@ -219,14 +226,10 @@ const Header = () => {
                 >
                   <Link
                     href="/compte"
-                    className="relative overflow-hidden bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2 rounded-full group inline-flex items-center text-sm font-medium"
+                    className="relative bg-primary text-white px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
                   >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-purple-500 group-hover:from-purple-500 group-hover:to-primary transition-all duration-500"></span>
-                    <span className="absolute -inset-px bg-gradient-to-r from-primary-light to-primary rounded-full animate-gradient-x opacity-50 group-hover:opacity-70 blur-sm transition-opacity duration-500"></span>
-                    <span className="relative flex items-center justify-center">
-                      Créer un compte
-                      <ArrowRight2 size="18" variant="Bulk" color="currentColor"  className=" text-primary  ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
+                    Créer un compte
+                    <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                   </Link>
                 </motion.div>
                 <motion.div
@@ -237,13 +240,11 @@ const Header = () => {
                 >
                   <button
                     onClick={handleLoginClick}
-                    className="relative overflow-hidden px-5 py-2 rounded-full group inline-flex items-center text-sm font-medium"
+                    className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                   >
-                    <span className="absolute inset-0 border border-primary rounded-full group-hover:border-transparent group-hover:bg-primary/10 transition-all duration-300"></span>
-                    <span className="absolute inset-0 border-2 border-transparent bg-gradient-to-r from-primary-light via-primary to-purple-500 opacity-0 group-hover:opacity-100 rounded-full mask-border animate-gradient-x transition-opacity duration-300"></span>
-                    <span className="relative text-primary flex items-center justify-center">
+                    <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
                       Se connecter
-                      <ArrowRight2 size="18" variant="Bulk" color="currentColor" className="text-primary ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                     </span>
                   </button>
                 </motion.div>
@@ -285,7 +286,7 @@ const Header = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <Image 
-                      src="/icones/logo.svg" 
+                      src={logoSrc} 
                       alt="MboaSMS Logo" 
                       width={80} 
                       height={28} 
@@ -410,15 +411,11 @@ const Header = () => {
                       >
                         <Link
                           href="/compte"
-                          className="relative overflow-hidden bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-3 rounded-full group flex items-center justify-center text-base font-medium w-full"
+                          className="bg-primary text-white px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full shadow-md shadow-primary/25 active:scale-[0.98] transition-all duration-200"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-purple-500 group-hover:from-purple-500 group-hover:to-primary transition-all duration-500"></span>
-                          <span className="absolute -inset-px bg-gradient-to-r from-primary-light to-primary rounded-full animate-gradient-x opacity-50 group-hover:opacity-70 blur-sm transition-opacity duration-500"></span>
-                          <span className="relative flex items-center justify-center">
-                            Créer un compte
-                            <ArrowRight2 size="18" variant="Bulk" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                          </span>
+                          Créer un compte
+                          <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                         </Link>
                       </motion.div>
                       <motion.div
@@ -429,13 +426,11 @@ const Header = () => {
                       >
                         <button
                           onClick={handleLoginClick}
-                          className="relative overflow-hidden px-5 py-3 rounded-full group flex items-center justify-center text-base font-medium w-full"
+                          className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                         >
-                          <span className="absolute inset-0 border border-primary rounded-full group-hover:border-transparent group-hover:bg-primary/10 transition-all duration-300"></span>
-                          <span className="absolute inset-0 border-2 border-transparent bg-gradient-to-r from-primary-light via-primary to-purple-500 opacity-0 group-hover:opacity-100 rounded-full mask-border animate-gradient-x transition-opacity duration-300"></span>
-                          <span className="relative text-primary flex items-center justify-center">
+                          <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
                             Se connecter
-                            <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                            <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                           </span>
                         </button>
                       </motion.div>

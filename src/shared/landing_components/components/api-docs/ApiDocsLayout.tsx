@@ -134,7 +134,7 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-20 left-0 z-30 h-[calc(100vh-5rem)] w-72 bg-card border-r border-border transition-transform duration-300 overflow-y-auto",
+          "fixed top-20 left-0 z-50 h-[calc(100vh-5rem)] w-72 bg-card border-r border-border transition-transform duration-300 overflow-y-auto",
           "lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
