@@ -2,17 +2,24 @@
 
 import Header from "@/shared/landing_components/components/layout/Header";
 import Footer from "@/shared/landing_components/components/layout/Footer";
-import ScheduleCallModal from "@/shared/landing_components/components/ScheduleCallModal";
-import CollaboratorLogos from "@/shared/landing_components/components/sections/CollaboratorLogos";
-import ServicePresentation from "@/shared/landing_components/components/sections/ServicePresentation";
-import Testimonials from "@/shared/landing_components/components/sections/Testimonials";
 import { Button } from "@/shared/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowRight2, Code1, MessageText1, Mobile, Global, SearchNormal1, Sms, Clock, ShieldTick, Chart2, Call, Whatsapp, DirectSend } from "iconsax-react";
 import Image from "next/image";
 import { usePricing } from "@/core/hooks/usePricing";
 import type { PricingPlanType } from "@/core/models/pricing";
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
+
+// ─── Lazy-loaded heavy sections ──────────────────────────────────────────────
+
+const ServicePresentation = lazy(() => import("@/shared/landing_components/components/sections/ServicePresentation"));
+const Testimonials = lazy(() => import("@/shared/landing_components/components/sections/Testimonials"));
+const CollaboratorLogos = lazy(() => import("@/shared/landing_components/components/sections/CollaboratorLogos"));
+const ScheduleCallModal = lazy(() => import("@/shared/landing_components/components/ScheduleCallModal"));
+
+function SectionFallback() {
+  return <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div></div>;
+}
 
 // ─── i18n Content ────────────────────────────────────────────────────────────
 
@@ -223,7 +230,7 @@ const countryPricing = [
   { code: "CA", flag: "🇨🇦", name: { fr: "Canada", en: "Canada" }, price: 0.02, currency: "CAD", region: "america" as Region },
 ];
 
-// ─── Globe Dots (simplified world map positions) ─────────────────────────────
+// ─── Globe Data ──────────────────────────────────────────────────────────────
 
 const globeDots = [
   // Africa
@@ -266,64 +273,25 @@ const globeDots = [
   { x: 85, y: 62, active: false },
 ];
 
-// ─── Connection lines between dots ──────────────────────────────────────────
-
 const connections = [
-  { from: { x: 52, y: 48 }, to: { x: 48, y: 25 } },  // CM -> FR
-  { from: { x: 52, y: 48 }, to: { x: 22, y: 30 } },  // CM -> US
-  { from: { x: 52, y: 48 }, to: { x: 48, y: 42 } },  // CM -> NG
-  { from: { x: 48, y: 25 }, to: { x: 46, y: 22 } },  // FR -> GB
-  { from: { x: 48, y: 25 }, to: { x: 47, y: 24 } },  // FR -> BE
-  { from: { x: 22, y: 30 }, to: { x: 20, y: 22 } },  // US -> CA
-  { from: { x: 44, y: 45 }, to: { x: 43, y: 42 } },  // CI -> SN
+  { from: { x: 52, y: 48 }, to: { x: 48, y: 25 } },
+  { from: { x: 52, y: 48 }, to: { x: 22, y: 30 } },
+  { from: { x: 52, y: 48 }, to: { x: 48, y: 42 } },
+  { from: { x: 48, y: 25 }, to: { x: 46, y: 22 } },
+  { from: { x: 48, y: 25 }, to: { x: 47, y: 24 } },
+  { from: { x: 22, y: 30 }, to: { x: 20, y: 22 } },
+  { from: { x: 44, y: 45 }, to: { x: 43, y: 42 } },
 ];
 
-// ─── Animated SMS Bubble Component ──────────────────────────────────────────
-
-function SmsBubble({ delay, x, y }: { delay: number; x: number; y: number }) {
-  return (
-    <motion.div
-      className="absolute pointer-events-none"
-      style={{ left: `${x}%`, top: `${y}%` }}
-      initial={{ opacity: 0, scale: 0, y: 0 }}
-      animate={{
-        opacity: [0, 1, 1, 0],
-        scale: [0.5, 1, 1, 0.7],
-        y: [0, -30, -80, -120],
-        x: [0, 10, 20, 30],
-      }}
-      transition={{
-        duration: 4,
-        delay,
-        repeat: Infinity,
-        repeatDelay: 2,
-        ease: "easeOut",
-      }}
-    >
-      <div className="bg-primary/90 backdrop-blur-sm text-white text-[10px] px-2.5 py-1.5 rounded-xl rounded-bl-sm shadow-lg shadow-primary/20 whitespace-nowrap">
-        <Sms size="10" color="currentColor" className="inline mr-1" />
-        SMS
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Language Toggle Component ──────────────────────────────────────────────
+// ─── Language Toggle (lightweight, no motion) ────────────────────────────────
 
 function LanguageToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="fixed top-24 right-6 z-40 flex items-center rounded-full bg-card/80 backdrop-blur-md border border-border shadow-lg overflow-hidden"
-    >
+    <div className="fixed top-24 right-6 z-40 flex items-center rounded-full bg-card/80 backdrop-blur-md border border-border shadow-lg overflow-hidden animate-fade-in-up">
       <button
         onClick={() => setLang("fr")}
         className={`px-3 py-1.5 text-xs font-semibold transition-all duration-300 ${
-          lang === "fr"
-            ? "bg-primary text-white"
-            : "text-muted-foreground hover:text-foreground"
+          lang === "fr" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         FR
@@ -331,14 +299,24 @@ function LanguageToggle({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr
       <button
         onClick={() => setLang("en")}
         className={`px-3 py-1.5 text-xs font-semibold transition-all duration-300 ${
-          lang === "en"
-            ? "bg-primary text-white"
-            : "text-muted-foreground hover:text-foreground"
+          lang === "en" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         EN
       </button>
-    </motion.div>
+    </div>
+  );
+}
+
+// ─── Checkmark SVG (reused many times, extracted) ────────────────────────────
+
+function Check({ className = "text-primary" }: { className?: string }) {
+  return (
+    <div className={`w-5 h-5 rounded-full bg-current/10 flex items-center justify-center mr-3 shrink-0 ${className}`}>
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
   );
 }
 
@@ -371,14 +349,11 @@ export default function Home() {
     return results;
   }, [countrySearch, lang, regionFilter]);
 
+  // Hero uses motion for the initial page load animation (worth it)
   const stagger = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08 },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
   };
-
   const fadeUp = {
     hidden: { opacity: 0, y: 24 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } },
@@ -389,9 +364,8 @@ export default function Home() {
       <Header />
       <LanguageToggle lang={lang} setLang={setLang} />
 
-      {/* ─── Hero Section ─────────────────────────────────────────────── */}
+      {/* ─── Hero Section (keeps motion — it's the first thing users see) ── */}
       <section className="relative py-20 md:py-32 px-6 md:px-12 lg:px-24 overflow-hidden">
-        {/* Background gradient orbs */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-primary/20 to-purple-600/10 rounded-full filter blur-[100px] dark:from-primary/15 dark:to-purple-600/8"></div>
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-amber-500/10 to-primary/10 rounded-full filter blur-[80px] dark:from-amber-500/5 dark:to-primary/8"></div>
@@ -401,11 +375,7 @@ export default function Home() {
         <div className="container mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left: Text content */}
-            <motion.div
-              variants={stagger}
-              initial="hidden"
-              animate="visible"
-            >
+            <motion.div variants={stagger} initial="hidden" animate="visible">
               <motion.div variants={fadeUp}>
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
                   <Global size="16" color="currentColor" variant="Bold" />
@@ -413,10 +383,7 @@ export default function Home() {
                 </span>
               </motion.div>
 
-              <motion.h1
-                variants={fadeUp}
-                className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
-              >
+              <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
                 <span className="text-foreground">{t.hero.title1}</span>
                 <br />
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-amber-500 bg-clip-text text-transparent bg-300% animate-gradient-x">
@@ -424,19 +391,12 @@ export default function Home() {
                 </span>
               </motion.h1>
 
-              <motion.p
-                variants={fadeUp}
-                className="text-lg md:text-xl text-muted-foreground max-w-lg mb-10 leading-relaxed"
-              >
+              <motion.p variants={fadeUp} className="text-lg md:text-xl text-muted-foreground max-w-lg mb-10 leading-relaxed">
                 {t.hero.subtitle}
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Button
-                  size="lg"
-                  className="relative overflow-hidden rounded-full group text-base px-8 h-12"
-                  asChild
-                >
+                <Button size="lg" className="relative overflow-hidden rounded-full group text-base px-8 h-12" asChild>
                   <a href="/compte">
                     <span className="absolute inset-0 bg-gradient-to-r from-primary to-purple-500 group-hover:from-purple-500 group-hover:to-primary transition-all duration-500"></span>
                     <span className="relative flex items-center justify-center text-white font-medium">
@@ -445,19 +405,11 @@ export default function Home() {
                     </span>
                   </a>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full border-border hover:border-primary/50 hover:bg-primary/5 text-foreground h-12 px-8 text-base"
-                  asChild
-                >
-                  <a href="#pricing">
-                    {t.hero.ctaSecondary}
-                  </a>
+                <Button variant="outline" size="lg" className="rounded-full border-border hover:border-primary/50 hover:bg-primary/5 text-foreground h-12 px-8 text-base" asChild>
+                  <a href="#pricing">{t.hero.ctaSecondary}</a>
                 </Button>
               </motion.div>
 
-              {/* Stats row */}
               <motion.div variants={fadeUp} className="flex gap-8 md:gap-12">
                 {[
                   { value: t.hero.stat1, label: t.hero.stat1Label },
@@ -472,36 +424,29 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Right: Globe visualization */}
+            {/* Right: Globe — CSS-only dots, only motion for the container fade-in */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-[450px] md:h-[550px] hidden lg:block"
             >
-              {/* Globe container */}
               <div className="absolute inset-0 flex items-center justify-center">
-                {/* Globe circle */}
                 <div className="relative w-[420px] h-[420px]">
-                  {/* Globe outline */}
                   <div className="absolute inset-0 rounded-full border border-border/50 dark:border-border/30"></div>
                   <div className="absolute inset-4 rounded-full border border-border/30 dark:border-border/20"></div>
                   <div className="absolute inset-8 rounded-full border border-border/20 dark:border-border/10"></div>
-
-                  {/* Horizontal grid lines */}
                   <div className="absolute top-1/4 left-0 right-0 border-t border-border/15 dark:border-border/10"></div>
                   <div className="absolute top-1/2 left-0 right-0 border-t border-border/20 dark:border-border/10"></div>
                   <div className="absolute top-3/4 left-0 right-0 border-t border-border/15 dark:border-border/10"></div>
-
-                  {/* Vertical grid lines */}
                   <div className="absolute left-1/4 top-0 bottom-0 border-l border-border/15 dark:border-border/10"></div>
                   <div className="absolute left-1/2 top-0 bottom-0 border-l border-border/20 dark:border-border/10"></div>
                   <div className="absolute left-3/4 top-0 bottom-0 border-l border-border/15 dark:border-border/10"></div>
 
-                  {/* SVG connection lines */}
+                  {/* SVG connection lines — CSS animation instead of motion */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                     {connections.map((conn, i) => (
-                      <motion.line
+                      <line
                         key={i}
                         x1={conn.from.x}
                         y1={conn.from.y}
@@ -510,40 +455,27 @@ export default function Home() {
                         stroke="currentColor"
                         className="text-primary/30"
                         strokeWidth="0.3"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: [0, 0.6, 0] }}
-                        transition={{
-                          duration: 3,
-                          delay: i * 0.5,
-                          repeat: Infinity,
-                          repeatDelay: 1,
-                          ease: "easeInOut",
-                        }}
+                        style={{ animation: `svg-line-pulse 3s ${i * 0.5}s ease-in-out infinite` }}
                       />
                     ))}
                   </svg>
 
-                  {/* Globe dots */}
+                  {/* Globe dots — pure CSS animations instead of 33 motion.div */}
                   {globeDots.map((dot, i) => (
-                    <motion.div
+                    <div
                       key={i}
                       className="absolute"
                       style={{
                         left: `${dot.x}%`,
                         top: `${dot.y}%`,
+                        animation: `dot-appear 0.4s ${0.5 + i * 0.05}s ease-out both`,
                         transform: "translate(-50%, -50%)",
                       }}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.5 + i * 0.05, duration: 0.4 }}
                     >
                       {dot.active ? (
                         <div className="relative group cursor-pointer">
-                          {/* Pulse ring */}
                           <div className="absolute inset-0 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/30 animate-pulse-ring"></div>
-                          {/* Dot */}
                           <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-lg shadow-primary/40 -translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-200"></div>
-                          {/* Label on hover */}
                           {dot.label && (
                             <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-card text-foreground text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md whitespace-nowrap border border-border">
                               {dot.label}
@@ -553,14 +485,27 @@ export default function Home() {
                       ) : (
                         <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 -translate-x-1/2 -translate-y-1/2"></div>
                       )}
-                    </motion.div>
+                    </div>
                   ))}
 
-                  {/* Floating SMS bubbles */}
-                  <SmsBubble delay={0} x={48} y={35} />
-                  <SmsBubble delay={1.5} x={22} y={28} />
-                  <SmsBubble delay={3} x={55} y={60} />
-                  <SmsBubble delay={4.5} x={70} y={30} />
+                  {/* SMS bubbles — CSS animation instead of 4 motion.div with infinite loops */}
+                  {[
+                    { x: 48, y: 35, delay: 0 },
+                    { x: 22, y: 28, delay: 1.5 },
+                    { x: 55, y: 60, delay: 3 },
+                    { x: 70, y: 30, delay: 4.5 },
+                  ].map((bubble, i) => (
+                    <div
+                      key={i}
+                      className="absolute pointer-events-none animate-sms-float"
+                      style={{ left: `${bubble.x}%`, top: `${bubble.y}%`, animationDelay: `${bubble.delay}s` }}
+                    >
+                      <div className="bg-primary/90 backdrop-blur-sm text-white text-[10px] px-2.5 py-1.5 rounded-xl rounded-bl-sm shadow-lg shadow-primary/20 whitespace-nowrap">
+                        <Sms size="10" color="currentColor" className="inline mr-1" />
+                        SMS
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -568,24 +513,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Stats Bar ────────────────────────────────────────────────── */}
+      {/* ─── Stats Bar (CSS animations) ──────────────────────────────── */}
       <section className="py-12 border-y border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-6">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={stagger}
-            className="text-center mb-8"
-          >
-            <motion.h2 variants={fadeUp} className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              {t.stats.title}
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground">
-              {t.stats.subtitle}
-            </motion.p>
-          </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="text-center mb-8 animate-fade-in-up">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.stats.title}</h2>
+            <p className="text-muted-foreground">{t.stats.subtitle}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 stagger-children">
             {t.stats.items.map((stat, i) => {
               const icons = [
                 <Global key="g" size="22" color="currentColor" variant="Bold" />,
@@ -594,14 +529,9 @@ export default function Home() {
                 <Clock key="t" size="22" color="currentColor" variant="Bold" />,
               ];
               return (
-                <motion.div
+                <div
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.5 }}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="text-center p-6 rounded-2xl bg-background/80 border border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group cursor-default"
+                  className="text-center p-6 rounded-2xl bg-background/80 border border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 group cursor-default"
                 >
                   <div className="w-10 h-10 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mx-auto mb-3 text-primary transition-colors duration-300">
                     {icons[i]}
@@ -610,54 +540,44 @@ export default function Home() {
                     {stat.value}
                   </div>
                   <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* ─── Service Presentation ─────────────────────────────────────── */}
-      <ServicePresentation />
+      {/* ─── Service Presentation (lazy-loaded) ─────────────────────── */}
+      <Suspense fallback={<SectionFallback />}>
+        <ServicePresentation />
+      </Suspense>
 
-      {/* ─── Testimonials ─────────────────────────────────────────────── */}
-      <Testimonials />
+      {/* ─── Testimonials (lazy-loaded) ─────────────────────────────── */}
+      <Suspense fallback={<SectionFallback />}>
+        <Testimonials />
+      </Suspense>
 
-      {/* ─── Collaborator Logos ───────────────────────────────────────── */}
-      <CollaboratorLogos />
+      {/* ─── Collaborator Logos (lazy-loaded) ───────────────────────── */}
+      <Suspense fallback={<SectionFallback />}>
+        <CollaboratorLogos />
+      </Suspense>
 
-      {/* ─── Platforms Section ────────────────────────────────────────── */}
+      {/* ─── Platforms Section (CSS animations) ─────────────────────── */}
       <section className="py-20 md:py-28 bg-background relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-b from-primary/8 to-transparent rounded-full filter blur-[100px]"></div>
 
         <div className="container mx-auto px-6 relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={stagger}
-            className="text-center mb-16"
-          >
-            <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+          <div className="text-center mb-16 animate-fade-in-up">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
               {t.platforms.badge}
-            </motion.span>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t.platforms.title}
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground text-lg max-w-xl mx-auto">
-              {t.platforms.subtitle}
-            </motion.p>
-          </motion.div>
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t.platforms.title}</h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">{t.platforms.subtitle}</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
             {/* API Card */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="group relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5"
-            >
+            <div className="group relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 animate-fade-in-up">
               <div className="h-1 bg-gradient-to-r from-primary via-purple-500 to-primary-light"></div>
               <div className="p-8 md:p-10">
                 <div className="flex items-center justify-between mb-6">
@@ -671,8 +591,6 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-3">{t.platforms.api.title}</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">{t.platforms.api.desc}</p>
-
-                {/* Mini code preview */}
                 <div className="mb-6 rounded-lg bg-background/80 border border-border/50 p-3 font-mono text-xs overflow-hidden">
                   <div className="flex items-center gap-1.5 mb-2">
                     <div className="w-2 h-2 rounded-full bg-red-400"></div>
@@ -684,15 +602,10 @@ export default function Home() {
                     <span className="text-foreground/70">/api/v1/sms/send</span>
                   </div>
                 </div>
-
                 <ul className="space-y-3 mb-8">
                   {t.platforms.api.features.map((feature, i) => (
                     <li key={i} className="flex items-center text-sm">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mr-3 shrink-0">
-                        <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
+                      <Check />
                       <span className="text-foreground">{feature}</span>
                     </li>
                   ))}
@@ -704,16 +617,10 @@ export default function Home() {
                   </a>
                 </Button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Bulk SMS Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="group relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5"
-            >
+            <div className="group relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
               <div className="h-1 bg-gradient-to-r from-amber-500 via-primary to-purple-500"></div>
               <div className="p-8 md:p-10">
                 <div className="flex items-center justify-between mb-6">
@@ -727,8 +634,6 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-3">{t.platforms.bulk.title}</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">{t.platforms.bulk.desc}</p>
-
-                {/* Mini dashboard preview */}
                 <div className="mb-6 rounded-lg bg-background/80 border border-border/50 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Dashboard</div>
@@ -743,15 +648,10 @@ export default function Home() {
                     <span className="text-[10px] text-primary font-medium">75%</span>
                   </div>
                 </div>
-
                 <ul className="space-y-3 mb-8">
                   {t.platforms.bulk.features.map((feature, i) => (
                     <li key={i} className="flex items-center text-sm">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mr-3 shrink-0">
-                        <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
+                      <Check />
                       <span className="text-foreground">{feature}</span>
                     </li>
                   ))}
@@ -763,14 +663,13 @@ export default function Home() {
                   </a>
                 </Button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── Mobile App Section ───────────────────────────────────────── */}
       <section className="py-20 bg-gradient-to-br from-[#2D1250] via-[#3A1659] to-[#1E0A3C] relative overflow-hidden">
-        {/* Decorative */}
         <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
           <div className="absolute top-10 left-10 transform rotate-12">
             <Mobile size="64" color="currentColor" variant="Bold" className="text-white" />
@@ -782,64 +681,30 @@ export default function Home() {
 
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative h-[400px] md:h-[500px] order-2 md:order-1"
-            >
+            <div className="relative h-[400px] md:h-[500px] order-2 md:order-1">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#2D1250] md:hidden z-10"></div>
-              <Image
-                src="/phone.png"
-                alt="MboaSMS Mobile App"
-                fill
-                className="object-contain z-0"
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="order-1 md:order-2"
-            >
+              <Image src="/phone.png" alt="MboaSMS Mobile App" fill className="object-contain z-0" />
+            </div>
+            <div className="order-1 md:order-2 animate-fade-in-up">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/90 text-sm font-medium mb-6">
                 <Mobile size="16" color="currentColor" variant="Bold" />
                 {t.mobileApp.badge}
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">
-                {t.mobileApp.title}
-              </h2>
-              <p className="text-white/70 mb-6 text-lg leading-relaxed">
-                {t.mobileApp.subtitle}
-              </p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">{t.mobileApp.title}</h2>
+              <p className="text-white/70 mb-6 text-lg leading-relaxed">{t.mobileApp.subtitle}</p>
 
-              {/* Features list */}
               <ul className="space-y-3 mb-8">
                 {t.mobileApp.features.map((feature, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="flex items-center text-sm text-white/80"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center mr-3 shrink-0">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
+                  <li key={i} className="flex items-center text-sm text-white/80">
+                    <Check className="text-white/50" />
                     {feature}
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Button variant="default" size="lg" className="rounded-full bg-white hover:bg-white/90 text-[#3A1659] px-6 h-auto py-3 font-medium" asChild>
                   <a href="#" className="flex items-center">
-                    {/* Google Play icon */}
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 010 1.38l-2.302 2.302L15.396 13l2.302-2.492zM5.864 3.468L16.8 9.8l-2.302 2.302L5.864 3.468z" />
                     </svg>
@@ -848,7 +713,6 @@ export default function Home() {
                 </Button>
                 <Button variant="default" size="lg" className="rounded-full bg-gradient-to-r from-purple-500 to-primary hover:from-primary hover:to-purple-500 text-white px-6 h-auto py-3 border-0 font-medium" asChild>
                   <a href="#" className="flex items-center">
-                    {/* Apple icon */}
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                     </svg>
@@ -875,50 +739,30 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Country Pricing Section ──────────────────────────────────── */}
+      {/* ─── Country Pricing Section (no AnimatePresence) ──────────── */}
       <section id="pricing" className="py-20 md:py-28 px-6 md:px-12 lg:px-24 relative overflow-hidden bg-background">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-primary/10 to-transparent rounded-full filter blur-[80px]"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/5 to-transparent rounded-full filter blur-[80px]"></div>
 
         <div className="container mx-auto relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={stagger}
-            className="text-center mb-12"
-          >
-            <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+          <div className="text-center mb-12 animate-fade-in-up">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
               <Global size="16" color="currentColor" variant="Bold" />
               {t.pricing.badge}
-            </motion.span>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t.pricing.title}
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground text-lg max-w-xl mx-auto">
-              {t.pricing.subtitle}
-            </motion.p>
-          </motion.div>
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t.pricing.title}</h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">{t.pricing.subtitle}</p>
+          </div>
 
           {/* Region filters */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex flex-wrap justify-center gap-2 mb-6"
-          >
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
             {(["all", "africa", "europe", "america"] as Region[]).map((region) => {
-              const labels = {
-                all: t.pricing.regionAll,
-                africa: t.pricing.regionAfrica,
-                europe: t.pricing.regionEurope,
-                america: t.pricing.regionAmerica,
-              };
+              const labels = { all: t.pricing.regionAll, africa: t.pricing.regionAfrica, europe: t.pricing.regionEurope, america: t.pricing.regionAmerica };
               const regionIcons: Record<Region, string> = { all: "🌍", africa: "🌍", europe: "🇪🇺", america: "🌎" };
               return (
                 <button
@@ -935,15 +779,10 @@ export default function Home() {
                 </button>
               );
             })}
-          </motion.div>
+          </div>
 
           {/* Country search */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-md mx-auto mb-10"
-          >
+          <div className="max-w-md mx-auto mb-10">
             <div className="relative">
               <SearchNormal1 size="18" color="currentColor" className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -954,68 +793,50 @@ export default function Home() {
                 className="w-full pl-11 pr-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200"
               />
             </div>
-          </motion.div>
+          </div>
 
-          {/* Country grid */}
+          {/* Country grid — plain CSS transitions instead of AnimatePresence */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-16">
-            <AnimatePresence mode="popLayout">
-              {filteredCountries.map((country, i) => (
-                <motion.div
-                  key={country.code}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className={`group relative flex items-center justify-between p-4 rounded-xl bg-card border hover:shadow-md hover:shadow-primary/5 transition-all duration-300 cursor-default ${
-                    (country as typeof countryPricing[0] & { popular?: boolean }).popular
-                      ? "border-primary/40 ring-1 ring-primary/10"
-                      : "border-border hover:border-primary/30"
-                  }`}
-                >
-                  {/* Popular / Cheapest badge */}
-                  {(country as typeof countryPricing[0] & { popular?: boolean }).popular && (
-                    <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary text-white rounded-full">
-                      {lang === "fr" ? "Populaire" : "Popular"}
-                    </span>
-                  )}
-                  {(country as typeof countryPricing[0] & { cheapest?: boolean }).cheapest && (
-                    <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500 text-white rounded-full">
-                      {lang === "fr" ? "Meilleur prix" : "Best price"}
-                    </span>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{country.flag}</span>
-                    <div>
-                      <div className="font-medium text-foreground text-sm">{country.name[lang]}</div>
-                      <div className="text-xs text-muted-foreground">{country.code}</div>
-                    </div>
+            {filteredCountries.map((country) => (
+              <div
+                key={country.code}
+                className={`group relative flex items-center justify-between p-4 rounded-xl bg-card border hover:shadow-md hover:shadow-primary/5 transition-all duration-300 cursor-default ${
+                  (country as typeof countryPricing[0] & { popular?: boolean }).popular
+                    ? "border-primary/40 ring-1 ring-primary/10"
+                    : "border-border hover:border-primary/30"
+                }`}
+              >
+                {(country as typeof countryPricing[0] & { popular?: boolean }).popular && (
+                  <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary text-white rounded-full">
+                    {lang === "fr" ? "Populaire" : "Popular"}
+                  </span>
+                )}
+                {(country as typeof countryPricing[0] & { cheapest?: boolean }).cheapest && (
+                  <span className="absolute -top-2.5 left-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500 text-white rounded-full">
+                    {lang === "fr" ? "Meilleur prix" : "Best price"}
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{country.flag}</span>
+                  <div>
+                    <div className="font-medium text-foreground text-sm">{country.name[lang]}</div>
+                    <div className="text-xs text-muted-foreground">{country.code}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-primary text-lg">{country.price}</div>
-                    <div className="text-xs text-muted-foreground">{country.currency} {t.pricing.perSms}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-primary text-lg">{country.price}</div>
+                  <div className="text-xs text-muted-foreground">{country.currency} {t.pricing.perSms}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Plans Section */}
           <div className="mt-8">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={stagger}
-              className="text-center mb-10"
-            >
-              <motion.h3 variants={fadeUp} className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                {t.pricing.planTitle}
-              </motion.h3>
-              <motion.p variants={fadeUp} className="text-muted-foreground">
-                {t.pricing.planSubtitle}
-              </motion.p>
-            </motion.div>
+            <div className="text-center mb-10 animate-fade-in-up">
+              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.pricing.planTitle}</h3>
+              <p className="text-muted-foreground">{t.pricing.planSubtitle}</p>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {isLoadingPlans ? (
@@ -1026,13 +847,10 @@ export default function Home() {
                 ))
               ) : activePlans.length > 0 ? (
                 activePlans.map((plan: PricingPlanType, index: number) => (
-                  <motion.div
+                  <div
                     key={plan.id}
-                    className="relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="relative rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group animate-fade-in-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="h-1 bg-gradient-to-r from-primary via-purple-500 to-amber-500"></div>
                     <div className="flex flex-col h-full p-6 md:p-8">
@@ -1044,14 +862,12 @@ export default function Home() {
                           {lang === "fr" ? plan.planNameFr : plan.planNameEn}
                         </h3>
                       </div>
-
                       <div className="mb-6">
                         <div className="flex items-baseline">
                           <span className="text-4xl font-bold text-primary">{plan.smsUnitPrice}</span>
                           <span className="ml-2 text-muted-foreground text-sm">FCFA {t.pricing.perSms}</span>
                         </div>
                       </div>
-
                       <ul className="space-y-3 mb-8 flex-grow">
                         <li className="flex items-center text-sm">
                           <Chart2 size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
@@ -1063,12 +879,9 @@ export default function Home() {
                         </li>
                         <li className="flex items-center text-sm">
                           <ShieldTick size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
-                          <span className="text-foreground">
-                            {lang === "fr" ? plan.descriptionFr : plan.descriptionEn}
-                          </span>
+                          <span className="text-foreground">{lang === "fr" ? plan.descriptionFr : plan.descriptionEn}</span>
                         </li>
                       </ul>
-
                       <Button className="w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary text-white transition-all duration-500">
                         <span className="flex items-center justify-center">
                           {t.pricing.choosePlan}
@@ -1076,7 +889,7 @@ export default function Home() {
                         </span>
                       </Button>
                     </div>
-                  </motion.div>
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
@@ -1085,25 +898,15 @@ export default function Home() {
               )}
             </div>
 
-            {/* Custom solution CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mt-12 text-center"
-            >
+            <div className="mt-12 text-center animate-fade-in-up">
               <p className="text-muted-foreground mb-4">{t.pricing.customSolution}</p>
-              <Button
-                variant="outline"
-                className="rounded-full border-border hover:border-primary/50 hover:bg-primary/5"
-                onClick={() => setScheduleCallOpen(true)}
-              >
+              <Button variant="outline" className="rounded-full border-border hover:border-primary/50 hover:bg-primary/5" onClick={() => setScheduleCallOpen(true)}>
                 <span className="flex items-center">
                   {t.pricing.contactSales}
                   <ArrowRight2 size="16" color="currentColor" className="ml-2" />
                 </span>
               </Button>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -1114,13 +917,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]"></div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          {/* Trust stats bar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="flex flex-wrap justify-center gap-6 md:gap-10 mb-10"
-          >
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10 mb-10">
             {[
               { v: "2,500+", l: lang === "fr" ? "Entreprises" : "Businesses" },
               { v: "10M+", l: lang === "fr" ? "SMS / mois" : "SMS / month" },
@@ -1131,66 +928,33 @@ export default function Home() {
                 <div className="text-xs text-white/60 uppercase tracking-wider">{s.l}</div>
               </div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white max-w-3xl mx-auto leading-tight"
-          >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white max-w-3xl mx-auto leading-tight">
             {t.cta.title}
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-lg text-white/80 mb-10 max-w-2xl mx-auto"
-          >
-            {t.cta.subtitle}
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Button
-              size="lg"
-              className="rounded-full bg-white hover:bg-white/90 text-primary font-medium px-8 h-12"
-              asChild
-            >
+          </h2>
+          <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">{t.cta.subtitle}</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="rounded-full bg-white hover:bg-white/90 text-primary font-medium px-8 h-12" asChild>
               <a href="/compte" className="flex items-center justify-center">
                 {t.cta.primary}
                 <ArrowRight2 size="18" color="currentColor" className="ml-2" />
               </a>
             </Button>
-            <Button
-              onClick={() => setScheduleCallOpen(true)}
-              variant="outline"
-              size="lg"
-              className="rounded-full border-white/30 text-white hover:bg-white/10 font-medium px-8 h-12"
-            >
+            <Button onClick={() => setScheduleCallOpen(true)} variant="outline" size="lg" className="rounded-full border-white/30 text-white hover:bg-white/10 font-medium px-8 h-12">
               <span className="flex items-center">
                 {t.cta.secondary}
                 <ArrowRight2 size="18" color="currentColor" className="ml-2" />
               </span>
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* ─── Contact Section ──────────────────────────────────────────── */}
       <section className="py-20 px-6 md:px-12 lg:px-24">
         <div className="container mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative max-w-4xl mx-auto"
-          >
+          <div className="relative max-w-4xl mx-auto animate-fade-in-up">
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary/20 to-purple-500/10 rounded-full filter blur-xl"></div>
             <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-gradient-to-tr from-amber-500/10 to-primary/20 rounded-full filter blur-xl"></div>
 
@@ -1198,24 +962,14 @@ export default function Home() {
               <div className="h-1 absolute top-0 left-0 right-0 bg-gradient-to-r from-primary via-purple-500 to-amber-500 rounded-t-2xl"></div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Left: Text + CTA */}
                 <div className="text-center md:text-left">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto md:mx-0 mb-6">
                     <Sms size="24" color="currentColor" variant="Bulk" className="text-primary" />
                   </div>
-
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                    {t.contact.title}
-                  </h3>
-                  <p className="text-muted-foreground mb-8 max-w-lg">
-                    {t.contact.subtitle}
-                  </p>
-
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">{t.contact.title}</h3>
+                  <p className="text-muted-foreground mb-8 max-w-lg">{t.contact.subtitle}</p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <Button
-                      onClick={() => setScheduleCallOpen(true)}
-                      className="rounded-full bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary text-white px-6 transition-all duration-500"
-                    >
+                    <Button onClick={() => setScheduleCallOpen(true)} className="rounded-full bg-gradient-to-r from-primary to-purple-500 hover:from-purple-500 hover:to-primary text-white px-6 transition-all duration-500">
                       <span className="flex items-center">
                         {t.contact.schedule}
                         <svg className="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1229,12 +983,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Right: Direct contact info */}
                 <div className="flex flex-col gap-4">
-                  <a
-                    href={`mailto:${t.contact.email}`}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-primary/30 transition-all duration-300 group"
-                  >
+                  <a href={`mailto:${t.contact.email}`} className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-primary/30 transition-all duration-300 group">
                     <div className="w-11 h-11 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
                       <DirectSend size="20" color="currentColor" variant="Bold" className="text-primary" />
                     </div>
@@ -1243,13 +993,7 @@ export default function Home() {
                       <div className="text-foreground font-medium">{t.contact.email}</div>
                     </div>
                   </a>
-
-                  <a
-                    href={`https://wa.me/${t.contact.whatsapp.replace(/\s/g, "").replace("+", "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-emerald-500/30 transition-all duration-300 group"
-                  >
+                  <a href={`https://wa.me/${t.contact.whatsapp.replace(/\s/g, "").replace("+", "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-emerald-500/30 transition-all duration-300 group">
                     <div className="w-11 h-11 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center shrink-0 transition-colors">
                       <Whatsapp size="20" color="currentColor" variant="Bold" className="text-emerald-500" />
                     </div>
@@ -1258,11 +1002,7 @@ export default function Home() {
                       <div className="text-foreground font-medium">{t.contact.whatsapp}</div>
                     </div>
                   </a>
-
-                  <a
-                    href={`tel:${t.contact.phone.replace(/\s/g, "")}`}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-primary/30 transition-all duration-300 group"
-                  >
+                  <a href={`tel:${t.contact.phone.replace(/\s/g, "")}`} className="flex items-center gap-4 p-4 rounded-xl bg-background/80 border border-border hover:border-primary/30 transition-all duration-300 group">
                     <div className="w-11 h-11 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
                       <Call size="20" color="currentColor" variant="Bold" className="text-primary" />
                     </div>
@@ -1274,16 +1014,18 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       <Footer />
 
-      <ScheduleCallModal
-        isOpen={scheduleCallOpen}
-        onClose={() => setScheduleCallOpen(false)}
-      />
+      {/* ScheduleCallModal — lazy-loaded, only rendered when needed */}
+      {scheduleCallOpen && (
+        <Suspense fallback={null}>
+          <ScheduleCallModal isOpen={scheduleCallOpen} onClose={() => setScheduleCallOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }
