@@ -13,7 +13,7 @@ export function Step1AccountType() {
         name="accountType"
         render={({ field }) => (
           <FormItem className="space-y-4">
-            <FormLabel className="text-gray-300 text-lg">Choisissez votre type de compte</FormLabel>
+            <FormLabel className="text-foreground text-lg">Choisissez votre type de compte</FormLabel>
             <FormControl>
               <div className="grid grid-cols-2 gap-6 py-3">
                 <AccountTypeCard

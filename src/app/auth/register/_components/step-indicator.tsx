@@ -10,8 +10,8 @@ export function StepIndicator({ currentStep, totalSteps, stepNames }: StepIndica
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-2">
-        <p className="text-sm font-medium text-gray-300">{stepNames[currentStep]}</p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm font-medium text-foreground">{stepNames[currentStep]}</p>
+        <p className="text-sm text-muted-foreground">
           Étape {currentStep + 1} sur {totalSteps}
         </p>
       </div>
@@ -20,7 +20,7 @@ export function StepIndicator({ currentStep, totalSteps, stepNames }: StepIndica
           <div
             key={index}
             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              index <= currentStep ? 'bg-primary' : 'bg-gray-700'
+              index <= currentStep ? 'bg-primary' : 'bg-muted'
             }`}
           />
         ))}

@@ -14,11 +14,11 @@ export function Step5SmsConfig() {
         name="smsESenderId"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">ID de l'expéditeur SMS</FormLabel>
+                        <FormLabel className="text-foreground">ID de l'expéditeur SMS</FormLabel>
             <FormControl>
               <div className="relative">
-                <MessageText size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input placeholder="Max 11 characters" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                <MessageText size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Max 11 characters" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />
@@ -30,11 +30,11 @@ export function Step5SmsConfig() {
         name="numeroCommerce"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Numéro de commerce</FormLabel>
+                        <FormLabel className="text-foreground">Numéro de commerce</FormLabel>
             <FormControl>
               <div className="relative">
-                <Hashtag size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input placeholder="Enter your trade number" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                <Hashtag size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Enter your trade number" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />
@@ -46,11 +46,11 @@ export function Step5SmsConfig() {
         name="adresseEnterprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Adresse de l'entreprise</FormLabel>
+                        <FormLabel className="text-foreground">Adresse de l'entreprise</FormLabel>
             <FormControl>
               <div className="relative">
-                <Home size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input placeholder="Enter your company address" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                <Home size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Enter your company address" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />
@@ -62,11 +62,11 @@ export function Step5SmsConfig() {
         name="villeEntreprise"
         render={({ field }) => (
           <FormItem>
-                        <FormLabel className="text-gray-300">Ville de l'entreprise</FormLabel>
+                        <FormLabel className="text-foreground">Ville de l'entreprise</FormLabel>
             <FormControl>
               <div className="relative">
-                <Building size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input placeholder="Enter your company city" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                <Building size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Enter your company city" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />
@@ -78,7 +78,7 @@ export function Step5SmsConfig() {
         name="enterpriseCountryId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-gray-300">Pays de l'entreprise</FormLabel>
+            <FormLabel className="text-foreground">Pays de l'entreprise</FormLabel>
             <FormControl>
               <CountrySelect {...field} />
             </FormControl>

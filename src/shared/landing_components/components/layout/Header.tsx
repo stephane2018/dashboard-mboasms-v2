@@ -126,12 +126,12 @@ const Header = () => {
               transition={{ duration: 0.5 }}
               className="flex items-center"
             >
-              <Image 
-                src={logoSrc} 
-                alt="MboaSMS Logo" 
-                width={120} 
-                height={40} 
-                className="h-10 w-auto"
+              <Image
+                src={logoSrc}
+                alt="MboaSMS Logo"
+                width={120}
+                height={40}
+                className="h-7 md:h-9 w-auto"
               />
             </motion.div>
           </Link>
@@ -225,7 +225,7 @@ const Header = () => {
                   className="hidden md:block"
                 >
                   <Link
-                    href="/compte"
+                    href="/auth/register"
                     className="relative bg-primary text-white px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
                   >
                     Créer un compte
@@ -271,7 +271,7 @@ const Header = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="fixed inset-0 bg-background/95 backdrop-blur-lg z-40 md:hidden"
+              className="fixed inset-0 bg-background z-40 md:hidden"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
