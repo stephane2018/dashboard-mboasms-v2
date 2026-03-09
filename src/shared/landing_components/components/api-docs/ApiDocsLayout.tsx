@@ -1,340 +1,247 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Menu, X, Info, Key, Clock, MessageSquare, Layers, Send, FileText, AlertTriangle, BookOpen } from 'lucide-react';
 
 interface ApiDocsLayoutProps {
   children: React.ReactNode;
 }
 
-interface NavItem {
+type NavSectionItem = {
   title: string;
   href: string;
   section: string;
-  icon: React.ReactNode;
-}
+  method?: string;
+};
 
-const navItems: NavItem[] = [
-  { title: "Introduction", href: "#introduction", section: "overview", icon: <BookOpen size={16} /> },
-  { title: "Authentication", href: "#authentication", section: "overview", icon: <Key size={16} /> },
-  { title: "Rate Limiting", href: "#rate-limiting", section: "overview", icon: <Clock size={16} /> },
-  { title: "SMS API", href: "#sms-api", section: "endpoints", icon: <MessageSquare size={16} /> },
-  { title: "Bulk SMS", href: "#bulk-sms", section: "endpoints", icon: <Layers size={16} /> },
-  { title: "Delivery Reports", href: "#delivery-reports", section: "endpoints", icon: <FileText size={16} /> },
-  { title: "Webhooks", href: "#webhooks", section: "integration", icon: <Send size={16} /> },
-  { title: "Error Codes", href: "#error-codes", section: "reference", icon: <AlertTriangle size={16} /> },
+const navSections: { key: string; title: string; items: NavSectionItem[] }[] = [
+  {
+    key: "getting-started",
+    title: "Getting Started",
+    items: [
+      { title: "Introduction", href: "#introduction", section: "getting-started" },
+      { title: "Base URL", href: "#base-url", section: "getting-started" },
+      { title: "Authentication", href: "#authentication", section: "getting-started" },
+      { title: "Rate Limiting", href: "#rate-limiting", section: "getting-started" },
+    ],
+  },
+  {
+    key: "endpoints",
+    title: "API Endpoints",
+    items: [
+      { title: "Send SMS", href: "#send-sms", section: "endpoints", method: "POST" },
+      { title: "Send SMS (Basic Auth)", href: "#send-sms-auth", section: "endpoints", method: "POST" },
+      { title: "Send Bulk SMS", href: "#send-bulk", section: "endpoints", method: "POST" },
+    ],
+  },
+  {
+    key: "reference",
+    title: "Reference",
+    items: [
+      { title: "Response Format", href: "#response-format", section: "reference" },
+      { title: "Error Codes", href: "#error-codes", section: "reference" },
+      { title: "SDKs & Libraries", href: "#sdks", section: "reference" },
+    ],
+  },
 ];
 
+const allNavItems = navSections.flatMap((s) => s.items);
+
 export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
-  const [activeSection, setActiveSection] = useState<string>("overview");
   const [activeItem, setActiveItem] = useState<string>("#introduction");
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  
-  // Check for hash changes to update active item
+
+  // Intersection observer for scroll spy
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const matchingItem = navItems.find(item => item.href === hash);
-        if (matchingItem) {
-          setActiveItem(hash);
-          setActiveSection(matchingItem.section);
+    const ids = allNavItems.map((item) => item.href.replace("#", ""));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveItem(`#${entry.target.id}`);
+          }
         }
-      }
-    };
-    
-    // Initial check
-    handleHashChange();
-    
-    // Listen for hash changes
-    window.addEventListener('hashchange', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+    );
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, []);
-  
-  // Close sidebar when screen size changes to desktop
+
+  // Close sidebar on resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024 && sidebarOpen) {
-        setSidebarOpen(false);
-      }
+      if (window.innerWidth >= 1024 && sidebarOpen) setSidebarOpen(false);
     };
-
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, [sidebarOpen]);
 
-  // Prevent scrolling when mobile sidebar is open
+  // Prevent scroll when mobile sidebar open
   useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    document.body.style.overflow = sidebarOpen ? 'hidden' : 'auto';
+    return () => { document.body.style.overflow = 'auto'; };
   }, [sidebarOpen]);
 
-  // Add smooth scrolling behavior to the document
+  // Smooth scroll
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
-    
-    return () => {
-      document.documentElement.style.scrollBehavior = '';
-    };
+    return () => { document.documentElement.style.scrollBehavior = ''; };
   }, []);
 
-  const handleNavClick = (href: string, section: string) => {
+  const handleNavClick = useCallback((href: string) => {
     setActiveItem(href);
-    setActiveSection(section);
-    if (sidebarOpen) {
-      setSidebarOpen(false);
-    }
-  };
+    setSidebarOpen(false);
+  }, []);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen relative">
-      {/* Mobile sidebar toggle */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <button 
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
-          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-        >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-
-      {/* Sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
-      {/* Sidebar - Floating and sticky to middle left */}
-      <aside 
-        ref={sidebarRef}
-        className={cn(
-          "w-[280px] lg:w-72 fixed top-1/2 -translate-y-1/2 left-4 z-50 bg-background/95 dark:bg-background/95 backdrop-blur-md border border-primary/20 rounded-xl p-4 lg:p-6 max-h-[80vh] overflow-y-auto transition-all duration-300 shadow-xl",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        )}
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'var(--primary) transparent',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-          backgroundImage: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(123, 24, 204, 0.03))'
-        }}
+    <div className="flex min-h-screen relative">
+      {/* Mobile toggle */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <Link href="/" className="flex items-center group">
-              <h1 className="text-xl font-bold text-primary group-hover:text-primary/80 transition-colors">MboaSMS</h1>
-            </Link>
-            <div className="flex items-center mt-1">
-              <div className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
-              <p className="text-sm text-muted-foreground">API Documentation</p>
-            </div>
-          </div>
-          <button 
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {sidebarOpen ? (
+            <path d="M18 6L6 18M6 6l12 12" />
+          ) : (
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
-            className="p-2 rounded-md hover:bg-muted/50 lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <X size={18} />
-          </button>
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed top-20 left-0 z-30 h-[calc(100vh-5rem)] w-72 bg-card border-r border-border transition-transform duration-300 overflow-y-auto",
+          "lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-card border-b border-border px-6 py-4">
+          {/* <Link href="/" className="flex items-center gap-3 group">
+            <Image src="/icones/logo.svg" alt="MboaSMS" width={100} height={32} className="h-7 w-auto" />
+          </Link> */}
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-xs text-muted-foreground font-medium">API Documentation</span>
+            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">v1</span>
+          </div>
         </div>
-        
-        <nav className="space-y-6 relative">
-          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/5 via-primary/20 to-primary/5"></div>
-          <div>
-            <div className="flex items-center gap-2 mb-3 pl-3 bg-gradient-to-r from-primary/10 to-transparent py-1 rounded-l-md">
-              <Info size={16} className="text-primary" />
-              <h2 className="text-sm font-medium text-primary">Overview</h2>
-            </div>
-            <ul className="space-y-1.5">
-              {navItems
-                .filter(item => item.section === "overview")
-                .map((item) => (
+
+        {/* Navigation */}
+        <nav className="p-4 space-y-6">
+          {navSections.map((section) => (
+            <div key={section.key}>
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2 px-3">
+                {section.title}
+              </h3>
+              <ul className="space-y-0.5">
+                {section.items.map((item) => (
                   <li key={item.href}>
-                    <Link 
+                    <Link
                       href={item.href}
+                      onClick={() => handleNavClick(item.href)}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-2 text-sm rounded-md transition-all relative group",
-                        activeItem === item.href 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-foreground hover:bg-primary/5"
+                        "flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-all duration-200 relative group",
+                        activeItem === item.href
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground/80 hover:bg-muted/50 hover:text-foreground"
                       )}
-                      onClick={() => handleNavClick(item.href, item.section)}
                     >
+                      {activeItem === item.href && (
+                        <motion.div
+                          layoutId="sidebar-indicator"
+                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-primary rounded-full"
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                      {item.method && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono shrink-0">
+                          {item.method}
+                        </span>
+                      )}
                       <span className={cn(
-                        "flex-shrink-0 transition-colors",
-                        activeItem === item.href 
-                          ? "text-primary" 
-                          : "text-muted-foreground group-hover:text-primary/70"
-                      )}>
-                        {item.icon}
-                      </span>
-                      <span className={cn(
-                        "transition-transform",
-                        activeItem !== item.href && "group-hover:translate-x-1"
+                        "transition-transform duration-150",
+                        activeItem !== item.href && "group-hover:translate-x-0.5"
                       )}>
                         {item.title}
                       </span>
-                      {activeItem === item.href && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-md"></div>
-                      )}
                     </Link>
                   </li>
                 ))}
-            </ul>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2 mb-3 pl-3 bg-gradient-to-r from-primary/10 to-transparent py-1 rounded-l-md">
-              <MessageSquare size={16} className="text-primary" />
-              <h2 className="text-sm font-medium text-primary">Endpoints</h2>
+              </ul>
             </div>
-            <ul className="space-y-1.5">
-              {navItems
-                .filter(item => item.section === "endpoints")
-                .map((item) => (
-                  <li key={item.href}>
-                    <Link 
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-2 text-sm rounded-md transition-all relative group",
-                        activeItem === item.href 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-foreground hover:bg-primary/5"
-                      )}
-                      onClick={() => handleNavClick(item.href, item.section)}
-                    >
-                      <span className={cn(
-                        "flex-shrink-0 transition-colors",
-                        activeItem === item.href 
-                          ? "text-primary" 
-                          : "text-muted-foreground group-hover:text-primary/70"
-                      )}>
-                        {item.icon}
-                      </span>
-                      <span className={cn(
-                        "transition-transform",
-                        activeItem !== item.href && "group-hover:translate-x-1"
-                      )}>
-                        {item.title}
-                      </span>
-                      {activeItem === item.href && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-md"></div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2 mb-3 pl-3 bg-gradient-to-r from-primary/10 to-transparent py-1 rounded-l-md">
-              <Send size={16} className="text-primary" />
-              <h2 className="text-sm font-medium text-primary">Integration</h2>
-            </div>
-            <ul className="space-y-1.5">
-              {navItems
-                .filter(item => item.section === "integration")
-                .map((item) => (
-                  <li key={item.href}>
-                    <Link 
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-2 text-sm rounded-md transition-all relative group",
-                        activeItem === item.href 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-foreground hover:bg-primary/5"
-                      )}
-                      onClick={() => handleNavClick(item.href, item.section)}
-                    >
-                      <span className={cn(
-                        "flex-shrink-0 transition-colors",
-                        activeItem === item.href 
-                          ? "text-primary" 
-                          : "text-muted-foreground group-hover:text-primary/70"
-                      )}>
-                        {item.icon}
-                      </span>
-                      <span className={cn(
-                        "transition-transform",
-                        activeItem !== item.href && "group-hover:translate-x-1"
-                      )}>
-                        {item.title}
-                      </span>
-                      {activeItem === item.href && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-md"></div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-2 mb-3 pl-3 bg-gradient-to-r from-primary/10 to-transparent py-1 rounded-l-md">
-              <FileText size={16} className="text-primary" />
-              <h2 className="text-sm font-medium text-primary">Reference</h2>
-            </div>
-            <ul className="space-y-1.5">
-              {navItems
-                .filter(item => item.section === "reference")
-                .map((item) => (
-                  <li key={item.href}>
-                    <Link 
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-2 text-sm rounded-md transition-all relative group",
-                        activeItem === item.href 
-                          ? "bg-primary/10 text-primary font-medium" 
-                          : "text-foreground hover:bg-primary/5"
-                      )}
-                      onClick={() => handleNavClick(item.href, item.section)}
-                    >
-                      <span className={cn(
-                        "flex-shrink-0 transition-colors",
-                        activeItem === item.href 
-                          ? "text-primary" 
-                          : "text-muted-foreground group-hover:text-primary/70"
-                      )}>
-                        {item.icon}
-                      </span>
-                      <span className={cn(
-                        "transition-transform",
-                        activeItem !== item.href && "group-hover:translate-x-1"
-                      )}>
-                        {item.title}
-                      </span>
-                      {activeItem === item.href && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-md"></div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
+          ))}
+
+          {/* Quick links */}
+          <div className="border-t border-border pt-4">
+            <Link
+              href="/compte"
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary/5 border border-primary/20 text-primary hover:bg-primary/10 transition-colors font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+              </svg>
+              Dashboard
+            </Link>
           </div>
         </nav>
       </aside>
-      
+
       {/* Main content */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
-        {children}
+      <main className="flex-1 min-w-0">
+        <div className="max-w-4xl mx-auto px-6 md:px-10 py-8 md:py-12">
+          {children}
+        </div>
       </main>
+
+      {/* Right sidebar - Table of contents (desktop only) */}
+      <aside className="hidden xl:block w-56 shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto py-8 pr-6">
+        <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-3">
+          On this page
+        </div>
+        <ul className="space-y-1 border-l border-border pl-3">
+          {allNavItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => handleNavClick(item.href)}
+                className={cn(
+                  "block text-xs py-1 transition-colors duration-150",
+                  activeItem === item.href
+                    ? "text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {item.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </aside>
     </div>
   );
 }

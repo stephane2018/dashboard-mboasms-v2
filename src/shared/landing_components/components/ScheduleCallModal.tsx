@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CloseCircle } from 'iconsax-react';
 import { Button } from './ui/button';
@@ -25,6 +25,24 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [callType, setCallType] = useState<CallType>('calendar');
+
+  const handleClose = useCallback(() => {
+    onClose();
+    setStep(1);
+    setSelectedDate(null);
+    setSelectedTime('');
+    setCallType('calendar');
+  }, [onClose]);
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleClose]);
 
   // Current month and year for calendar
   const currentDate = new Date();
@@ -437,22 +455,25 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={handleClose}
         >
-          <motion.div 
+          <motion.div
             className="bg-[#2D2A37] rounded-xl w-full max-w-sm overflow-hidden relative"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h1 className="text-xl font-bold text-white">Schedule a Call</h1>
-                <button 
-                  onClick={onClose}
-                  className="p-1 rounded-full hover:bg-gray-800 transition-colors"
+                <button
+                  onClick={handleClose}
+                  className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+                  aria-label="Close"
                 >
-                  <CloseCircle size="20" className="text-gray-400" />
+                  <CloseCircle size="22" variant="Bold" className="text-gray-400 hover:text-white transition-colors" />
                 </button>
               </div>
               
