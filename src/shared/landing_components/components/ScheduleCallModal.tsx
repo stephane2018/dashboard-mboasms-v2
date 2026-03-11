@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CloseCircle } from 'iconsax-react';
+import { CloseCircle, Calendar, Clock, ArrowRight2, ArrowLeft2, TickCircle, Whatsapp } from 'iconsax-react';
 import { Button } from './ui/button';
 import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 type CallType = 'calendar' | 'whatsapp';
 
@@ -34,7 +35,6 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     setCallType('calendar');
   }, [onClose]);
 
-  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,127 +44,93 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Current month and year for calendar
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  // Generate calendar days
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay();
-  };
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentYear, currentMonth);
     const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
-    
-    // Previous month days to show
     const daysInPrevMonth = getDaysInMonth(currentYear, currentMonth - 1);
+
     const prevMonthDays = Array.from({ length: firstDay }, (_, i) => ({
       day: daysInPrevMonth - firstDay + i + 1,
       currentMonth: false,
-      date: new Date(currentYear, currentMonth - 1, daysInPrevMonth - firstDay + i + 1)
+      date: new Date(currentYear, currentMonth - 1, daysInPrevMonth - firstDay + i + 1),
     }));
-    
-    // Current month days
+
     const currentMonthDays = Array.from({ length: daysInMonth }, (_, i) => ({
       day: i + 1,
       currentMonth: true,
-      date: new Date(currentYear, currentMonth, i + 1)
+      date: new Date(currentYear, currentMonth, i + 1),
     }));
-    
-    // Next month days to fill the calendar
-    const totalDaysShown = 42; // 6 rows of 7 days
+
+    const totalDaysShown = 42;
     const nextMonthDays = Array.from(
       { length: totalDaysShown - (prevMonthDays.length + currentMonthDays.length) },
       (_, i) => ({
         day: i + 1,
         currentMonth: false,
-        date: new Date(currentYear, currentMonth + 1, i + 1)
+        date: new Date(currentYear, currentMonth + 1, i + 1),
       })
     );
-    
+
     return [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
   };
 
   const calendarDays = generateCalendarDays();
-  
-  // Morning time slots
+
   const morningSlots = ['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'];
-  
-  // Afternoon time slots
   const afternoonSlots = ['2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'];
 
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-  };
-
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
-  };
-
   const handleContinue = () => {
-    if (step === 1 && selectedDate && selectedTime) {
-      setStep(2);
-    } else if (step === 2 && callType) {
-      setStep(3);
-    }
+    if (step === 1 && selectedDate && selectedTime) setStep(2);
+    else if (step === 2 && callType) setStep(3);
   };
 
   const handleBack = () => {
-    if (step === 2) {
-      setStep(1);
-    } else if (step === 3) {
-      setStep(2);
-    }
+    if (step === 2) setStep(1);
+    else if (step === 3) setStep(2);
   };
 
   const generateGoogleCalendarLink = (eventData: EventData): string => {
-    // Parse the time string (e.g., "9:00 AM") to get hours and minutes in 24-hour format
     const parseTime = (timeStr: string): { hours: number; minutes: number } => {
       const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
       if (!match) return { hours: 0, minutes: 0 };
-      
       let hours = parseInt(match[1]);
       const minutes = parseInt(match[2]);
       const period = match[3].toUpperCase();
-      
-      // Convert to 24-hour format
       if (period === 'PM' && hours < 12) hours += 12;
       if (period === 'AM' && hours === 12) hours = 0;
-      
       return { hours, minutes };
     };
-    
-    // Create a new date object for the event date
+
     const eventDate = new Date(eventData.date);
-    
-    // Parse the time and set hours and minutes
     const { hours, minutes } = parseTime(eventData.time);
     eventDate.setHours(hours, minutes, 0, 0);
-    
-    // Create end time (30 minutes later)
     const endDate = new Date(eventDate.getTime() + 30 * 60000);
 
-    // Format dates for Google Calendar
-    const formatForCalendar = (date: Date): string => {
-      return format(date, "yyyyMMdd'T'HHmmss");
-    };
-    
-    const startFormatted = formatForCalendar(eventDate);
-    const endFormatted = formatForCalendar(endDate);
+    const formatForCalendar = (date: Date): string => format(date, "yyyyMMdd'T'HHmmss");
 
-    // Create URL parameters
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: eventData.title,
       details: eventData.description,
-      dates: `${startFormatted}/${endFormatted}`,
-      add: "contact@mboasms.com"
+      dates: `${formatForCalendar(eventDate)}/${formatForCalendar(endDate)}`,
+      add: "contact@mboasms.com",
     });
 
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -172,7 +138,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
 
   const generateWhatsAppLink = (eventData: EventData): string => {
     const message = encodeURIComponent(
-      `Hello! I would like to schedule a call on ${format(eventData.date, "MMMM d")} at ${eventData.time}.\n\n${eventData.title}\n${eventData.description}`
+      `Bonjour! Je souhaite planifier un appel le ${format(eventData.date, "d MMMM", { locale: fr })} à ${eventData.time}.\n\n${eventData.title}\n${eventData.description}`
     );
     return `https://wa.me/237670424589?text=${message}`;
   };
@@ -184,266 +150,329 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
       date: selectedDate,
       time: selectedTime,
       title: "MboaSMS - Consultation Call",
-      description: "Discussion about MboaSMS messaging services and solutions for your business."
+      description: "Discussion about MboaSMS messaging services and solutions for your business.",
     };
 
-    const calendarLink = callType === "calendar" 
+    const link = callType === "calendar"
       ? generateGoogleCalendarLink(eventData)
       : generateWhatsAppLink(eventData);
 
-    window.open(calendarLink, "_blank");
-    
-    // Close the modal and reset state
-    onClose();
-    setStep(1);
-    setSelectedDate(null);
-    setSelectedTime('');
-    setCallType('calendar');
+    window.open(link, "_blank");
+    handleClose();
   };
 
+  // Step indicator
+  const StepIndicator = () => (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex items-center gap-2">
+          <div className={`
+            flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold transition-all duration-300
+            ${step >= s
+              ? 'bg-primary text-white shadow-md shadow-primary/30'
+              : 'bg-muted text-muted-foreground'
+            }
+          `}>
+            {step > s ? (
+              <TickCircle size="16" variant="Bold" color="currentColor" />
+            ) : s}
+          </div>
+          {s < 3 && (
+            <div className={`w-8 sm:w-12 h-0.5 rounded-full transition-all duration-300 ${step > s ? 'bg-primary' : 'bg-border'}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   const renderStep1 = () => (
-    <div className="flex flex-col space-y-4">
-      <h2 className="text-lg font-semibold text-white">Select a Date</h2>
-      
-      <div className="bg-[#1E1B24] rounded-lg p-3">
-        <div className="text-center mb-2">
-          <h3 className="text-base font-medium text-white">
-            {new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </h3>
+    <div className="flex flex-col space-y-5">
+      {/* Calendar */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Calendar size="16" variant="Bulk" color="currentColor" className="text-primary" />
+          </div>
+          <h3 className="text-sm font-semibold text-foreground">Choisissez une date</h3>
         </div>
-        
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-            <div key={index} className="text-center text-xs font-medium text-white py-0.5">
-              {day}
+
+        <div className="rounded-xl border border-border bg-muted/30 p-3">
+          <p className="text-center text-sm font-semibold text-foreground mb-3">
+            {new Date(currentYear, currentMonth).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+          </p>
+
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day) => (
+              <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((day, index) => {
+              const isToday = day.currentMonth && day.date.getDate() === currentDate.getDate() && day.date.getMonth() === currentDate.getMonth();
+              const isSelected = selectedDate && day.currentMonth && day.date.getDate() === selectedDate.getDate() && day.date.getMonth() === selectedDate.getMonth();
+              const isPast = day.date < new Date(new Date().setHours(0, 0, 0, 0));
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => !isPast && day.currentMonth && setSelectedDate(day.date)}
+                  disabled={isPast || !day.currentMonth}
+                  className={`
+                    text-center py-1.5 rounded-lg text-xs font-medium transition-all duration-200
+                    ${!day.currentMonth ? 'text-muted-foreground/30' : isPast ? 'text-muted-foreground/40 cursor-not-allowed' : 'text-foreground hover:bg-primary/10'}
+                    ${isToday && !isSelected ? 'ring-1 ring-primary/40 font-bold' : ''}
+                    ${isSelected ? 'bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary' : ''}
+                  `}
+                >
+                  {day.day}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Time slots */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Clock size="16" variant="Bulk" color="currentColor" className="text-primary" />
+          </div>
+          <h3 className="text-sm font-semibold text-foreground">Choisissez une heure</h3>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Matin</p>
+            <div className="grid grid-cols-3 gap-2">
+              {morningSlots.map((time) => (
+                <button
+                  key={time}
+                  onClick={() => setSelectedTime(time)}
+                  className={`
+                    py-2 px-2 rounded-lg text-xs font-medium transition-all duration-200 border
+                    ${selectedTime === time
+                      ? 'bg-primary text-white border-primary shadow-sm shadow-primary/30'
+                      : 'bg-background border-border text-foreground hover:border-primary/40 hover:bg-primary/5'
+                    }
+                  `}
+                >
+                  {time}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-7 gap-1">
-          {calendarDays.map((day, index) => {
-            const isToday = day.currentMonth && day.date.getDate() === currentDate.getDate() && day.date.getMonth() === currentDate.getMonth();
-            const isSelected = selectedDate && day.currentMonth && day.date.getDate() === selectedDate.getDate() && day.date.getMonth() === selectedDate.getMonth();
-            const isPast = day.date < new Date(new Date().setHours(0, 0, 0, 0));
-            
-            return (
-              <button
-                key={index}
-                onClick={() => !isPast && day.currentMonth && handleDateSelect(day.date)}
-                disabled={isPast || !day.currentMonth}
-                className={`
-                  text-center py-1 rounded-md text-xs
-                  ${!day.currentMonth ? 'text-gray-600' : isPast ? 'text-gray-500' : 'text-white'}
-                  ${isToday ? 'bg-primary/20 font-bold' : ''}
-                  ${isSelected ? 'bg-primary text-white font-bold' : ''}
-                  ${!isPast && day.currentMonth && !isSelected ? 'hover:bg-gray-700' : ''}
-                `}
-              >
-                {day.day}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      
-      <h2 className="text-lg font-semibold text-white">Select a Time</h2>
-      
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-xs font-medium mb-1 text-white">Morning</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {morningSlots.map((time, index) => {
-              const isSelected = selectedTime === time;
-              
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleTimeSelect(time)}
-                  className={`
-                    py-1.5 px-2 rounded-md text-xs flex items-center
-                    ${isSelected ? 'bg-primary text-white' : 'bg-[#1E1B24] text-white hover:bg-gray-700'}
-                  `}
-                >
-                  <span className="mr-1.5">
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
-                  {time}
-                </button>
-              );
-            })}
           </div>
-        </div>
-        
-        <div>
-          <h3 className="text-xs font-medium mb-1 text-white">Afternoon</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {afternoonSlots.map((time, index) => {
-              const isSelected = selectedTime === time;
-              
-              return (
+
+          <div>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Apres-midi</p>
+            <div className="grid grid-cols-3 gap-2">
+              {afternoonSlots.map((time) => (
                 <button
-                  key={index}
-                  onClick={() => handleTimeSelect(time)}
+                  key={time}
+                  onClick={() => setSelectedTime(time)}
                   className={`
-                    py-1.5 px-2 rounded-md text-xs flex items-center
-                    ${isSelected ? 'bg-primary text-white' : 'bg-[#1E1B24] text-white hover:bg-gray-700'}
+                    py-2 px-2 rounded-lg text-xs font-medium transition-all duration-200 border
+                    ${selectedTime === time
+                      ? 'bg-primary text-white border-primary shadow-sm shadow-primary/30'
+                      : 'bg-background border-border text-foreground hover:border-primary/40 hover:bg-primary/5'
+                    }
                   `}
                 >
-                  <span className="mr-1.5">
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
                   {time}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </div>
-      
-      <Button 
+
+      <Button
         onClick={handleContinue}
-        className="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg flex items-center justify-center text-sm"
+        className="w-full rounded-xl h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
         disabled={!selectedDate || !selectedTime}
       >
-        Continue
-        <svg className="w-4 h-4 ml-1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        Continuer
+        <ArrowRight2 size="16" color="currentColor" className="ml-2" />
       </Button>
     </div>
   );
 
   const renderStep2 = () => (
-    <div className="flex flex-col space-y-4">
-      <div className="mb-2">
-        <h2 className="text-lg font-semibold text-white">Selected Date & Time</h2>
-        <div className="mt-2 p-3 bg-[#1E1B24] rounded-lg flex items-center">
-          <svg className="w-4 h-4 mr-2 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-            <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M3 10H21" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <span className="text-white">{selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''} at {selectedTime}</span>
+    <div className="flex flex-col space-y-5">
+      {/* Recap */}
+      <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Calendar size="18" variant="Bulk" color="currentColor" className="text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            {selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: fr }) : ''}
+          </p>
+          <p className="text-xs text-muted-foreground">{selectedTime} — 30 min</p>
         </div>
       </div>
-      
-      <h2 className="text-lg font-semibold text-white">Select Call Type</h2>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={() => setCallType('calendar')}
-          className={`p-3 rounded-lg border-2 flex flex-col items-center ${callType === 'calendar' ? 'border-primary bg-primary/10' : 'border-gray-700 hover:border-gray-600'}`}
-        >
-          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
-              <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M3 10H21" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          </div>
-          <span className="font-medium text-white">Google Calendar</span>
-          <p className="text-white text-sm mt-1">Schedule via Calendar</p>
-        </button>
-        
-        <button
-          onClick={() => setCallType('whatsapp')}
-          className={`p-3 rounded-lg border-2 flex flex-col items-center ${callType === 'whatsapp' ? 'border-primary bg-primary/10' : 'border-gray-700 hover:border-gray-600'}`}
-        >
-          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6.9 20.6C8.4 21.5 10.2 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 13.8 2.5 15.5 3.3 17L2.44 20.44C2.2 21.56 3.26 22.62 4.38 22.38L6.9 20.6Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16.5 14.8485C16.5 15.0105 16.4639 15.177 16.3879 15.339C16.3119 15.501 16.2089 15.654 16.0789 15.798C15.8729 16.014 15.6444 16.173 15.3879 16.278C15.1359 16.383 14.8659 16.437 14.5779 16.437C14.1629 16.437 13.7209 16.338 13.2564 16.137C12.7919 15.936 12.3274 15.654 11.8674 15.291C11.4029 14.9235 10.9654 14.52 10.5504 14.0715C10.1399 13.6185 9.77238 13.1655 9.44988 12.7125C9.13188 12.2595 8.87988 11.8065 8.69388 11.358C8.50788 10.905 8.41488 10.4655 8.41488 10.0395C8.41488 9.7605 8.46388 9.4905 8.56138 9.2385C8.65888 8.982 8.81388 8.748 9.02538 8.5365C9.28188 8.2845 9.56238 8.163 9.85788 8.163C9.95988 8.163 10.0619 8.1855 10.1534 8.2305C10.2494 8.2755 10.3319 8.343 10.3954 8.442L11.3879 9.8865C11.4514 9.9765 11.4964 10.0575 11.5279 10.134C11.5594 10.2105 11.5774 10.287 11.5774 10.3545C11.5774 10.4445 11.5504 10.5345 11.4964 10.6245C11.4469 10.7145 11.3744 10.8045 11.2829 10.8945L10.9204 11.2705C10.8794 11.3115 10.8614 11.358 10.8614 11.4165C10.8614 11.4435 10.8659 11.4705 10.8749 11.502C10.8884 11.5335 10.8974 11.556 10.9024 11.574C10.9879 11.7405 11.1334 11.952 11.3429 12.2055C11.5569 12.459 11.7844 12.717 12.0299 12.975C12.2934 13.233 12.5469 13.4685 12.8049 13.6815C13.0584 13.89 13.2744 14.031 13.4469 14.1165C13.4604 14.1165 13.4784 14.1255 13.5054 14.139C13.5369 14.1525 13.5684 14.157 13.6044 14.157C13.6674 14.157 13.7164 14.1345 13.7569 14.094L14.1194 13.7355C14.2154 13.6365 14.3069 13.5645 14.3929 13.5195C14.4789 13.4655 14.5649 13.4385 14.6599 13.4385C14.7274 13.4385 14.7994 13.452 14.8794 13.4835C14.9594 13.515 15.0439 13.56 15.1334 13.6185L16.5959 14.625C16.6954 14.6925 16.7629 14.7735 16.8034 14.868C16.8394 14.9625 16.5 15.057 16.5 15.1515V14.8485Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10"/>
-            </svg>
-          </div>
-          <span className="font-medium text-white">WhatsApp</span>
-          <p className="text-white text-sm mt-1">Call via WhatsApp</p>
-        </button>
-      </div>
-      
-      <div className="bg-[#1E1B24] rounded-lg p-3">
-        <h3 className="font-medium mb-2 text-white">Your Selected Date & Time</h3>
-        <div className="flex items-center text-white mb-1">
-          <svg className="w-4 h-4 mr-2 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-            <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M3 10H21" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <span className="text-white">{selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}</span>
+
+      {/* Call type selection */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Comment souhaitez-vous etre contacte ?</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={() => setCallType('calendar')}
+            className={`
+              group relative rounded-xl border-2 p-4 text-left transition-all duration-200
+              ${callType === 'calendar'
+                ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
+                : 'border-border hover:border-primary/30 hover:bg-muted/50'
+              }
+            `}
+          >
+            <div className={`
+              w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors duration-200
+              ${callType === 'calendar' ? 'bg-primary text-white' : 'bg-blue-500/10 text-blue-500'}
+            `}>
+              <Calendar size="20" variant="Bulk" color="currentColor" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Google Calendar</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Ajoutez l&apos;evenement a votre agenda</p>
+            {callType === 'calendar' && (
+              <div className="absolute top-3 right-3">
+                <TickCircle size="18" variant="Bold" color="currentColor" className="text-primary" />
+              </div>
+            )}
+          </button>
+
+          <button
+            onClick={() => setCallType('whatsapp')}
+            className={`
+              group relative rounded-xl border-2 p-4 text-left transition-all duration-200
+              ${callType === 'whatsapp'
+                ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
+                : 'border-border hover:border-primary/30 hover:bg-muted/50'
+              }
+            `}
+          >
+            <div className={`
+              w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors duration-200
+              ${callType === 'whatsapp' ? 'bg-primary text-white' : 'bg-green-500/10 text-green-500'}
+            `}>
+              <Whatsapp size="20" variant="Bulk" color="currentColor" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">WhatsApp</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Planifiez via WhatsApp directement</p>
+            {callType === 'whatsapp' && (
+              <div className="absolute top-3 right-3">
+                <TickCircle size="18" variant="Bold" color="currentColor" className="text-primary" />
+              </div>
+            )}
+          </button>
         </div>
-        <div className="flex items-center text-white">
-          <svg className="w-4 h-4 mr-2 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-            <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="text-white">{selectedTime}</span>
-        </div>
       </div>
-      
-      <div className="flex space-x-4">
-        <Button 
+
+      <div className="flex gap-3">
+        <Button
           onClick={handleBack}
-          className="flex-1 bg-transparent border border-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg"
+          variant="outline"
+          className="flex-1 rounded-xl h-11 font-semibold border-border hover:border-primary/40"
         >
-          <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
+          <ArrowLeft2 size="16" color="currentColor" className="mr-2" />
+          Retour
         </Button>
-        
-        <Button 
+        <Button
           onClick={handleContinue}
-          className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 rounded-lg"
+          className="flex-1 rounded-xl h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
           disabled={!callType}
         >
-          Continue
-          <svg className="w-4 h-4 ml-1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          Continuer
+          <ArrowRight2 size="16" color="currentColor" className="ml-2" />
         </Button>
       </div>
     </div>
   );
 
   const renderStep3 = () => (
-    <div className="flex flex-col items-center justify-center text-center py-6">
-      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-4">
-        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 12L10 17L19 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-      
-      <h2 className="text-lg font-bold mb-2 text-white">Call Scheduled!</h2>
-      <p className="text-white mb-4">We&apos;ve scheduled your {callType === 'calendar' ? 'Calendar' : 'WhatsApp'} call for:</p>
-      
-      <div className="bg-[#1E1B24] rounded-lg p-3 mb-4 w-full">
-        <div className="flex items-center justify-center text-white">
-          <svg className="w-4 h-4 mr-2 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-            <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M3 10H21" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <span className="font-medium">{selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''} at {selectedTime}</span>
-        </div>
-      </div>
-      
-      <p className="text-white mb-4">You&apos;ll receive a confirmation email with all the details and a calendar invitation.</p>
-      
-      <Button 
-        onClick={handleConfirm}
-        className="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg"
+    <div className="flex flex-col items-center text-center py-4">
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
+        className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-5"
       >
-        Done
-      </Button>
+        <TickCircle size="32" variant="Bold" color="currentColor" className="text-emerald-500" />
+      </motion.div>
+
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="text-xl font-bold text-foreground mb-2"
+      >
+        Appel planifie !
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="text-sm text-muted-foreground mb-6 max-w-xs"
+      >
+        Votre appel {callType === 'calendar' ? 'Google Calendar' : 'WhatsApp'} a ete planifie avec succes.
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="w-full rounded-xl border border-border bg-muted/30 p-4 mb-6"
+      >
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar size="16" variant="Bulk" color="currentColor" className="text-primary" />
+            <span className="text-sm font-medium text-foreground">
+              {selectedDate ? format(selectedDate, 'd MMM yyyy', { locale: fr }) : ''}
+            </span>
+          </div>
+          <div className="w-px h-5 bg-border" />
+          <div className="flex items-center gap-2">
+            <Clock size="16" variant="Bulk" color="currentColor" className="text-primary" />
+            <span className="text-sm font-medium text-foreground">{selectedTime}</span>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="flex gap-3 w-full"
+      >
+        <Button
+          onClick={handleBack}
+          variant="outline"
+          className="flex-1 rounded-xl h-11 font-semibold border-border hover:border-primary/40"
+        >
+          <ArrowLeft2 size="16" color="currentColor" className="mr-2" />
+          Retour
+        </Button>
+        <Button
+          onClick={handleConfirm}
+          className="flex-1 rounded-xl h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
+        >
+          {callType === 'calendar' ? (
+            <>
+              <Calendar size="16" variant="Bulk" color="currentColor" className="mr-2" />
+              Ouvrir l&apos;agenda
+            </>
+          ) : (
+            <>
+              <Whatsapp size="16" variant="Bulk" color="currentColor" className="mr-2" />
+              Ouvrir WhatsApp
+            </>
+          )}
+        </Button>
+      </motion.div>
     </div>
   );
 
@@ -451,35 +480,64 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={handleClose}
         >
           <motion.div
-            className="bg-[#2D2A37] rounded-xl w-full max-w-sm overflow-hidden relative"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto relative shadow-2xl border border-border/50"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-bold text-white">Schedule a Call</h1>
+            {/* Top gradient bar */}
+            <div className="h-1 bg-linear-to-r from-primary via-purple-500 to-fuchsia-500 rounded-t-2xl sm:rounded-t-2xl" />
+
+            {/* Mobile drag indicator */}
+            <div className="sm:hidden flex justify-center pt-2">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
+            </div>
+
+            <div className="p-5 sm:p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-5">
+                <div>
+                  <h1 className="text-lg font-bold text-foreground">Planifier un appel</h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {step === 1 && 'Choisissez une date et une heure'}
+                    {step === 2 && 'Selectionnez le type d\'appel'}
+                    {step === 3 && 'Confirmation de votre rendez-vous'}
+                  </p>
+                </div>
                 <button
                   onClick={handleClose}
-                  className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
-                  aria-label="Close"
+                  className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                  aria-label="Fermer"
                 >
-                  <CloseCircle size="22" variant="Bold" className="text-gray-400 hover:text-white transition-colors" />
+                  <CloseCircle size="20" variant="Bulk" color="currentColor" className="text-muted-foreground hover:text-foreground transition-colors" />
                 </button>
               </div>
-              
-              {step === 1 && renderStep1()}
-              {step === 2 && renderStep2()}
-              {step === 3 && renderStep3()}
+
+              <StepIndicator />
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {step === 1 && renderStep1()}
+                  {step === 2 && renderStep2()}
+                  {step === 3 && renderStep3()}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
         </motion.div>

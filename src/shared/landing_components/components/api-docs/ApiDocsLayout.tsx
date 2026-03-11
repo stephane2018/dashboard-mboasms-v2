@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Book1, Code1, DocumentCode2, ArrowRight2, HambergerMenu, CloseCircle } from 'iconsax-react';
 import { cn } from '@/lib/utils';
 
 interface ApiDocsLayoutProps {
@@ -16,10 +17,11 @@ type NavSectionItem = {
   method?: string;
 };
 
-const navSections: { key: string; title: string; items: NavSectionItem[] }[] = [
+const navSections: { key: string; title: string; icon: React.ElementType; items: NavSectionItem[] }[] = [
   {
     key: "getting-started",
-    title: "Getting Started",
+    title: "Pour commencer",
+    icon: Book1,
     items: [
       { title: "Introduction", href: "#introduction", section: "getting-started" },
       { title: "Base URL", href: "#base-url", section: "getting-started" },
@@ -29,7 +31,8 @@ const navSections: { key: string; title: string; items: NavSectionItem[] }[] = [
   },
   {
     key: "endpoints",
-    title: "API Endpoints",
+    title: "Endpoints",
+    icon: Code1,
     items: [
       { title: "Send SMS", href: "#send-sms", section: "endpoints", method: "POST" },
       { title: "Send SMS (Basic Auth)", href: "#send-sms-auth", section: "endpoints", method: "POST" },
@@ -39,6 +42,7 @@ const navSections: { key: string; title: string; items: NavSectionItem[] }[] = [
   {
     key: "reference",
     title: "Reference",
+    icon: DocumentCode2,
     items: [
       { title: "Response Format", href: "#response-format", section: "reference" },
       { title: "Error Codes", href: "#error-codes", section: "reference" },
@@ -48,6 +52,13 @@ const navSections: { key: string; title: string; items: NavSectionItem[] }[] = [
 ];
 
 const allNavItems = navSections.flatMap((s) => s.items);
+
+const methodColors: Record<string, string> = {
+  POST: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  GET: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  PUT: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  DELETE: "bg-red-500/10 text-red-600 dark:text-red-400",
+};
 
 export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
   const [activeItem, setActiveItem] = useState<string>("#introduction");
@@ -75,7 +86,6 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Close sidebar on resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024 && sidebarOpen) setSidebarOpen(false);
@@ -84,13 +94,11 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, [sidebarOpen]);
 
-  // Prevent scroll when mobile sidebar open
   useEffect(() => {
-    document.body.style.overflow = sidebarOpen ? 'hidden' : 'auto';
-    return () => { document.body.style.overflow = 'auto'; };
+    document.body.style.overflow = sidebarOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
 
-  // Smooth scroll
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
     return () => { document.documentElement.style.scrollBehavior = ''; };
@@ -101,145 +109,175 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
     setSidebarOpen(false);
   }, []);
 
+  const SidebarContent = () => (
+    <>
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-border/60 mt-10">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Code1 size="14" variant="Bulk" color="currentColor" className="text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground leading-tight">API Docs</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              </span>
+              <span className="text-[10px] text-muted-foreground">v1.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="p-3 space-y-5 flex-1 overflow-y-auto">
+        {navSections.map((section) => {
+          const SectionIcon = section.icon;
+          return (
+            <div key={section.key}>
+              <div className="flex items-center gap-2 px-3 mb-2">
+                <SectionIcon size="12" variant="Bulk" color="currentColor" className="text-muted-foreground" />
+                <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {section.title}
+                </h3>
+              </div>
+              <ul className="space-y-0.5">
+                {section.items.map((item) => {
+                  const isActive = activeItem === item.href;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => handleNavClick(item.href)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-2 text-[13px] rounded-xl transition-all duration-200 relative",
+                          isActive
+                            ? "bg-primary/8 text-primary font-medium"
+                            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                        )}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="sidebar-active"
+                            className="absolute left-0 top-1.5 bottom-1.5 w-[2.5px] bg-primary rounded-full"
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                          />
+                        )}
+                        {item.method && (
+                          <span className={cn(
+                            "text-[9px] font-bold px-1.5 py-0.5 rounded-md font-mono shrink-0",
+                            methodColors[item.method] || methodColors.POST
+                          )}>
+                            {item.method}
+                          </span>
+                        )}
+                        <span>{item.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+      </nav>
+    </>
+  );
+
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex min-h-screen relative max-w-7xl mx-auto">
       {/* Mobile toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/25 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200"
+        aria-label={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {sidebarOpen ? (
-            <path d="M18 6L6 18M6 6l12 12" />
-          ) : (
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
+        {sidebarOpen ? (
+          <CloseCircle size="22" variant="Bold" color="currentColor" />
+        ) : (
+          <HambergerMenu size="22" variant="Bold" color="currentColor" />
+        )}
       </button>
 
-      {/* Overlay */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed top-20 left-0 z-50 h-[calc(100vh-5rem)] w-72 bg-card border-r border-border transition-transform duration-300 overflow-y-auto",
-          "lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-card border-b border-border px-6 py-4">
-          {/* <Link href="/" className="flex items-center gap-3 group">
-            <Image src="/icones/logo.svg" alt="MboaSMS" width={100} height={32} className="h-7 w-auto" />
-          </Link> */}
-          <div className="flex items-center gap-2 mt-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="text-xs text-muted-foreground font-medium">API Documentation</span>
-            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">v1</span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="p-4 space-y-6">
-          {navSections.map((section) => (
-            <div key={section.key}>
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2 px-3">
-                {section.title}
-              </h3>
-              <ul className="space-y-0.5">
-                {section.items.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => handleNavClick(item.href)}
-                      className={cn(
-                        "flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-all duration-200 relative group",
-                        activeItem === item.href
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-foreground/80 hover:bg-muted/50 hover:text-foreground"
-                      )}
-                    >
-                      {activeItem === item.href && (
-                        <motion.div
-                          layoutId="sidebar-indicator"
-                          className="absolute left-0 top-1 bottom-1 w-[3px] bg-primary rounded-full"
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      )}
-                      {item.method && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono shrink-0">
-                          {item.method}
-                        </span>
-                      )}
-                      <span className={cn(
-                        "transition-transform duration-150",
-                        activeItem !== item.href && "group-hover:translate-x-0.5"
-                      )}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {/* Quick links */}
-          <div className="border-t border-border pt-4">
-            <Link
-              href="/compte"
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary/5 border border-primary/20 text-primary hover:bg-primary/10 transition-colors font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
-              </svg>
-              Dashboard
-            </Link>
-          </div>
-        </nav>
+      {/* Sidebar — Desktop */}
+      <aside className="hidden lg:flex lg:flex-col lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] w-64 bg-background border-r border-border/50 shrink-0">
+        <SidebarContent />
       </aside>
+
+      {/* Sidebar — Mobile */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.aside
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="fixed top-0 left-0 z-50 h-full w-72 bg-background border-r border-border/50 flex flex-col shadow-2xl lg:hidden"
+          >
+            {/* Mobile close */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border/60">
+              <span className="text-sm font-semibold text-foreground">Navigation</span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              >
+                <CloseCircle size="18" variant="Bulk" color="currentColor" className="text-muted-foreground" />
+              </button>
+            </div>
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <SidebarContent />
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
       <main className="flex-1 min-w-0">
-        <div className="max-w-4xl mx-auto px-6 md:px-10 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto px-5 sm:px-8 md:px-10 py-8 md:py-12">
           {children}
         </div>
       </main>
 
-      {/* Right sidebar - Table of contents (desktop only) */}
-      <aside className="hidden xl:block w-56 shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto py-8 pr-6">
-        <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-3">
-          On this page
-        </div>
-        <ul className="space-y-1 border-l border-border pl-3">
-          {allNavItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className={cn(
-                  "block text-xs py-1 transition-colors duration-150",
-                  activeItem === item.href
-                    ? "text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {item.title}
-              </Link>
-            </li>
-          ))}
+      {/* Right sidebar — Table of contents (xl only) */}
+      <aside className="hidden xl:block w-52 shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto py-8 pr-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-3 pl-3">
+          Sur cette page
+        </p>
+        <ul className="space-y-0.5 border-l border-border/50 pl-0">
+          {allNavItems.map((item) => {
+            const isActive = activeItem === item.href;
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => handleNavClick(item.href)}
+                  className={cn(
+                    "block text-xs py-1.5 pl-3 border-l-2 -ml-px transition-all duration-200",
+                    isActive
+                      ? "border-primary text-primary font-medium"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  )}
+                >
+                  {item.title}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </aside>
     </div>

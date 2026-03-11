@@ -1,4 +1,4 @@
-import { BaseEntity, PaginatedResponse } from './common';
+import { BaseEntity } from './common';
 
 export interface SmsCountryPriceType extends BaseEntity {
   statusCode?: number;
@@ -9,4 +9,4 @@ export interface SmsCountryPriceType extends BaseEntity {
   pricePerSms: number;
 }
 
-export type SmsCountryPriceResponse = PaginatedResponse<SmsCountryPriceType>;
+export type SmsCountryPriceResponse = SmsCountryPriceType[];
