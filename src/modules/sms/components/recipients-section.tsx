@@ -46,7 +46,7 @@ export function RecipientsSection({
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Button
-                            variant="ghost"
+                            variant="default"
                             size="sm"
                             className="h-8 text-xs gap-1.5 rounded-lg"
                             onClick={() => setIsGroupModalOpen(true)}
@@ -55,7 +55,8 @@ export function RecipientsSection({
                             Groupes
                         </Button>
                         <Button
-                            variant="ghost"
+                            type="button"
+                            variant="outline"
                             size="sm"
                             className="h-8 text-xs gap-1.5 rounded-lg"
                             onClick={() => setIsContactModalOpen(true)}

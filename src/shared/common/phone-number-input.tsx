@@ -565,7 +565,7 @@ export function PhoneNumberInput({
                                             onClick={() => handleDelete(entry.id)}
                                             className="p-0.5 hover:bg-red-100 rounded dark:hover:bg-red-900/30"
                                         >
-                                            <CloseCircle size={14} variant="Bulk" className="text-red-500" />
+                                            <CloseCircle size={14} variant="Bold" color="currentColor" className="text-red-500/70" />
                                         </button>
                                     </>
                                 )}

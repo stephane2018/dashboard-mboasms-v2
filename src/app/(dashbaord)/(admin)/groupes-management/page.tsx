@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/shared/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
+import { Card, CardContent } from "@/shared/ui/card"
 import { Input } from "@/shared/ui/input"
 import { Skeleton } from "@/shared/ui/skeleton"
 import {
@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select"
-import { Badge } from "@/shared/ui/badge"
 import { Label } from "@/shared/ui/label"
 import { toast } from "sonner"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
@@ -41,21 +40,24 @@ function GroupCardsSkeleton() {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: GROUP_CARD_PLACEHOLDER_COUNT }).map((_, index) => (
-        <Card key={`group-card-skeleton-${index}`} className="border border-border/40">
-          <CardHeader className="space-y-1.5 pb-2">
-            <Skeleton className="h-3 w-1/4" />
-            <Skeleton className="h-5 w-1/2" />
-            <Skeleton className="h-3 w-1/3" />
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            <Skeleton className="h-2.5 w-full" />
-            <Skeleton className="h-2.5 w-2/3" />
-            <div className="flex gap-1.5">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-20" />
+        <div key={`group-card-skeleton-${index}`} className="rounded-2xl border border-border/50 p-4">
+          <div className="flex items-start gap-2.5 mb-3">
+            <Skeleton className="h-9 w-9 rounded-xl shrink-0" />
+            <div className="space-y-1.5 flex-1">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
             </div>
-          </CardContent>
-        </Card>
+            <Skeleton className="h-5 w-8 rounded-full" />
+          </div>
+          <div className="flex gap-4 mb-3 px-1">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <div className="flex gap-2 pt-3 border-t border-border/40">
+            <Skeleton className="h-8 flex-1 rounded-xl" />
+            <Skeleton className="h-8 w-10 rounded-xl" />
+          </div>
+        </div>
       ))}
     </div>
   )
@@ -315,7 +317,7 @@ export default function AdminGroupesPage() {
 
       {/* Statistics cards */}
       <div className="grid gap-3 grid-cols-3">
-        <Card className="relative overflow-hidden border-l-[3px] border-l-blue-500 bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm">
+        <Card className="relative overflow-hidden border-l-[3px] border-l-blue-500 bg-linear-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="bg-blue-500/10 dark:bg-blue-500/20 rounded-xl p-2.5 shrink-0">
@@ -328,7 +330,7 @@ export default function AdminGroupesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="relative overflow-hidden border-l-[3px] border-l-emerald-500 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 backdrop-blur-sm">
+        <Card className="relative overflow-hidden border-l-[3px] border-l-emerald-500 bg-linear-to-br from-emerald-500/10 to-emerald-600/5 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl p-2.5 shrink-0">
@@ -341,7 +343,7 @@ export default function AdminGroupesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="relative overflow-hidden border-l-[3px] border-l-amber-500 bg-gradient-to-br from-amber-500/10 to-amber-600/5 backdrop-blur-sm">
+        <Card className="relative overflow-hidden border-l-[3px] border-l-amber-500 bg-linear-to-br from-amber-500/10 to-amber-600/5 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="bg-amber-500/10 dark:bg-amber-500/20 rounded-xl p-2.5 shrink-0">
@@ -449,82 +451,82 @@ export default function AdminGroupesPage() {
                   const isSelected = selectedGroupId === g.id
 
                   return (
-                    <Card
+                    <div
                       key={g.id}
                       className={cn(
-                        "cursor-pointer border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group",
+                        "relative rounded-2xl border border-border/50 bg-background p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group",
                         isSelected && "border-primary ring-2 ring-primary/20"
                       )}
                       onClick={() => handleGroupClick(g.id)}
                     >
-                      <CardHeader className="space-y-0.5 pb-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                            {g.code || "—"}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] px-2 py-0 bg-muted/30">
-                            {g.enterpriseFull?.socialRaison}
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-base leading-tight group-hover:text-primary transition-colors">
-                          {g.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {contacts.length} contact{contacts.length !== 1 ? "s" : ""} • ID: {g.id.slice(0, 6)}…
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="rounded-lg bg-muted/30 p-2 flex items-center gap-2 border border-border/40">
-                            <div className="rounded-full bg-background p-1 shadow-sm">
-                              <Building size="14" variant="Bulk" color="currentColor" className="text-primary" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] text-muted-foreground">Entreprise</p>
-                              <p className="font-semibold truncate">{g.enterpriseFull?.socialRaison}</p>
-                            </div>
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="rounded-xl bg-primary/10 p-2 shrink-0">
+                            <People size={18} variant="Bulk" color="currentColor" className="text-primary" />
                           </div>
-                          <div className="rounded-lg bg-muted/30 p-2 flex items-center gap-2 border border-border/40">
-                            <div className="rounded-full bg-background p-1 shadow-sm">
-                              <People size="14" variant="Bulk" color="currentColor" className="text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] text-muted-foreground">Contacts</p>
-                              <p className="font-semibold">{contacts.length}</p>
-                            </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+                              {g.name}
+                            </h3>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {g.code || "—"} · {g.enterpriseFull?.socialRaison}
+                            </p>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleOpenAddContacts(g)
-                            }}
-                            disabled={isMutating}
-                            className="flex-1 h-8 text-xs"
-                          >
-                            <AddSquare size="16" color="currentColor" variant="Bulk" className="mr-1" />
-                            Ajouter
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setGroupToDelete(g)
-                              setIsDeleteOpen(true)
-                            }}
-                            disabled={isMutating}
-                            className="h-8 px-4 text-xs"
-                          >
-                            <Trash size="16" color="currentColor" variant="Bulk" className="mr-1" />
-                            Supprimer
-                          </Button>
+                        <span className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums shrink-0",
+                          contacts.length > 0
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+                            : "bg-muted text-muted-foreground"
+                        )}>
+                          {contacts.length}
+                        </span>
+                      </div>
+
+                      {/* Stats row */}
+                      <div className="flex items-center gap-4 mb-3 px-1">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <People size={13} variant="Bulk" color="currentColor" />
+                          <span className="tabular-nums font-medium text-foreground">{contacts.length}</span>
+                          <span>contact{contacts.length !== 1 ? "s" : ""}</span>
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Building size={13} variant="Bulk" color="currentColor" />
+                          <span className="truncate max-w-[120px]">{g.enterpriseFull?.socialRaison}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 pt-3 border-t border-border/40">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenAddContacts(g)
+                          }}
+                          disabled={isMutating}
+                          className="flex-1 h-8 text-xs rounded-xl gap-1.5"
+                        >
+                          <AddSquare size={14} color="currentColor" variant="Bulk" />
+                          Ajouter
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setGroupToDelete(g)
+                            setIsDeleteOpen(true)
+                          }}
+                          disabled={isMutating}
+                          className="h-8 px-3 text-xs rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        >
+                          <Trash size={14} color="currentColor" variant="Bulk" />
+                        </Button>
+                      </div>
+                    </div>
                   )
                 })}
               </div>

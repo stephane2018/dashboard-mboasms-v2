@@ -117,15 +117,24 @@ export function SMSConfirmationModal({
                     {/* Stats grid */}
                     <div className="grid grid-cols-3 gap-2">
                         <div className="rounded-xl bg-muted/30 p-3 text-center">
-                            <p className="text-[11px] text-muted-foreground mb-1">Destinataires</p>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <ProfileTick size={18} color="currentColor" variant="Bulk" className="text-muted-foreground" />
+                            <p className="text-[11px] text-muted-foreground">Destinataires</p>
+                          </div>
                             <p className="text-xl font-bold tabular-nums">{validRecipients}</p>
                         </div>
                         <div className="rounded-xl bg-primary/5 p-3 text-center">
-                            <p className="text-[11px] text-muted-foreground mb-1">Total SMS</p>
+                           <div className="flex items-center justify-center gap-1.5">
+                            <MessageText1 size={18} color="currentColor" variant="Bulk" className="text-primary" />
+                            <p className="text-[11px] text-muted-foreground">Total SMS</p>
+                           </div>
                             <p className="text-xl font-bold text-primary tabular-nums">{totalSmsToSend}</p>
                         </div>
                         <div className={`rounded-xl p-3 text-center ${hasInsufficientBalance ? 'bg-red-50 dark:bg-red-500/5' : 'bg-emerald-50 dark:bg-emerald-500/5'}`}>
-                            <p className="text-[11px] text-muted-foreground mb-1">Solde après</p>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Wallet size={16} color="currentColor" variant="Bulk" className={`shrink-0 ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`} />
+                                <p className="text-[11px] text-muted-foreground">Solde après</p>
+                            </div>
                             <p className={`text-xl font-bold tabular-nums ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                                 {remainingBalance.toLocaleString()}
                             </p>
@@ -173,7 +182,8 @@ export function SMSConfirmationModal({
 
                 <DialogFooter className="gap-2 px-5 py-4 border-t border-border/50 shrink-0 bg-muted/20">
                     <Button
-                        variant="ghost"
+                        type="button"
+                        variant="outline"
                         onClick={onClose}
                         disabled={isLoading}
                         className="flex-1 sm:flex-none rounded-xl"

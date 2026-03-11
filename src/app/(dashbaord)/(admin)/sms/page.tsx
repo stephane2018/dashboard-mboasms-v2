@@ -58,7 +58,9 @@ export default function SMSPage() {
     const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
-        user?.companyId || "")
+        user?.companyId || "");
+    console.log(senderIdsData);
+    console.log(user?.companyId);
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
     const userSenderId = user?.smsSenderId || ""
@@ -329,7 +331,7 @@ export default function SMSPage() {
     }
 
     return (
-        <div className="max-w-[1200px] mx-auto p-4 md:p-6 space-y-5">
+        <div className="  p-4 md:p-6 space-y-5">
             {/* Page Header — compact */}
             <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5">

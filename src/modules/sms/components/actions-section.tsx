@@ -34,7 +34,8 @@ export function ActionsSection({
                 )}
             </Button>
             <Button
-                variant="ghost"
+                type="button"
+                variant="outline"
                 onClick={onClear}
                 disabled={isSending}
                 className="w-full h-9 rounded-xl text-xs text-muted-foreground"
