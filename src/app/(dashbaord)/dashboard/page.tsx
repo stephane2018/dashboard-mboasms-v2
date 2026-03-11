@@ -137,13 +137,13 @@ export default function DashboardHome() {
         <Button asChild size="sm" className="rounded-xl px-5 gap-2 shadow-sm">
           <a href="/sms">
             Nouvelle campagne
-            <ArrowRight2 size="16" />
+            <ArrowRight2 size="16" variant="Bulk" color="currentColor" />
           </a>
         </Button>
       </section>
 
       {/* KPI Cards */}
-      <section className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
           <>
             <SkeletonCard />

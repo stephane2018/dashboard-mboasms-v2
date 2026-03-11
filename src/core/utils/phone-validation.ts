@@ -43,6 +43,20 @@ export function isCamtelPhoneNumber(phoneNumber: string): boolean {
 }
 
 /**
+ * Checks if a phone number is a Cameroon number (any operator)
+ */
+export function isCameroonNumber(phoneNumber: string): boolean {
+  if (!phoneNumber || typeof phoneNumber !== "string") return false
+  const cleaned = phoneNumber.trim()
+  return (
+    isOrangePhoneNumber(cleaned) ||
+    isMTNPhoneNumber(cleaned) ||
+    isNexttelPhoneNumber(cleaned) ||
+    isCamtelPhoneNumber(cleaned)
+  )
+}
+
+/**
  * Phone operator types
  */
 export type PhoneOperator = "ORANGE" | "MTN" | "NEXTTEL" | "CAMTEL" | "UNKNOWN"

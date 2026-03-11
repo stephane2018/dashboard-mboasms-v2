@@ -21,8 +21,9 @@ import { ImportModal } from "./_components/import-modal"
 import { useAuthContext } from "@/core/providers"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { SearchNormal1, UserAdd, DocumentDownload, Sms } from "iconsax-react"
-import { getPhoneValidationStatus } from "@/core/utils/phone-validation"
+import { Switch } from "@/shared/ui/switch"
+import { SearchNormal1, UserAdd, DocumentDownload, Sms, Global } from "iconsax-react"
+import { getPhoneValidationStatus, isCameroonNumber } from "@/core/utils/phone-validation"
 import { searchContacts } from "@/core/utils/search.utils"
 import { useSMSStore } from "@/core/stores/smsStore"
 
@@ -50,6 +51,7 @@ export default function UsersListPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
   const [contactsToDelete, setContactsToDelete] = useState<EnterpriseContactResponseType[]>([])
+  const [showInternationalOnly, setShowInternationalOnly] = useState(false)
 
   // Fetch contacts with pagination
   const { getContacts, isLoading } = useContactsByEnterprise()
@@ -77,10 +79,14 @@ export default function UsersListPage() {
   const allContacts = Array.isArray(data) ? data : []
   const totalElements = Array.isArray(data) ? data.length : 0
 
-  // Filter contacts based on search term across multiple columns
+  // Filter contacts based on search term and international filter
   const filteredContacts = useMemo(() => {
-    return searchContacts(allContacts, searchTerm)
-  }, [allContacts, searchTerm])
+    let result = searchContacts(allContacts, searchTerm)
+    if (showInternationalOnly) {
+      result = result.filter(c => !isCameroonNumber(c.phoneNumber))
+    }
+    return result
+  }, [allContacts, searchTerm, showInternationalOnly])
 
   const contacts = filteredContacts
   const displayedElements = filteredContacts.length
@@ -344,8 +350,18 @@ export default function UsersListPage() {
               className="h-9 w-[200px] pl-9 sm:w-[300px]"
             />
           </div>
-          {searchTerm && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
+          <Button className="flex text-white items-center gap-2 cursor-pointer">
+            <Switch
+              checked={showInternationalOnly}
+              onCheckedChange={setShowInternationalOnly}
+            />
+            <span className="flex items-center gap-1.5 text-xs text-white whitespace-nowrap">
+              <Global size={14} color="currentColor" variant="Bulk" />
+              International
+            </span>
+          </Button>
+          {(searchTerm || showInternationalOnly) && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
               {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
             </span>
           )}
@@ -375,7 +391,7 @@ export default function UsersListPage() {
         enablePagination={true}
         enableColumnFilter={true}
         rowSelectable={true}
-        getRowCanBeSelected={(contact) => getPhoneValidationStatus(contact.phoneNumber) === "CORRECT"}
+        getRowCanBeSelected={(contact) => getPhoneValidationStatus(contact.phoneNumber) === "CORRECT" || !isCameroonNumber(contact.phoneNumber)}
         onPaginationChange={setPagination}
         onRowSelectionChange={setSelectedContacts}
         initialState={{

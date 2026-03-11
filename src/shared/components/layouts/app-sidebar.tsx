@@ -26,6 +26,7 @@ import {
   type RoleBasedNavItem,
 } from './sidebar-config'
 import Image from 'next/image'
+import { useTheme } from 'next-themes'
 import { useUserStore } from '@/core/stores/userStore'
 import { Role } from '@/core/config/enum'
 
@@ -35,6 +36,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUserStore()
   const userRole = user?.role || Role.USER
   const { state } = useSidebar()
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const logoSrc = mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg'
 
   const dashboardConfig = React.useMemo(() => getDashboardConfig(userRole), [userRole])
   const isDashboardActive =
@@ -65,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem className={`${state === 'collapsed' ? 'mx-auto' : ''}  p-2`}>
             <SidebarMenuButton size="lg" asChild className="bg-transparent!">
               <Link href="/" className={`flex ${state === 'collapsed' ? 'justify-center' : 'justify-start'} `}>
-                <Image src="/logo.png" alt="MboaSMS" fill className="rounded-sm" />
+                <Image src={logoSrc} alt="MboaSMS" fill className="rounded-sm" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

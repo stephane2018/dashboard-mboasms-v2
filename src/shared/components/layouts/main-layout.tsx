@@ -42,7 +42,10 @@ import {
   Setting2,
   WalletMoney,
   Information,
+  Sun1,
+  Moon,
 } from "iconsax-react"
+import { useTheme } from "next-themes"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -55,6 +58,12 @@ interface MainLayoutProps {
 export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const router = useRouter()
   const { user, clearUser, actingCompanyId, actingCompanyName, setActingCompany, clearActingCompany } = useUserStore()
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const userDisplayName = user?.name || user?.email || "Utilisateur"
   const userInitials = userDisplayName
@@ -144,11 +153,25 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
               </Link>
             </Button>
 
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            >
+              {mounted && resolvedTheme === 'dark' ? (
+                <Sun1 size="18" variant="Bulk" color="currentColor" className="text-amber-500" />
+              ) : (
+                <Moon size="18" variant="Bulk" color="currentColor" className="text-primary" />
+              )}
+              <span className="sr-only">Changer le thème</span>
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-full border border-border/70 bg-gradient-to-br from-primary/5 to-purple-500/5 px-3 py-2 shadow-sm hover:border-primary hover:shadow-primary/10 transition-all duration-200">
                   <div className="relative">
-                    <Avatar className="h-9 w-9 ring-1 ring-border">
+                    <Avatar className="h-7 w-7 ring-1 ring-border">
                       <AvatarImage src={user?.avatar || ""} alt={userDisplayName} />
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
