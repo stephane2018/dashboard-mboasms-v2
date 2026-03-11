@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
@@ -30,59 +29,52 @@ export function SenderIdSection({
     onShowSenderIdInputChange,
 }: SenderIdSectionProps) {
     return (
-        <Card className={!activeSenderId ? "border-amber-300 dark:border-amber-700" : ""}>
-            <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <UserTag size={20} color="currentColor" variant="Bulk" className="text-primary" />
-                            Sender ID
-                        </CardTitle>
-                        <CardDescription>
-                            {activeSenderId
-                                ? `Vos SMS seront envoyés avec : ${activeSenderId}`
-                                : "Aucun Sender ID - Veuillez en configurer un"}
-                        </CardDescription>
-                    </div>
-                    {!hasPrimarySenderId && (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                                {temporarySenderId ? "Activer le senderId temporaire" : "Désactiver le senderId temporaire"}
-                            </span>
-                            <Switch
-                                checked={!!temporarySenderId}
-                                onCheckedChange={(checked) => {
-                                    if (checked) {
-                                        onActivateTempSenderId()
-                                    } else {
-                                        onSetTemporarySenderId("")
-                                    }
-                                }}
-                            />
-                        </div>
-                    )}
-                    {hasPrimarySenderId && (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                                {useTemporarySenderId ? "Temporaire" : "Principal"}
-                            </span>
-                            <Switch
-                                checked={!useTemporarySenderId}
-                                onCheckedChange={(checked) => {
-                                    onSetUseTemporarySenderId(!checked)
-                                }}
-                            />
-                        </div>
+        <div className={`rounded-2xl border bg-card ${!activeSenderId ? "border-amber-300 dark:border-amber-700" : "border-border/50"}`}>
+            <div className="flex items-center justify-between p-4 pb-3">
+                <div className="flex items-center gap-2">
+                    <UserTag size={18} color="currentColor" variant="Bulk" className="text-primary" />
+                    <h2 className="text-sm font-semibold text-foreground">Sender ID</h2>
+                    {activeSenderId && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                            — {activeSenderId}
+                        </span>
                     )}
                 </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {/* Enterprise Sender IDs Dropdown */}
+                {/* Toggle principal/temporaire */}
+                {hasPrimarySenderId && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground">
+                            {useTemporarySenderId ? "Temporaire" : "Principal"}
+                        </span>
+                        <Switch
+                            checked={!useTemporarySenderId}
+                            onCheckedChange={(checked) => onSetUseTemporarySenderId(!checked)}
+                        />
+                    </div>
+                )}
+                {!hasPrimarySenderId && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground">
+                            {temporarySenderId ? "Temporaire actif" : "Inactif"}
+                        </span>
+                        <Switch
+                            checked={!!temporarySenderId}
+                            onCheckedChange={(checked) => {
+                                if (checked) onActivateTempSenderId()
+                                else onSetTemporarySenderId("")
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="px-4 pb-4 space-y-3">
+                {/* Enterprise Sender IDs dropdown */}
                 {senderIds.length > 0 && (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Sender ID de l'entreprise</label>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Sender ID entreprise</label>
                         <Select value={activeSenderId || undefined} onValueChange={onSetTemporarySenderId}>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-9 rounded-lg text-sm">
                                 <SelectValue placeholder="Sélectionner un Sender ID" />
                             </SelectTrigger>
                             <SelectContent>
@@ -94,116 +86,101 @@ export function SenderIdSection({
                             </SelectContent>
                         </Select>
                         {isLoadingSenderIds && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Chargement des Sender IDs...
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                Chargement...
                             </div>
                         )}
                     </div>
                 )}
 
                 {hasPrimarySenderId && !useTemporarySenderId ? (
-                    /* Primary Sender ID display */
-                    <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <TickCircle size={24} color="currentColor" variant="Bulk" className="text-green-600" />
-                        <div className="flex-1">
-                            <p className="font-bold text-xl text-green-700 dark:text-green-400">
+                    /* Primary active */
+                    <div className="flex items-center gap-2.5 p-3 bg-emerald-50 dark:bg-emerald-500/5 rounded-xl border border-emerald-200/60 dark:border-emerald-500/15">
+                        <TickCircle size={20} color="currentColor" variant="Bulk" className="text-emerald-600 shrink-0" />
+                        <div className="min-w-0">
+                            <p className="font-bold text-base text-emerald-700 dark:text-emerald-400 truncate">
                                 {userSenderId}
                             </p>
-                            <p className="text-sm text-green-600 dark:text-green-500">
-                                {isSenderIdVerified ? "Sender ID principal actif" : "En attente de validation"}
+                            <p className="text-[11px] text-emerald-600 dark:text-emerald-500">
+                                {isSenderIdVerified ? "Sender ID vérifié et actif" : "En attente de validation"}
                             </p>
                         </div>
                     </div>
                 ) : (
-                    /* Temporary Sender ID input */
                     <>
+                        {/* Temp mode info */}
                         {hasPrimarySenderId && (
-                            <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
-                                <span className="text-sm text-blue-700 dark:text-blue-400">
-                                    Mode temporaire activé. Votre Sender ID principal ({userSenderId}) est désactivé.
-                                </span>
+                            <div className="flex items-center gap-2 p-2.5 bg-blue-50 dark:bg-blue-500/5 rounded-lg text-xs text-blue-700 dark:text-blue-400">
+                                <InfoCircle size={14} color="currentColor" variant="Bulk" className="shrink-0" />
+                                Mode temporaire. Principal ({userSenderId}) désactivé.
                             </div>
                         )}
 
                         {!hasPrimarySenderId && (
                             <>
-                                {(temporarySenderId && senderIds.length === 0) ? (
-                                    <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                                        <Warning2 size={20} color="currentColor" variant="Bulk" className="text-amber-600 shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                                                Aucun Sender ID permanent configuré
-                                            </p>
-                                            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                                                Utilisez le Sender ID temporaire "infos" ou définissez votre propre Sender ID.
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                                        <Warning2 size={20} color="currentColor" variant="Bulk" className="text-amber-600 shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                                                Aucun Sender ID permanent configuré
-                                            </p>
-                                            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                                                Configurez un Sender ID permanent ou utilisez un Sender ID temporaire.
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
+                                <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-500/5 rounded-lg">
+                                    <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                                        Aucun Sender ID permanent.{" "}
+                                        {temporarySenderId
+                                            ? `Utilisation de "${temporarySenderId}".`
+                                            : "Configurez-en un ou activez le temporaire."}
+                                    </p>
+                                </div>
 
-                                {/* Quick activate button */}
                                 {!temporarySenderId && (
                                     <Button
                                         variant="outline"
-                                        className="w-full"
+                                        size="sm"
+                                        className="w-full h-8 text-xs rounded-lg gap-1.5"
                                         onClick={onActivateTempSenderId}
                                     >
-                                        <TickCircle size={16} color="currentColor" variant="Bulk" className="mr-2" />
-                                        Activer le Sender ID temporaire "infos"
+                                        <TickCircle size={14} color="currentColor" variant="Bulk" />
+                                        Activer "infos" (temporaire)
                                     </Button>
                                 )}
 
-                                {/* Save own sender ID section */}
                                 {!showSenderIdInput ? (
                                     <Button
-                                        variant="secondary"
-                                        className="w-full"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full h-8 text-xs rounded-lg gap-1.5 text-muted-foreground"
                                         onClick={() => onShowSenderIdInputChange(true)}
                                     >
-                                        <Edit size={16} color="currentColor" variant="Bulk" className="mr-2" />
-                                        Définir mon Sender ID permanent
+                                        <Edit size={14} color="currentColor" variant="Bulk" />
+                                        Définir un Sender ID permanent
                                     </Button>
                                 ) : (
-                                    <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
-                                        <label className="text-sm font-medium">Nouveau Sender ID</label>
+                                    <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
                                         <Input
                                             type="text"
                                             value={newSenderIdInput}
                                             onChange={(e) => onNewSenderIdInputChange(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 11))}
                                             placeholder="Ex: MONENTREPRISE"
                                             maxLength={11}
+                                            className="h-9 rounded-lg text-sm"
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                            Max 11 caractères alphanumériques. Sera soumis pour validation.
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Max 11 caractères alphanumériques
                                         </p>
                                         <div className="flex gap-2">
                                             <Button
-                                                className="flex-1"
+                                                size="sm"
+                                                className="flex-1 h-8 text-xs rounded-lg"
                                                 onClick={onSaveSenderId}
                                                 disabled={isSavingSenderId || !newSenderIdInput.trim()}
                                             >
                                                 {isSavingSenderId ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                 ) : (
                                                     "Enregistrer"
                                                 )}
                                             </Button>
                                             <Button
                                                 variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-xs rounded-lg"
                                                 onClick={() => {
                                                     onShowSenderIdInputChange(false)
                                                     onNewSenderIdInputChange("")
@@ -217,31 +194,24 @@ export function SenderIdSection({
                             </>
                         )}
 
-                        {/* Confirmation when temporary sender ID is activated */}
+                        {/* Temp sender confirmation */}
                         {temporarySenderId && (
-                            <div className="flex items-center justify-between gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                <div className="flex items-center gap-2">
-                                    <TickCircle size={16} color="currentColor" variant="Bulk" className="text-green-600" />
-                                    <span className="text-sm text-green-700 dark:text-green-400">
-                                        Vos SMS seront envoyés avec : <strong>{temporarySenderId}</strong>
-                                    </span>
+                            <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-500/5 rounded-lg border border-emerald-200/60 dark:border-emerald-500/15">
+                                <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400">
+                                    <TickCircle size={14} color="currentColor" variant="Bulk" />
+                                    Envoi avec : <strong>{temporarySenderId}</strong>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    onClick={() => {
-                                        onSetTemporarySenderId("")
-                                    }}
+                                <button
+                                    onClick={() => onSetTemporarySenderId("")}
+                                    className="p-1 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                                 >
-                                    <CloseCircle size={14} color="currentColor" variant="Bulk" className="mr-1" />
-                                    Désactiver
-                                </Button>
+                                    <CloseCircle size={14} color="currentColor" variant="Bulk" />
+                                </button>
                             </div>
                         )}
                     </>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
