@@ -63,6 +63,8 @@ export function useRecharge(options: UseRechargeOptions = {}) {
   const queryClient = useQueryClient()
   const user = useUserStore((state) => state.user)
   const _isSuperAdmin = user?.role === Role.SUPER_ADMIN
+  const _isAdminUser = user?.role === Role.ADMIN_USER
+  const _isAdmin = _isSuperAdmin || _isAdminUser
   const enterpriseId = user?.companyId
 
   const queryKey = options.queryKey ?? (_isSuperAdmin ? ["recharges"] : ["recharges", enterpriseId])
@@ -78,12 +80,12 @@ export function useRecharge(options: UseRechargeOptions = {}) {
       if (_isSuperAdmin) {
         return (await getAllRecharges()) ?? []
       }
-      const page = await getRecharges(enterpriseId!)
-      return page?.content ?? []
+      return (await getRecharges(enterpriseId!)) ?? []
     },
-    enabled: !!user && (_isSuperAdmin || !!enterpriseId),
+    enabled: !!user && (_isAdmin || !!enterpriseId),
     ...(options.queryOptions ?? {}),
   })
+  console.log(rechargesQuery.data);
 
   const createRechargeMutation = useMutation({
     mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),

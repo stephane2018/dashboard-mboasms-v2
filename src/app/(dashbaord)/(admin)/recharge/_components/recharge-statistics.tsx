@@ -23,60 +23,73 @@ export function RechargeStatistics({
       title: "Total recharges",
       value: totalRecharges.toLocaleString(),
       icon: Wallet,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      gradient: "from-blue-500/10 to-blue-600/5",
+      iconBg: "bg-blue-500/10 dark:bg-blue-500/20",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      borderAccent: "border-l-blue-500",
     },
     {
       title: "En attente",
       value: pendingRecharges.toLocaleString(),
       icon: Clock,
-      iconColor: "text-amber-600",
-      bgColor: "bg-amber-50 dark:bg-amber-900/20",
+      gradient: "from-amber-500/10 to-amber-600/5",
+      iconBg: "bg-amber-500/10 dark:bg-amber-500/20",
+      iconColor: "text-amber-600 dark:text-amber-400",
+      borderAccent: "border-l-amber-500",
     },
     {
       title: "Validées",
       value: validatedRecharges.toLocaleString(),
       icon: TickCircle,
-      iconColor: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-900/20",
+      gradient: "from-emerald-500/10 to-emerald-600/5",
+      iconBg: "bg-emerald-500/10 dark:bg-emerald-500/20",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
+      borderAccent: "border-l-emerald-500",
     },
     {
       title: "Refusées",
       value: refusedRecharges.toLocaleString(),
       icon: CloseCircle,
-      iconColor: "text-red-600",
-      bgColor: "bg-red-50 dark:bg-red-900/20",
+      gradient: "from-rose-500/10 to-rose-600/5",
+      iconBg: "bg-rose-500/10 dark:bg-rose-500/20",
+      iconColor: "text-rose-600 dark:text-rose-400",
+      borderAccent: "border-l-rose-500",
     },
     {
       title: "Montant total",
       value: `${totalAmount.toLocaleString()} FCFA`,
       icon: MoneyRecive,
-      iconColor: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      gradient: "from-violet-500/10 to-violet-600/5",
+      iconBg: "bg-violet-500/10 dark:bg-violet-500/20",
+      iconColor: "text-violet-600 dark:text-violet-400",
+      borderAccent: "border-l-violet-500",
     },
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
       {stats.map((stat) => (
-        <Card key={stat.title} className="border-2">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-bold tracking-tight">
-                  {stat.value}
-                </p>
-              </div>
-              <div className={`${stat.bgColor} rounded-lg p-2.5`}>
+        <Card
+          key={stat.title}
+          className={`relative overflow-hidden border-l-[3px] ${stat.borderAccent} bg-gradient-to-br ${stat.gradient} backdrop-blur-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className={`${stat.iconBg} rounded-xl p-2.5 shrink-0`}>
                 <stat.icon
-                  size={24}
+                  size={20}
                   variant="Bulk"
-                   color="currentColor"
+                  color="currentColor"
                   className={stat.iconColor}
                 />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
+                  {stat.title}
+                </p>
+                <p className="text-lg font-bold tracking-tight truncate">
+                  {stat.value}
+                </p>
               </div>
             </div>
           </CardContent>

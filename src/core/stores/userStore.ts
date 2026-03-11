@@ -107,11 +107,17 @@ export const useUserStore = create<UserStore>()(
       name: 'user-storage',
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Validate token on rehydration - if token is expired, clear user data
-          // This prevents stale user data from being loaded when the token is no longer valid
-          const token = tokenManager.getToken();
-          if (state.user && (!token || tokenManager.isTokenExpired())) {
-            state.clearUser();
+          // Only validate token on the client side (localStorage is available)
+          if (typeof window !== 'undefined') {
+            try {
+              const token = tokenManager.getToken();
+              if (state.user && (!token || tokenManager.isTokenExpired())) {
+                state.clearUser();
+              }
+            } catch {
+              // If token validation fails (e.g., localStorage not ready), don't clear user
+              // The auth provider will handle validation when it's ready
+            }
           }
 
           state.setHydrated(true);

@@ -71,10 +71,10 @@ export class HttpClient {
     return response.data;
   }
 
-  private async handleTokenRefresh(): Promise<string> {
+  private async handleTokenRefresh(silent = false): Promise<string> {
     const refreshToken = tokenManager.getRefreshToken();
     if (!refreshToken) {
-      this.handleUnauthorized();
+      if (!silent) this.handleUnauthorized();
       throw new Error("No refresh token available");
     }
 
@@ -87,12 +87,26 @@ export class HttpClient {
 
       return response.data.token;
     } catch (error) {
-      this.handleUnauthorized();
+      if (!silent) this.handleUnauthorized();
       throw error;
     }
   }
 
   private handleUnauthorized(): void {
+    // Only clear tokens and redirect on protected pages
+    // Public pages should never touch the auth state
+    const publicPaths = ["/", "/sms-pricing", "/auth", "/api-docs"];
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
+    const isPublicPage = publicPaths.some(
+      (p) => currentPath === p || currentPath.startsWith(p + "/")
+    );
+
+    if (isPublicPage) {
+      // On public pages, do NOT clear tokens - the user might be authenticated
+      // and just browsing the public site
+      return;
+    }
+
     tokenManager.clearTokens();
     toast.error("Session expirée. Veuillez vous reconnecter.");
     window.location.href = "/auth/login";
@@ -108,7 +122,8 @@ export class HttpClient {
 
         const { response } = error;
 
-        if (response && UNAUTHORIZED_STATUS_NUMBERS.includes(response.status)) {
+        // Only treat 401 as session expired (not 403 which is permission denied)
+        if (response && response.status === 401) {
           callback();
           this.handleUnauthorized();
         }
@@ -142,9 +157,10 @@ export class HttpClient {
       }
 
       // Check if token should be refreshed proactively before making the request
+      // Use silent mode so a failed proactive refresh doesn't redirect to login
       if (tokenManager.shouldRefreshToken() && !this.isRefreshing) {
         try {
-          await this.handleTokenRefresh();
+          await this.handleTokenRefresh(true);
         } catch {
           // If proactive refresh fails, continue with current token
           // The response interceptor will handle 401/403 errors
@@ -183,7 +199,8 @@ export class HttpClient {
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        if (UNAUTHORIZED_STATUS_NUMBERS.includes(error.response?.status as number) && !originalRequest._retry) {
+        // Only attempt token refresh on 401 (unauthorized), not on 403 (forbidden/permission denied)
+        if (error.response?.status === 401 && !originalRequest._retry) {
           if (this.isRefreshing) {
             // Queue the request if refresh is in progress
             return new Promise(resolve => {

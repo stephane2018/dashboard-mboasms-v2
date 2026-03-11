@@ -24,16 +24,16 @@ import {
   SelectValue,
 } from "@/shared/ui/select"
 import { Badge } from "@/shared/ui/badge"
+import { Label } from "@/shared/ui/label"
 import { toast } from "sonner"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { GroupTableView } from "./group-table-view"
 import { useGroups } from "@/core/hooks/useGroups"
 import type { GroupWithEnterprise } from "@/core/hooks/useGroups"
-import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react"
-import { People, Building, AddSquare, Trash } from "iconsax-react"
+import { ChevronLeft, ChevronRight, LayoutGrid, List, RefreshCw } from "lucide-react"
+import { People, Building, AddSquare, Trash, Add, SearchNormal1, FolderOpen, Refresh2 } from "iconsax-react"
 import { cn } from "@/lib/utils"
-
 
 const GROUP_CARD_PLACEHOLDER_COUNT = 6
 
@@ -41,7 +41,7 @@ function GroupCardsSkeleton() {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: GROUP_CARD_PLACEHOLDER_COUNT }).map((_, index) => (
-        <Card key={`group-card-skeleton-${index}`} className="border border-border/60">
+        <Card key={`group-card-skeleton-${index}`} className="border border-border/40">
           <CardHeader className="space-y-1.5 pb-2">
             <Skeleton className="h-3 w-1/4" />
             <Skeleton className="h-5 w-1/2" />
@@ -101,7 +101,6 @@ export default function AdminGroupesPage() {
   // Set initial enterprise filter based on role (only once after user is known)
   useEffect(() => {
     if (!_isSuperAdmin) {
-      // Non-SUPER_ADMIN: lock to "all" since they only see their enterprise's groups anyway
       setSelectedEnterpriseId("all")
     }
   }, [_isSuperAdmin])
@@ -152,7 +151,6 @@ export default function AdminGroupesPage() {
   useEffect(() => {
     setSelectedContactIds(new Set())
   }, [selectedGroupId])
-
 
   const handlePrevPage = () => setPage((prev) => Math.max(0, prev - 1))
   const handleNextPage = () => setPage((prev) => Math.min(totalPages - 1, prev + 1))
@@ -272,37 +270,106 @@ export default function AdminGroupesPage() {
     setIsContactModalOpen(true)
   }
 
+  // Statistics
+  const totalContacts = useMemo(
+    () => filteredGroups.reduce((sum, g) => sum + (g.enterpriseContacts?.length || 0), 0),
+    [filteredGroups]
+  )
+  const emptyGroups = useMemo(
+    () => filteredGroups.filter((g) => !g.enterpriseContacts?.length).length,
+    [filteredGroups]
+  )
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {_isSuperAdmin ? "Groupes (Plateforme)" : "Mes groupes"}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {_isSuperAdmin
-              ? "Gérez les groupes de contacts de toutes les entreprises"
-              : "Gérez vos groupes de contacts"}
-          </p>
+    <div className="flex flex-col gap-5 p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-2.5">
+              <People size={22} variant="Bulk" color="currentColor" className="text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {_isSuperAdmin ? "Groupes (Plateforme)" : "Mes groupes"}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {_isSuperAdmin
+                  ? "Gérez les groupes de contacts de toutes les entreprises"
+                  : "Gérez vos groupes de contacts"}
+              </p>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={loadGroups} disabled={isLoading}>
+          <Button variant="outline" size="sm" onClick={loadGroups} disabled={isLoading} className="h-9">
+            <Refresh2 size={16} variant="Bulk" color="currentColor" className="mr-2" />
             Actualiser
           </Button>
-          <Button onClick={() => setIsCreateOpen(true)}>Nouveau groupe</Button>
+          <Button size="sm" onClick={() => setIsCreateOpen(true)} className="h-9 shadow-sm">
+            <Add size={16} variant="Bulk" color="currentColor" className="mr-2" />
+            Nouveau groupe
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-lg">Filtres</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <p className="text-sm font-medium mb-2">Filtrer par entreprise</p>
+      {/* Statistics cards */}
+      <div className="grid gap-3 grid-cols-3">
+        <Card className="relative overflow-hidden border-l-[3px] border-l-blue-500 bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-500/10 dark:bg-blue-500/20 rounded-xl p-2.5 shrink-0">
+                <FolderOpen size={20} variant="Bulk" color="currentColor" className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total groupes</p>
+                <p className="text-lg font-bold tracking-tight">{totalGroups}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="relative overflow-hidden border-l-[3px] border-l-emerald-500 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl p-2.5 shrink-0">
+                <People size={20} variant="Bulk" color="currentColor" className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total contacts</p>
+                <p className="text-lg font-bold tracking-tight">{totalContacts}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="relative overflow-hidden border-l-[3px] border-l-amber-500 bg-gradient-to-br from-amber-500/10 to-amber-600/5 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-amber-500/10 dark:bg-amber-500/20 rounded-xl p-2.5 shrink-0">
+                <FolderOpen size={20} variant="Bulk" color="currentColor" className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Groupes vides</p>
+                <p className="text-lg font-bold tracking-tight">{emptyGroups}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="rounded-xl border bg-card/50 backdrop-blur-sm">
+        <div className="flex items-center px-4 py-2.5 border-b bg-muted/30">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Filtres
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 p-4">
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Entreprise
+            </Label>
             <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={!_isSuperAdmin}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="h-9 bg-background/60">
                 <SelectValue placeholder="Toutes les entreprises" />
               </SelectTrigger>
               <SelectContent>
@@ -315,158 +382,171 @@ export default function AdminGroupesPage() {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <p className="text-sm font-medium mb-2">Nombre de contacts minimum</p>
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Contacts minimum
+            </Label>
             <Input
               type="number"
               placeholder="Ex: 10"
               value={contactCountFilter}
               onChange={(e) => setContactCountFilter(e.target.value)}
+              className="h-9 bg-background/60"
             />
           </div>
         </div>
-          </CardContent>
-      </Card>
+      </div>
 
-      <div>
-        <div className="pb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-lg font-semibold">Liste des groupes</div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={viewMode === "grid" ? "secondary" : "ghost"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-                className="h-9 w-9"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-                className="h-9 w-9"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {filteredGroups.length} groupe(s) trouvé(s)
-            </div>
+      {/* Groups section */}
+      <Card className="overflow-hidden border bg-card/50 backdrop-blur-sm">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/20">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold">Liste des groupes</span>
+            <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+              {filteredGroups.length} groupe{filteredGroups.length !== 1 ? "s" : ""}
+            </span>
           </div>
-                  </div>
-
-        {isLoading && viewMode === 'grid' ? (
-          <GroupCardsSkeleton />
-        ) : filteredGroups.length === 0 ? (
-          <div className="text-sm text-muted-foreground border border-dashed rounded-lg p-6 text-center">
-            Aucun groupe
+          <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-0.5">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("grid")}
+              className="h-7 w-7"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("list")}
+              className="h-7 w-7"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
           </div>
-        ) : viewMode === 'grid' ? (
-          <>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {paginatedGroups.map((g) => {
-                const contacts = g.enterpriseContacts || []
-                const isSelected = selectedGroupId === g.id
+        </div>
 
-                return (
-                  <Card
-                    key={g.id}
-                    className={cn(
-                      "cursor-pointer border transition-all duration-200 hover:shadow-sm",
-                      isSelected && "border-primary ring-2 ring-primary/20"
-                    )}
-                    onClick={() => handleGroupClick(g.id)}
-                  >
-                    <CardHeader className="space-y-0.5 pb-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {g.code || "—"}
-                        </span>
-                        <Badge variant="outline" className="text-[10px] px-2 py-0">
-                          {g.enterpriseFull?.socialRaison}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-lg leading-tight">{g.name}</CardTitle>
-                      <CardDescription>
-                        {contacts.length} contact(s) • ID: {g.id.slice(0, 6)}…
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="rounded-md bg-muted/40 p-2 flex items-center gap-2">
-                          <div className="rounded-full bg-background p-1">
-                            <Building size="14" variant="Bulk" color="currentColor" className="text-primary" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground">Entreprise</p>
-                            <p className="font-semibold truncate">{g.enterpriseFull?.socialRaison}</p>
-                          </div>
-                        </div>
-                        <div className="rounded-md bg-muted/40 p-2 flex items-center gap-2">
-                          <div className="rounded-full bg-background p-1">
-                            <People size="14" variant="Bulk" color="currentColor" className="text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] text-muted-foreground">Contacts</p>
-                            <p className="font-semibold">{contacts.length}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleOpenAddContacts(g)
-                          }}
-                          disabled={isMutating}
-                          className="flex-1 h-8 text-xs"
-                        >
-                          <AddSquare size="16" color="currentColor" variant="Bulk" className="mr-1" />
-                          Ajouter
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setGroupToDelete(g)
-                            setIsDeleteOpen(true)
-                          }}
-                          disabled={isMutating}
-                          className="h-8 px-4 text-xs"
-                        >
-                          <Trash size="16" color="currentColor" variant="Bulk" className="mr-1" />
-                          Supprimer
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-
-            <div className="mt-4 flex flex-col gap-3 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                Affichage{" "}
-                {totalGroups === 0
-                  ? "0"
-                  : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)}`}{" "}
-                sur {totalGroups} groupes
+        {/* Content */}
+        <div className="p-4">
+          {isLoading && viewMode === 'grid' ? (
+            <GroupCardsSkeleton />
+          ) : filteredGroups.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="rounded-full bg-muted/50 p-5">
+                <FolderOpen size={36} variant="Bulk" className="text-muted-foreground/40" />
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Aucun groupe</p>
+                <p className="text-xs text-muted-foreground/70">Créez un nouveau groupe pour commencer</p>
+              </div>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedGroups.map((g) => {
+                  const contacts = g.enterpriseContacts || []
+                  const isSelected = selectedGroupId === g.id
+
+                  return (
+                    <Card
+                      key={g.id}
+                      className={cn(
+                        "cursor-pointer border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group",
+                        isSelected && "border-primary ring-2 ring-primary/20"
+                      )}
+                      onClick={() => handleGroupClick(g.id)}
+                    >
+                      <CardHeader className="space-y-0.5 pb-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            {g.code || "—"}
+                          </span>
+                          <Badge variant="outline" className="text-[10px] px-2 py-0 bg-muted/30">
+                            {g.enterpriseFull?.socialRaison}
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-base leading-tight group-hover:text-primary transition-colors">
+                          {g.name}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          {contacts.length} contact{contacts.length !== 1 ? "s" : ""} • ID: {g.id.slice(0, 6)}…
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="rounded-lg bg-muted/30 p-2 flex items-center gap-2 border border-border/40">
+                            <div className="rounded-full bg-background p-1 shadow-sm">
+                              <Building size="14" variant="Bulk" color="currentColor" className="text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-muted-foreground">Entreprise</p>
+                              <p className="font-semibold truncate">{g.enterpriseFull?.socialRaison}</p>
+                            </div>
+                          </div>
+                          <div className="rounded-lg bg-muted/30 p-2 flex items-center gap-2 border border-border/40">
+                            <div className="rounded-full bg-background p-1 shadow-sm">
+                              <People size="14" variant="Bulk" color="currentColor" className="text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Contacts</p>
+                              <p className="font-semibold">{contacts.length}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenAddContacts(g)
+                            }}
+                            disabled={isMutating}
+                            className="flex-1 h-8 text-xs"
+                          >
+                            <AddSquare size="16" color="currentColor" variant="Bulk" className="mr-1" />
+                            Ajouter
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setGroupToDelete(g)
+                              setIsDeleteOpen(true)
+                            }}
+                            disabled={isMutating}
+                            className="h-8 px-4 text-xs"
+                          >
+                            <Trash size="16" color="currentColor" variant="Bulk" className="mr-1" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+
+              {/* Pagination */}
+              <div className="mt-4 flex items-center justify-between rounded-lg border bg-muted/20 px-4 py-2.5 text-sm text-muted-foreground">
+                <span className="text-xs tabular-nums">
+                  {totalGroups === 0
+                    ? "0 groupes"
+                    : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)} sur ${totalGroups}`}
+                </span>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" onClick={handlePrevPage} disabled={page === 0}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handlePrevPage} disabled={page === 0}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-xs">
-                    Page {page + 1} / {totalPages}
+                  <span className="text-xs tabular-nums px-2">
+                    {page + 1} / {totalPages}
                   </span>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    className="h-7 w-7"
                     onClick={handleNextPage}
                     disabled={page >= totalPages - 1}
                   >
@@ -474,21 +554,22 @@ export default function AdminGroupesPage() {
                   </Button>
                 </div>
               </div>
-            </div>
-          </>
-        ) : (
-          <GroupTableView
-            data={filteredGroups}
-            isLoading={isLoading}
-            onAddContacts={handleOpenAddContacts}
-            onDelete={(group) => {
-              setGroupToDelete(group)
-              setIsDeleteOpen(true)
-            }}
-          />
-        )}
-      </div>
+            </>
+          ) : (
+            <GroupTableView
+              data={filteredGroups}
+              isLoading={isLoading}
+              onAddContacts={handleOpenAddContacts}
+              onDelete={(group) => {
+                setGroupToDelete(group)
+                setIsDeleteOpen(true)
+              }}
+            />
+          )}
+        </div>
+      </Card>
 
+      {/* Create Group Dialog */}
       <AlertDialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -543,6 +624,7 @@ export default function AdminGroupesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete Group Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -560,6 +642,7 @@ export default function AdminGroupesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Contact Selection Modal */}
       <ContactSelectionModal
         isOpen={isContactModalOpen}
         onClose={() => {
@@ -571,6 +654,7 @@ export default function AdminGroupesPage() {
         existingContactIds={selectedGroupForContacts?.enterpriseContacts?.map((c) => c.id)}
       />
 
+      {/* Remove Contact Dialog */}
       <AlertDialog open={isRemoveContactOpen} onOpenChange={setIsRemoveContactOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

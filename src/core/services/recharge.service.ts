@@ -6,7 +6,6 @@ import {
     CreditAccountRequestType,
     CreditAccountResponseType,
     RechargeListContentType,
-    RechargePageType,
     UpdateRechargeRequestType,
 } from '@/core/models/recharges';
 
@@ -34,9 +33,9 @@ export const getRechargesByEnterprise = async (enterpriseId: string, page: numbe
     }
 };
 
-export const getRecharges = async (enterpriseId: string): Promise<RechargePageType> => {
+export const getRecharges = async (enterpriseId: string): Promise<RechargeListContentType[]> => {
     try {
-        const response = await httpClient.get<RechargePageType>(`/api/v1/recharge/${enterpriseId}/all`);
+        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/${enterpriseId}/all`);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

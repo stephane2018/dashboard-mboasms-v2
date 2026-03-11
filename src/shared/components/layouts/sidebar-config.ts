@@ -14,6 +14,7 @@ import {
     Lifebuoy,
     Sms,
     TicketDiscount,
+    Global,
 } from 'iconsax-react'
 import { Role } from '@/core/config/enum'
 
@@ -111,6 +112,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 title: 'Pricing',
                 url: '/pricing',
                 icon: MoneyRecive,
+                roles: [Role.SUPER_ADMIN],
+            },
+            {
+                title: 'Prix internationaux',
+                url: '/country-prices',
+                icon: Global,
                 roles: [Role.SUPER_ADMIN],
             },
             {
