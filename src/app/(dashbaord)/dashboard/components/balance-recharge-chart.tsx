@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Calendar } from '@/shared/ui/calendar';
@@ -14,7 +13,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/shared/ui/chart';
-import { TrendingUp, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { Calendar as CalendarIcon, RefreshCcw, X } from 'lucide-react';
 import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import type { Period, RechargeStatus } from '@/modules/statistics/types';
 import { format } from 'date-fns';
@@ -29,10 +28,10 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const periods: { value: Period; label: string }[] = [
-  { value: 'DAY', label: 'Journalier' },
-  { value: 'WEEK', label: 'Hebdomadaire' },
-  { value: 'MONTH', label: 'Mensuel' },
-  { value: 'YEAR', label: 'Annuel' },
+  { value: 'DAY', label: 'Jour' },
+  { value: 'WEEK', label: 'Semaine' },
+  { value: 'MONTH', label: 'Mois' },
+  { value: 'YEAR', label: 'Année' },
 ];
 
 const statuses: { value: RechargeStatus; label: string }[] = [
@@ -57,10 +56,11 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-        <div className="text-sm text-muted-foreground mb-1">{data.label}</div>
+      <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
+        <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
         <div className="flex items-center gap-2">
-          <div className="text-base font-bold">{data.count} recharges</div>
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
+          <div className="text-sm font-bold">{data.count} recharges</div>
         </div>
       </div>
     );
@@ -73,41 +73,35 @@ export function BalanceRechargeChart() {
   const [status, setStatus] = useState<RechargeStatus | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  
-  // Convert dates to ISO format for API (memoized to prevent unnecessary re-renders)
-  const startDateISO = React.useMemo(() => 
+
+  const startDateISO = React.useMemo(() =>
     startDate ? startDate.toISOString() : '', [startDate]
   );
-  const endDateISO = React.useMemo(() => 
+  const endDateISO = React.useMemo(() =>
     endDate ? endDate.toISOString() : '', [endDate]
   );
-  
+
   const { data, isLoading, error, loadRechargeTimeline } = useRechargeTimeline({
     period,
     status,
     startDate: startDateISO,
     endDate: endDateISO,
-    autoLoad: false, // Disable auto-load, we'll trigger it manually
+    autoLoad: false,
   });
 
-  // Load data when filters change
   React.useEffect(() => {
     loadRechargeTimeline();
   }, [period, status, startDateISO, endDateISO, loadRechargeTimeline]);
 
-  const totalRecharges = React.useMemo(() => 
+  const totalRecharges = React.useMemo(() =>
     data.reduce((sum, item) => sum + item.count, 0), [data]
   );
-  const maxCount = React.useMemo(() => 
+  const maxCount = React.useMemo(() =>
     Math.max(...data.map((d) => d.count), 1), [data]
   );
-  const minCount = React.useMemo(() => 
+  const minCount = React.useMemo(() =>
     Math.min(...data.map((d) => d.count), 0), [data]
   );
-
-  const handleRefresh = () => {
-    loadRechargeTimeline();
-  };
 
   const handleClearDates = () => {
     setStartDate(undefined);
@@ -115,121 +109,94 @@ export function BalanceRechargeChart() {
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="flex flex-col items-stretch gap-5 pt-6">
-        <div className="flex w-full items-baseline gap-2 sm:gap-3">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Total Recharges</span>
-            <span className="text-3xl font-bold">{totalRecharges.toLocaleString()}</span>
-          </div>
-          <div className="flex w-full items-center gap-1 text-emerald-600">
-            <TrendingUp className="w-4 h-4" />
-            <span className="font-medium">{data.length} périodes</span>
-            <span className="text-muted-foreground font-normal">Dernière période</span>
-          </div>
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Period pills */}
+        <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
+          {periods.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                period === p.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-          <span>
-            Max: <span className="text-sky-600 font-medium">{maxCount}</span>
-          </span>
-          <span>
-            Min: <span className="text-amber-600 font-medium">{minCount}</span>
-          </span>
-          <span>
-            Période: <span className="text-purple-600 font-medium">{periods.find(p => p.value === period)?.label}</span>
-          </span>
-          {status && (
-            <span>
-              Statut: <span className="text-orange-600 font-medium">{statuses.find(s => s.value === status)?.label}</span>
-            </span>
-          )}
-        </div>
+        <div className="h-5 w-px bg-border/60 hidden sm:block" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 items-center">
-          <div className="flex items-center gap-2 col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-6">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Filtres:</span>
-          </div>
+        {/* Status filter */}
+        <Select value={status || 'all'} onValueChange={(value) => setStatus(value === 'all' ? undefined : value as RechargeStatus)}>
+          <SelectTrigger className="w-[130px] h-8 text-xs rounded-lg border-border/60">
+            <SelectValue placeholder="Statut" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous statuts</SelectItem>
+            {statuses.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
-            <SelectTrigger>
-              <CalendarIcon className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Période" />
-            </SelectTrigger>
-            <SelectContent>
-              {periods.map((p) => (
-                <SelectItem key={p.value} value={p.value}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="h-5 w-px bg-border/60 hidden sm:block" />
 
-          <Select value={status || 'all'} onValueChange={(value) => setStatus(value === 'all' ? undefined : value as RechargeStatus)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              {statuses.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+        {/* Compact date range */}
+        <div className="flex items-center gap-1.5">
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
+              <button
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border/60 bg-background hover:bg-muted/50 transition-colors",
                   !startDate && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "dd/MM/yy", { locale: fr }) : "Début"}
-              </Button>
+                <CalendarIcon className="h-3 w-3" />
+                {startDate ? format(startDate, "dd MMM", { locale: fr }) : "Début"}
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={startDate}
                 onSelect={(date) => {
                   setStartDate(date);
-                  if (date && endDate && date > endDate) {
-                    setEndDate(date);
-                  }
+                  if (date && endDate && date > endDate) setEndDate(date);
                 }}
                 autoFocus
               />
             </PopoverContent>
           </Popover>
 
+          <span className="text-xs text-muted-foreground">→</span>
+
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
+              <button
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border/60 bg-background hover:bg-muted/50 transition-colors",
                   !endDate && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "dd/MM/yy", { locale: fr }) : "Fin"}
-              </Button>
+                <CalendarIcon className="h-3 w-3" />
+                {endDate ? format(endDate, "dd MMM", { locale: fr }) : "Fin"}
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={endDate}
                 onSelect={(date) => {
                   setEndDate(date);
-                  if (date && startDate && date < startDate) {
-                    setStartDate(date);
-                  }
+                  if (date && startDate && date < startDate) setStartDate(date);
                 }}
                 disabled={(date) => startDate ? date < startDate : false}
                 autoFocus
@@ -238,132 +205,137 @@ export function BalanceRechargeChart() {
           </Popover>
 
           {(startDate || endDate) && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleClearDates}
-              className="text-muted-foreground hover:text-foreground"
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              title="Effacer les dates"
             >
-              Effacer
-            </Button>
+              <X className="h-3.5 w-3.5" />
+            </button>
           )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Chargement...' : 'Actualiser'}
-          </Button>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-
-        <ChartContainer
-          config={chartConfig}
-          className="h-[320px] w-full [&_.recharts-curve.recharts-tooltip-cursor]:stroke-initial"
+        <button
+          onClick={() => loadRechargeTimeline()}
+          disabled={isLoading}
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors ml-auto"
+          title="Actualiser"
         >
-          <ComposedChart
-            data={data}
-            margin={{
-              top: 20,
-              right: 10,
-              left: 5,
-              bottom: 20,
+          <RefreshCcw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
+        </button>
+      </div>
+
+      {/* Mini stats row */}
+      <div className="flex items-center gap-3 text-xs flex-wrap">
+        <span className="font-semibold text-foreground text-lg tabular-nums">{totalRecharges.toLocaleString()}</span>
+        <span className="text-muted-foreground">recharges</span>
+        <div className="h-4 w-px bg-border/60" />
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+          <span className="text-muted-foreground">Max</span>
+          <span className="font-medium text-foreground tabular-nums">{maxCount}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="text-muted-foreground">Min</span>
+          <span className="font-medium text-foreground tabular-nums">{minCount}</span>
+        </div>
+        {status && (
+          <>
+            <div className="h-4 w-px bg-border/60" />
+            <span className="text-muted-foreground">
+              Statut: <span className="font-medium text-foreground">{statuses.find(s => s.value === status)?.label}</span>
+            </span>
+          </>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      <ChartContainer
+        config={chartConfig}
+        className="h-[280px] w-full [&_.recharts-curve.recharts-tooltip-cursor]:stroke-initial"
+      >
+        <ComposedChart
+          data={data}
+          margin={{ top: 12, right: 12, left: -10, bottom: 12 }}
+        >
+          <defs>
+            <linearGradient id="rechargeAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={chartConfig.count.color} stopOpacity={0.08} />
+              <stop offset="100%" stopColor={chartConfig.count.color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+
+          <CartesianGrid
+            strokeDasharray="3 6"
+            stroke="var(--border)"
+            strokeOpacity={0.4}
+            horizontal={true}
+            vertical={false}
+          />
+
+          <XAxis
+            dataKey="label"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+            tickMargin={12}
+            interval="preserveStartEnd"
+            tickCount={5}
+          />
+
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+            tickFormatter={(value) => value.toString()}
+            tickMargin={8}
+            width={40}
+          />
+
+          <ChartTooltip
+            content={<CustomTooltip />}
+            cursor={{ strokeDasharray: '3 3', stroke: 'var(--muted-foreground)', strokeOpacity: 0.3 }}
+          />
+
+          <Line
+            type="monotone"
+            dataKey="count"
+            stroke={chartConfig.count.color}
+            strokeWidth={2}
+            dot={(props) => {
+              const { cx, cy, payload } = props;
+              if (payload.count > maxCount * 0.8 || payload.count < minCount * 1.2) {
+                return (
+                  <circle
+                    key={`dot-${payload.label}`}
+                    cx={cx}
+                    cy={cy}
+                    r={4}
+                    fill={chartConfig.count.color}
+                    stroke="var(--background)"
+                    strokeWidth={2}
+                  />
+                );
+              }
+              return <g key={`dot-${payload.label}`} />;
             }}
-          >
-            <defs>
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={chartConfig.count.color} stopOpacity={0.1} />
-                <stop offset="100%" stopColor={chartConfig.count.color} stopOpacity={0} />
-              </linearGradient>
-              <pattern id="dotGrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="10" cy="10" r="1" fill="var(--input)" fillOpacity={0.3} />
-              </pattern>
-              <filter id="dotShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor="rgba(0,0,0,0.8)" />
-              </filter>
-              <filter id="lineShadow" x="-100%" y="-100%" width="300%" height="300%">
-                <feDropShadow dx="4" dy="6" stdDeviation="25" floodColor="rgba(59, 130, 246, 0.9)" />
-              </filter>
-            </defs>
+            activeDot={{
+              r: 5,
+              fill: chartConfig.count.color,
+              stroke: 'var(--background)',
+              strokeWidth: 2,
+            }}
+          />
 
-            <rect x="0" y="0" width="100%" height="100%" fill="url(#dotGrid)" style={{ pointerEvents: 'none' }} />
-
-            <CartesianGrid
-              strokeDasharray="4 8"
-              stroke="var(--input)"
-              strokeOpacity={1}
-              horizontal={true}
-              vertical={false}
-            />
-
-            <XAxis
-              dataKey="label"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: chartConfig.count.color }}
-              tickMargin={15}
-              interval="preserveStartEnd"
-              tickCount={5}
-            />
-
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: chartConfig.count.color }}
-              tickFormatter={(value) => value.toString()}
-              tickMargin={15}
-            />
-
-            <ChartTooltip
-              content={<CustomTooltip />}
-              cursor={{ strokeDasharray: '3 3', stroke: 'var(--muted-foreground)', strokeOpacity: 0.5 }}
-            />
-
-            <Line
-              type="monotone"
-              dataKey="count"
-              stroke={chartConfig.count.color}
-              strokeWidth={2}
-              filter="url(#lineShadow)"
-              dot={(props) => {
-                const { cx, cy, payload } = props;
-                if (payload.count > maxCount * 0.8 || payload.count < minCount * 1.2) {
-                  return (
-                    <circle
-                      key={`dot-${payload.label}`}
-                      cx={cx}
-                      cy={cy}
-                      r={6}
-                      fill={chartConfig.count.color}
-                      stroke="white"
-                      strokeWidth={2}
-                      filter="url(#dotShadow)"
-                    />
-                  );
-                }
-
-                return <g key={`dot-${payload.label}`} />;
-              }}
-              activeDot={{
-                r: 6,
-                fill: chartConfig.count.color,
-                stroke: 'white',
-                strokeWidth: 2,
-                filter: 'url(#dotShadow)',
-              }}
-            />
-
-            <ChartLegend content={<ChartLegendContent />} />
-          </ComposedChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+          <ChartLegend content={<ChartLegendContent />} />
+        </ComposedChart>
+      </ChartContainer>
+    </div>
   );
 }

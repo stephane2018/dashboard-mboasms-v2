@@ -2,16 +2,13 @@
 
 import { Button } from "@/shared/ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import {
   ArrowRight2,
   Chart,
   MessageText1,
   People,
+  Send2,
+  WalletAdd,
+  Profile2User,
   WalletMoney,
 } from "iconsax-react";
 import { SmsTransactionChart } from "@/modules/sms/components/sms-transaction-chart";
@@ -35,85 +32,89 @@ const getKpiCards = (statistics: MainStatistics | null) => [
     value: statistics ? formatNumber(statistics.groupCount) : "0",
     trend: "Total des groupes",
     icon: MessageText1,
-    accent: "from-primary/10 to-purple-500/10",
+    color: "text-violet-600 dark:text-violet-400",
+    bg: "bg-violet-50 dark:bg-violet-500/10",
+    border: "border-l-violet-500",
   },
   {
     label: "Recharges",
     value: statistics ? formatNumber(statistics.rechargeCount) : "0",
     trend: "Nombre de recharges",
     icon: Chart,
-    accent: "from-emerald-100/60 to-emerald-50",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-500/10",
+    border: "border-l-emerald-500",
   },
   {
     label: "Crédit disponible",
     value: statistics ? formatCurrency(statistics.smsCredit) : "0 FCFA",
     trend: "Recharge recommandée",
     icon: WalletMoney,
-    accent: "from-amber-100/70 to-amber-50",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-500/10",
+    border: "border-l-amber-500",
   },
   {
     label: "Contacts",
     value: statistics ? formatNumber(statistics.contactCount) : "0",
     trend: "Total des contacts",
     icon: People,
-    accent: "from-sky-100/70 to-sky-50",
+    color: "text-sky-600 dark:text-sky-400",
+    bg: "bg-sky-50 dark:bg-sky-500/10",
+    border: "border-l-sky-500",
   },
 ];
 
 const quickActions = [
   {
-    title: "Envoyer une campagne SMS",
-    description: "Planifiez ou expédiez vos messages ciblés en quelques clics.",
+    title: "Envoyer une campagne",
+    description: "Planifiez vos messages ciblés en quelques clics.",
     href: "/sms",
-    cta: "Accéder à l'outil",
+    icon: Send2,
+    color: "text-primary",
+    bg: "bg-primary/5 hover:bg-primary/10",
   },
   {
-    title: "Ajouter des crédits",
-    description: "Rechargez votre solde pour éviter toute interruption de campagne.",
+    title: "Recharger le solde",
+    description: "Évitez toute interruption de vos campagnes.",
     href: "/recharge",
-    cta: "Recharger",
+    icon: WalletAdd,
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10",
   },
   {
     title: "Gérer les contacts",
-    description: "Importez, segmentez et maintenez vos listes à jour.",
+    description: "Importez et segmentez vos listes.",
     href: "/contacts",
-    cta: "Ouvrir le module",
+    icon: Profile2User,
+    color: "text-sky-600 dark:text-sky-400",
+    bg: "bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/5 dark:hover:bg-sky-500/10",
   },
 ];
 
 function SkeletonCard() {
   return (
-    <Card className="border border-border/60 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-8 w-20 mb-2" />
-        <Skeleton className="h-3 w-32" />
-      </CardContent>
-    </Card>
+    <div className="rounded-2xl border border-border/50 bg-card p-5 border-l-4 border-l-muted">
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-9 w-9 rounded-xl" />
+      </div>
+      <Skeleton className="h-8 w-24 mb-2" />
+      <Skeleton className="h-3 w-28" />
+    </div>
   );
 }
 
 function GlobalSkeletonCard() {
   return (
-    <Card className="border border-border/60 shadow-sm bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-4 w-32" />
-        </div>
+    <div className="rounded-2xl border border-border/50 bg-linear-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/10 dark:to-indigo-950/10 p-5 border-l-4 border-l-blue-500">
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-4 w-32" />
         <Skeleton className="h-6 w-16 rounded-full" />
-      </CardHeader>
-      <CardContent className="pt-0">
-        <Skeleton className="h-9 w-32 mb-2" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-1 w-12 rounded-full" />
-          <Skeleton className="h-3 w-40" />
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <Skeleton className="h-8 w-28 mb-2" />
+      <Skeleton className="h-3 w-36" />
+    </div>
   );
 }
 
@@ -122,129 +123,118 @@ export default function DashboardHome() {
   const kpiCards = getKpiCards(statistics);
 
   return (
-    <div className="space-y-8 p-6">
-      <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 p-4 md:p-6 max-w-[1400px] mx-auto">
+      {/* Header */}
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-wide text-muted-foreground">
-            Vue d'ensemble
-          </p>
-          <h1 className="bg-linear-to-r from-primary via-purple-500 to-primary-light bg-clip-text text-3xl font-bold text-transparent">
+          <h1 className="text-2xl font-bold text-foreground">
             Tableau de bord
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            Surveillez vos campagnes SMS, vos recharges et l'engagement de vos
-            contacts en temps réel.
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Suivez vos campagnes, recharges et contacts en temps réel.
           </p>
         </div>
-        <Button asChild className="rounded-full px-6">
-          <a href="/sms" className="flex items-center gap-2">
+        <Button asChild size="sm" className="rounded-xl px-5 gap-2 shadow-sm">
+          <a href="/sms">
             Nouvelle campagne
-            <ArrowRight2 size="18" className="transition-transform group-hover:translate-x-1" />
+            <ArrowRight2 size="16" />
           </a>
         </Button>
       </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {isLoading ? (
-            <>
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-            </>
-          ) : (
-            kpiCards.map((kpi) => (
-              <Card key={kpi.label} className="border border-border/60 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {kpi.label}
-                  </CardTitle>
-                  <div
-                    className={`rounded-full bg-linear-to-br ${kpi.accent} p-2`}
-                  >
-                    <kpi.icon size="20" color="currentColor" variant="Bulk" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-semibold">{kpi.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
-                </CardContent>
-              </Card>
-            ))
-          )}
-
+      {/* KPI Cards */}
+      <section className="grid gap-3 grid-cols-2 lg:grid-cols-5">
         {isLoading ? (
-          <GlobalSkeletonCard />
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <GlobalSkeletonCard />
+          </>
         ) : (
-          <GlobalSmsCard
-            label="SMS envoyés (global)"
-            value={statistics ? formatNumber(statistics.smsSentCount) : "0"}
-            trend="Total des SMS envoyés"
-          />
+          <>
+            {kpiCards.map((kpi) => (
+              <div
+                key={kpi.label}
+                className={`rounded-2xl border border-border/50 bg-card p-5 border-l-4 ${kpi.border} transition-shadow hover:shadow-md`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {kpi.label}
+                  </span>
+                  <div className={`rounded-xl ${kpi.bg} p-2`}>
+                    <kpi.icon size="18" color="currentColor" variant="Bulk" className={kpi.color} />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-foreground leading-tight">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{kpi.trend}</p>
+              </div>
+            ))}
+            <GlobalSmsCard
+              label="SMS envoyés (global)"
+              value={statistics ? formatNumber(statistics.smsSentCount) : "0"}
+              trend="Total des SMS envoyés"
+            />
+          </>
         )}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border border-border/60">
-          <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-lg">Performance des 30 derniers jours</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Volume de SMS envoyés et taux de délivrabilité par période.
-              </p>
-            </div>
-            <Button variant="outline" size="sm" className="rounded-full">
-              Exporter le rapport
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <SmsTransactionChart />
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border/60">
-          <CardHeader>
-            <CardTitle>Actions rapides</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Gagnez du temps en accédant directement aux modules clés.
+      {/* Charts + Quick Actions */}
+      <section className="grid gap-4 lg:grid-cols-3">
+        {/* SMS Transaction Chart */}
+        <div className="lg:col-span-2 rounded-2xl border border-border/50 bg-card">
+          <div className="p-5 pb-0">
+            <h2 className="text-base font-semibold text-foreground">Performance SMS</h2>
+            <p className="text-xs text-muted-foreground">
+              Volume de SMS envoyés par période
             </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          </div>
+          <div className="p-5 pt-3">
+            <SmsTransactionChart />
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="rounded-2xl border border-border/50 bg-card p-5">
+          <h2 className="text-base font-semibold text-foreground mb-1">Actions rapides</h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            Accédez directement aux modules clés.
+          </p>
+          <div className="space-y-2.5">
             {quickActions.map((action) => (
-              <div
+              <a
                 key={action.title}
-                className="rounded-xl border border-border/70 p-4 shadow-sm"
+                href={action.href}
+                className={`flex items-center gap-3.5 rounded-xl ${action.bg} p-3.5 transition-all duration-200 group`}
               >
-                <h3 className="text-sm font-semibold">{action.title}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {action.description}
-                </p>
-                <Button asChild variant="ghost" className="mt-3 px-0 text-primary">
-                  <a href={action.href} className="inline-flex items-center gap-1 text-sm font-semibold">
-                    {action.cta}
-                    <ArrowRight2 size="16" color="currentColor" variant="Bulk" className="text-primary" />
-                  </a>
-                </Button>
-              </div>
+                <div className="shrink-0 rounded-lg bg-background p-2 shadow-sm border border-border/50">
+                  <action.icon size="18" color="currentColor" variant="Bulk" className={action.color} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-medium text-foreground">{action.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{action.description}</p>
+                </div>
+                <ArrowRight2 size="14" color="currentColor" className="text-muted-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+              </a>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-1">
-        <Card className="border border-border/60 shadow-sm">
-          <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-lg">Balance annuelle des recharges</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Montant rechargé par mois sur l&apos;année en cours.
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent>
+      {/* Balance Recharge Chart */}
+      <section>
+        <div className="rounded-2xl border border-border/50 bg-card">
+          <div className="p-5 pb-0">
+            <h2 className="text-base font-semibold text-foreground">Balance des recharges</h2>
+            <p className="text-xs text-muted-foreground">
+              Montant rechargé par période sur l&apos;année en cours.
+            </p>
+          </div>
+          <div className="p-5 pt-3">
             <BalanceRechargeChart />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
     </div>
   );

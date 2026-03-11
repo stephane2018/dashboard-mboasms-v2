@@ -6,7 +6,6 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } fro
 import { useMessageTimeline } from '@/core/hooks';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Button } from '@/shared/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Calendar } from '@/shared/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 import { cn } from '@/lib/utils';
@@ -15,7 +14,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from '@/shared/ui/chart';
-import { Calendar as CalendarIcon, Filter, RefreshCcw } from 'lucide-react';
+import { Calendar as CalendarIcon, RefreshCcw, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { Period } from '@/modules/statistics/types';
@@ -28,10 +27,10 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const periods: { value: Period; label: string }[] = [
-  { value: 'DAY', label: 'Journalier' },
-  { value: 'WEEK', label: 'Hebdomadaire' },
-  { value: 'MONTH', label: 'Mensuel' },
-  { value: 'YEAR', label: 'Annuel' },
+  { value: 'DAY', label: 'Jour' },
+  { value: 'WEEK', label: 'Semaine' },
+  { value: 'MONTH', label: 'Mois' },
+  { value: 'YEAR', label: 'Année' },
 ];
 
 interface TooltipProps {
@@ -49,11 +48,11 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-        <div className="text-sm text-muted-foreground mb-1">{data.label}</div>
+      <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
+        <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
-          <div className="text-base font-bold">{data.count.toLocaleString()} SMS</div>
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
+          <div className="text-sm font-bold">{data.count.toLocaleString()} SMS</div>
         </div>
       </div>
     );
@@ -64,26 +63,17 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
 function SmsTransactionChartSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-center">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-9 w-[140px]" />
-        <Skeleton className="h-9 w-[160px]" />
-        <Skeleton className="h-9 w-[160px]" />
-        <Skeleton className="h-9 w-20" />
+      <div className="flex gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-8 w-20 rounded-lg" />
+        ))}
       </div>
-      <div className="flex gap-4">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-6 w-20" />
-        <Skeleton className="h-6 w-20" />
-        <Skeleton className="h-6 w-24" />
-      </div>
-      <Skeleton className="h-[260px] w-full rounded-lg" />
+      <Skeleton className="h-[240px] w-full rounded-xl" />
     </div>
   );
 }
 
 export function SmsTransactionChart() {
-  // Default to current month
   const now = useMemo(() => new Date(), []);
   const defaultStartDate = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1), [now]);
   const defaultEndDate = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999), [now]);
@@ -92,7 +82,6 @@ export function SmsTransactionChart() {
   const [startDate, setStartDate] = useState<Date | undefined>(defaultStartDate);
   const [endDate, setEndDate] = useState<Date | undefined>(defaultEndDate);
 
-  // Convert dates to ISO format for API
   const startDateISO = useMemo(() =>
     startDate ? startDate.toISOString() : '', [startDate]
   );
@@ -117,10 +106,6 @@ export function SmsTransactionChart() {
     data.length > 0 ? Math.min(...data.map((d) => d.count)) : 0, [data]
   );
 
-  const handleRefresh = () => {
-    refetch();
-  };
-
   const handleClearDates = () => {
     setStartDate(defaultStartDate);
     setEndDate(defaultEndDate);
@@ -132,10 +117,10 @@ export function SmsTransactionChart() {
 
   if (error && data.length === 0) {
     return (
-      <div className="flex h-64 w-full items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/40">
+      <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20">
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">{error}</p>
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             Réessayer
           </Button>
         </div>
@@ -145,143 +130,138 @@ export function SmsTransactionChart() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-center">
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Filtres:</span>
+      {/* Toolbar: Period pills + Date range + Refresh */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Period pills */}
+        <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
+          {periods.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                period === p.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
 
-        <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Période" />
-          </SelectTrigger>
-          <SelectContent>
-            {periods.map((p) => (
-              <SelectItem key={p.value} value={p.value}>
-                {p.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="h-5 w-px bg-border/60 hidden sm:block" />
 
-        <div className="flex items-center gap-2">
+        {/* Compact date range */}
+        <div className="flex items-center gap-1.5">
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
+              <button
                 className={cn(
-                  "w-[160px] justify-start text-left font-normal",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border/60 bg-background hover:bg-muted/50 transition-colors",
                   !startDate && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "dd MMM yyyy", { locale: fr }) : "Date début"}
-              </Button>
+                <CalendarIcon className="h-3 w-3" />
+                {startDate ? format(startDate, "dd MMM", { locale: fr }) : "Début"}
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={startDate}
                 onSelect={(date) => {
                   setStartDate(date);
-                  if (date && endDate && date > endDate) {
-                    setEndDate(date);
-                  }
+                  if (date && endDate && date > endDate) setEndDate(date);
                 }}
               />
             </PopoverContent>
           </Popover>
 
-          <span className="text-muted-foreground">-</span>
+          <span className="text-xs text-muted-foreground">→</span>
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
+              <button
                 className={cn(
-                  "w-[160px] justify-start text-left font-normal",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-border/60 bg-background hover:bg-muted/50 transition-colors",
                   !endDate && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "dd MMM yyyy", { locale: fr }) : "Date fin"}
-              </Button>
+                <CalendarIcon className="h-3 w-3" />
+                {endDate ? format(endDate, "dd MMM", { locale: fr }) : "Fin"}
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={endDate}
                 onSelect={(date) => {
                   setEndDate(date);
-                  if (date && startDate && date < startDate) {
-                    setStartDate(date);
-                  }
+                  if (date && startDate && date < startDate) setStartDate(date);
                 }}
                 disabled={(date) => startDate ? date < startDate : false}
               />
             </PopoverContent>
           </Popover>
+
+          <button
+            onClick={handleClearDates}
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            title="Réinitialiser"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClearDates}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          Réinitialiser
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
+        <button
+          onClick={() => refetch()}
           disabled={isFetching}
-          className="gap-2"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors ml-auto"
+          title="Actualiser"
         >
-          <RefreshCcw className={cn("h-4 w-4", isFetching && "animate-spin")} />
-          {isFetching ? 'Chargement...' : 'Actualiser'}
-        </Button>
+          <RefreshCcw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+        </button>
       </div>
 
-      <div className="flex items-center gap-4 text-sm flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">Total:</span>
-          <span className="text-2xl font-bold">{totalSms.toLocaleString()} SMS</span>
+      {/* Mini stats row */}
+      <div className="flex items-center gap-3 text-xs flex-wrap">
+        <span className="font-semibold text-foreground text-lg tabular-nums">{totalSms.toLocaleString()}</span>
+        <span className="text-muted-foreground">SMS total</span>
+        <div className="h-4 w-px bg-border/60" />
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-muted-foreground">Max</span>
+          <span className="font-medium text-foreground tabular-nums">{maxCount.toLocaleString()}</span>
         </div>
-        <span className="text-muted-foreground hidden sm:inline">|</span>
-        <span>
-          Max: <span className="text-emerald-600 font-medium">{maxCount.toLocaleString()}</span>
-        </span>
-        <span>
-          Min: <span className="text-amber-600 font-medium">{minCount.toLocaleString()}</span>
-        </span>
-        <span>
-          Périodes: <span className="text-purple-600 font-medium">{data.length}</span>
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="text-muted-foreground">Min</span>
+          <span className="font-medium text-foreground tabular-nums">{minCount.toLocaleString()}</span>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-xs dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
           {error}
         </div>
       )}
 
       {data.length === 0 && !isLoading && !error ? (
-        <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/40">
+        <div className="flex h-[240px] w-full items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20">
           <p className="text-sm text-muted-foreground">Aucune donnée disponible pour cette période</p>
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={data} margin={{ top: 8, right: 12, left: -10, bottom: 4 }}>
               <defs>
                 <linearGradient id="fillSmsCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
+                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} stroke="hsl(var(--border) / 0.5)" />
+              <CartesianGrid vertical={false} strokeDasharray="3 6" stroke="var(--border)" strokeOpacity={0.4} />
               <XAxis
                 dataKey="label"
                 tickLine={false}
@@ -289,18 +269,19 @@ export function SmsTransactionChart() {
                 tickMargin={8}
                 minTickGap={32}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
                 tickFormatter={(value) => value.toLocaleString()}
+                width={40}
               />
               <ChartTooltip
-                cursor={{ strokeDasharray: '3 3', stroke: 'var(--muted-foreground)', strokeOpacity: 0.5 }}
+                cursor={{ strokeDasharray: '3 3', stroke: 'var(--muted-foreground)', strokeOpacity: 0.3 }}
                 content={<CustomTooltip />}
               />
               <Area
