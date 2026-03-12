@@ -34,6 +34,14 @@ import { PaymentMethod } from "@/core/models/recharges"
 import { couponService } from "@/core/services/coupon.service"
 import type { Coupon } from "@/modules/coupon/types"
 
+function countryCodeToFlag(code: string): string {
+    const codePoints = code
+        .toUpperCase()
+        .split("")
+        .map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
+    return String.fromCodePoint(...codePoints)
+}
+
 interface InternationalRechargeModalProps {
     isOpen: boolean
     onClose: () => void
@@ -187,15 +195,26 @@ export function InternationalRechargeModal({
                         <Global size={24} color="currentColor" variant="Bulk" className="text-primary" />
                         Recharge internationale
                     </DialogTitle>
-                    <DialogDescription>
-                        Rechargez votre solde international en Franc CFA
-                        {selectedCountry && (
-                            <span className="block mt-1 font-medium text-foreground">
-                                {selectedCountry.countryName} — {selectedCountry.pricePerSms} FCFA/SMS
-                            </span>
-                        )}
+                    <DialogDescription asChild>
+                        <div className="text-muted-foreground">
+                            Rechargez votre solde international en Franc CFA
+                        </div>
                     </DialogDescription>
                 </DialogHeader>
+
+                {/* Country highlight */}
+                {selectedCountry && (
+                    <div className="flex items-center gap-4 p-4 rounded-xl bg-primary/5 border-2 border-primary/20">
+                        <span className="text-5xl">{countryCodeToFlag(selectedCountry.countryCode)}</span>
+                        <div>
+                            <div className="font-semibold text-foreground text-lg">{selectedCountry.countryName}</div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-2xl font-bold text-primary">{selectedCountry.pricePerSms}</span>
+                                <span className="text-sm text-muted-foreground">FCFA / SMS</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="space-y-6 py-4">
                     {/* Quantity of SMS */}
@@ -204,14 +223,16 @@ export function InternationalRechargeModal({
                         <Input
                             id="intl-qte"
                             type="number"
+                            inputMode="numeric"
                             min={1}
+                            step={1}
                             value={qteMessage}
-                            onChange={(e) => handleQteChange(e.target.value)}
+                            onChange={(e) => handleQteChange(e.target.value.replace(/[^0-9]/g, ""))}
                             placeholder="Ex: 500"
-                            className={cn("h-12", errors.qteMessage && "border-red-500")}
+                            className={cn("h-12 text-lg font-semibold", errors.qteMessage && "border-red-500 ring-1 ring-red-500")}
                         />
                         {errors.qteMessage && (
-                            <p className="text-xs text-red-500">{errors.qteMessage}</p>
+                            <p className="text-xs text-red-500 mt-1">{errors.qteMessage}</p>
                         )}
                     </div>
 
@@ -221,14 +242,16 @@ export function InternationalRechargeModal({
                         <Input
                             id="intl-amount"
                             type="number"
+                            inputMode="numeric"
                             min={1}
+                            step={1}
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
                             placeholder="Ex: 5000"
-                            className={cn("h-12 text-lg", errors.amount && "border-red-500")}
+                            className={cn("h-12 text-lg font-semibold", errors.amount && "border-red-500 ring-1 ring-red-500")}
                         />
                         {errors.amount && (
-                            <p className="text-xs text-red-500">{errors.amount}</p>
+                            <p className="text-xs text-red-500 mt-1">{errors.amount}</p>
                         )}
                         <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
                             <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
@@ -244,7 +267,7 @@ export function InternationalRechargeModal({
                         <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                             <SelectTrigger
                                 id="intl-payment-method"
-                                className={cn("h-12", errors.paymentMethod && "border-red-500")}
+                                className={cn("h-12", errors.paymentMethod && "border-red-500 ring-1 ring-red-500")}
                             >
                                 <SelectValue placeholder="Sélectionnez une méthode" />
                             </SelectTrigger>
@@ -274,7 +297,7 @@ export function InternationalRechargeModal({
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 placeholder="+237 6XX XXX XXX"
-                                className={cn("h-12", errors.phoneNumber && "border-red-500")}
+                                className={cn("h-12", errors.phoneNumber && "border-red-500 ring-1 ring-red-500")}
                             />
                             {errors.phoneNumber && (
                                 <p className="text-xs text-red-500">{errors.phoneNumber}</p>
@@ -298,7 +321,7 @@ export function InternationalRechargeModal({
                                 value={bankAccount}
                                 onChange={(e) => setBankAccount(e.target.value)}
                                 placeholder="CM21 1000 2000 0000 0001"
-                                className={cn("h-12", errors.bankAccount && "border-red-500")}
+                                className={cn("h-12", errors.bankAccount && "border-red-500 ring-1 ring-red-500")}
                             />
                             {errors.bankAccount && (
                                 <p className="text-xs text-red-500">{errors.bankAccount}</p>
@@ -412,7 +435,7 @@ export function InternationalRechargeModal({
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        disabled={isLoading || !amount || Number(amount) <= 0 || !qteMessage || Number(qteMessage) <= 0}
+                        disabled={isLoading}
                         className="min-w-[140px]"
                     >
                         {isLoading ? (
