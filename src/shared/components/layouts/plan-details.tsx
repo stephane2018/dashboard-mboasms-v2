@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/shared/ui/card'
 import { useSidebar } from '@/shared/ui/sidebar'
 import { useUserStore } from '@/core/stores/userStore'
 import { UseGetConnectedCompagnieData, useRecharge } from '@/core/hooks'
-import { useSmsCountryPrices } from '@/core/hooks/useSmsCountryPrices'
 import { useState } from 'react'
 import { CreateRechargeModal, type RechargeFormData } from '@/shared/common/create-recharge-modal'
 import { createRecharge } from '@/core/services/recharge.service'
@@ -20,7 +19,6 @@ export function PlanDetails() {
 
   const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
   const { rechargesQuery } = useRecharge()
-  const { pricesQuery } = useSmsCountryPrices()
 
   if (!user || state === 'collapsed') {
     return null
@@ -35,7 +33,7 @@ export function PlanDetails() {
   const planName = user.planName ?? 'Plan Business'
   const usagePercent = smsQuota > 0 ? Math.max(0, Math.min(100, 100 - (smsBalance / smsQuota) * 100)) : 100
 
-  const countryCount = pricesQuery.data?.length ?? 0
+  const internationalBalance =  0
 
   const handleRecharge = async (data: RechargeFormData) => {
     if (!user?.companyId) {
@@ -112,14 +110,33 @@ export function PlanDetails() {
             <p className="text-[10px] text-sky-200">Forfait International</p>
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium">Pays disponibles</span>
-              <span className="text-xs font-bold">{countryCount}</span>
+          {/* Circular Progress - Solde International */}
+          <div className="flex items-center justify-center py-1">
+            <div className="relative flex-shrink-0">
+              <svg width="56" height="56" viewBox="0 0 56 56">
+                <circle
+                  cx="28" cy="28" r="23"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.15)"
+                  strokeWidth="4"
+                />
+                <circle
+                  cx="28" cy="28" r="23"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 23}`}
+                  strokeDashoffset={`${2 * Math.PI * 23 * (1 - Math.min(1, internationalBalance > 0 ? 1 : 0))}`}
+                  transform="rotate(-90 28 28)"
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-xs font-bold leading-none">{internationalBalance.toLocaleString()}</span>
+                <span className="text-[8px] text-sky-200 leading-none mt-0.5">SMS</span>
+              </div>
             </div>
-            <p className="text-[10px] text-sky-200">
-              Envoyez des SMS dans {countryCount > 0 ? countryCount : '—'} pays à tarifs compétitifs
-            </p>
           </div>
 
           <Link href="/sms-pricing">
