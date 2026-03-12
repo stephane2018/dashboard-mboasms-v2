@@ -10,6 +10,7 @@ import {
   getAllMessageHistory,
   searchMessagesByPhoneNumber,
   type SendMessageToGroupPayload,
+  type MessageHistoryParams,
 } from "@/core/services/message.service"
 import type { SendMessageRequestType, SendMessageResponseType } from "@/core/models"
 import type { MessageHistoryType } from "@/core/models/history"
@@ -20,7 +21,7 @@ export const messageKeys = {
   lists: () => [...messageKeys.all, "list"] as const,
   list: (enterpriseId: string) => [...messageKeys.lists(), { enterpriseId }] as const,
   history: (enterpriseId: string, page: number, size: number) => [...messageKeys.all, "history", enterpriseId, page, size] as const,
-  allHistory: (page: number, size: number) => [...messageKeys.all, "all-history", page, size] as const,
+  allHistory: (params: MessageHistoryParams) => [...messageKeys.all, "all-history", params] as const,
   search: (phone: string, page: number, size: number) => [...messageKeys.all, "search", phone, page, size] as const,
 }
 
@@ -32,10 +33,10 @@ export function useMessageHistory(enterpriseId: string, page: number = 0, size: 
   })
 }
 
-export function useAllMessageHistory(page: number = 0, size: number = 10, enabled: boolean = true) {
+export function useAllMessageHistory(params: MessageHistoryParams = {}, enabled: boolean = true) {
   return useQuery<PaginatedResponse<MessageHistoryType>, Error>({
-    queryKey: messageKeys.allHistory(page, size),
-    queryFn: () => getAllMessageHistory(page, size),
+    queryKey: messageKeys.allHistory(params),
+    queryFn: () => getAllMessageHistory(params),
     enabled,
   });
 }
