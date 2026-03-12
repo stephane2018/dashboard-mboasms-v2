@@ -8,10 +8,14 @@ export type CreateSmsCountryPriceRequest = {
   pricePerSms: number;
 };
 
-export const getSmsCountryPrices = async (): Promise<SmsCountryPriceResponse> => {
+export const getSmsCountryPrices = async (params?: { page?: number; size?: number }): Promise<SmsCountryPriceResponse> => {
   try {
+    const searchParams = new URLSearchParams();
+    if (params?.page != null) searchParams.set('page', String(params.page));
+    if (params?.size != null) searchParams.set('size', String(params.size));
+    const query = searchParams.toString();
     const response = await httpClient.get<SmsCountryPriceResponse>(
-      '/api/v1/sms-country-prices',
+      `/api/v1/sms-country-prices${query ? `?${query}` : ''}`,
       { useToken: false }
     );
     return response;

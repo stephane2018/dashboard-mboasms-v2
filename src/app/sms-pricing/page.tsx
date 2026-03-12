@@ -2,11 +2,17 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowLeft, SearchNormal1, Global } from "iconsax-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, SearchNormal1, Global, Wallet } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
+import { useAuthContext } from "@/core/providers/auth-provider"
+import { useUserStore } from "@/core/stores/userStore"
+import { createInternationalRecharge } from "@/core/services/recharge.service"
+import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal"
 import Header from "@/shared/landing_components/components/layout/Header"
 import Footer from "@/shared/landing_components/components/layout/Footer"
+import { toast } from "sonner"
 
 function countryCodeToFlag(code: string): string {
   const codePoints = code
@@ -16,31 +22,77 @@ function countryCodeToFlag(code: string): string {
   return String.fromCodePoint(...codePoints);
 }
 
+const PAGE_SIZE = 250
+
 export default function PricingPage() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState("")
-  const pageSize = 20
-  const { pricesQuery } = useSmsCountryPrices()
-  const { data: allCountries, isLoading } = pricesQuery
+  const [isRechargeOpen, setIsRechargeOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState<{ countryName: string; countryCode: string; pricePerSms: number } | null>(null)
+
+  const router = useRouter()
+  const { isConnected } = useAuthContext()
+  const user = useUserStore((state) => state.user)
+  const { pricesQuery } = useSmsCountryPrices({ page, size: PAGE_SIZE })
+  const { data: rawData, isLoading } = pricesQuery
+  const countries = Array.isArray(rawData) ? rawData : (rawData as any)?.content ?? []
+  const totalElements: number = (rawData as any)?.totalElements ?? countries.length
+  const totalPages: number = (rawData as any)?.totalPages ?? Math.ceil(totalElements / PAGE_SIZE)
 
   const filtered = useMemo(() => {
-    const countries = allCountries || []
     if (!search) return countries
     return countries.filter(
-      (c) =>
+      (c: any) =>
         c.countryName.toLowerCase().includes(search.toLowerCase()) ||
         c.countryCode.toLowerCase().includes(search.toLowerCase())
     )
-  }, [allCountries, search])
+  }, [countries, search])
 
-  const totalElements = filtered.length
-  const totalPages = Math.ceil(totalElements / pageSize)
-  const paginatedCountries = filtered.slice(page * pageSize, (page + 1) * pageSize)
+  const handleCountryClick = (country: any) => {
+    if (!isConnected) {
+      router.push("/auth/login")
+      return
+    }
 
-  // Reset page when search changes
-  const handleSearch = (value: string) => {
-    setSearch(value)
-    setPage(0)
+    setSelectedCountry({
+      countryName: country.countryName,
+      countryCode: country.countryCode,
+      pricePerSms: country.pricePerSms,
+    })
+    setIsRechargeOpen(true)
+  }
+
+  const handleRechargeSubmit = async (data: InternationalRechargeFormData) => {
+    if (!user?.companyId) {
+      toast.error("Erreur", {
+        description: "ID entreprise manquant. Veuillez compléter votre profil.",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await createInternationalRecharge({
+        qteMessage: data.qteMessage,
+        amount: data.amount,
+        enterpriseId: user.companyId,
+        paymentMethod: data.paymentMethod,
+        debitPhoneNumber: data.debitPhoneNumber,
+        debitBankAccountNumber: data.debitBankAccountNumber,
+        couponCode: data.couponCode,
+      })
+      toast.success("Recharge internationale créée", {
+        description: "Votre demande de recharge a été créée avec succès.",
+      })
+    } catch (error: any) {
+      toast.error("Erreur", {
+        description: error?.message || "Une erreur s'est produite lors de la recharge.",
+      })
+      throw error
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -80,7 +132,7 @@ export default function PricingPage() {
                   <input
                     type="text"
                     value={search}
-                    onChange={(e) => handleSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                     placeholder="Rechercher un pays..."
                     className="w-full pl-11 pr-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200"
                   />
@@ -97,23 +149,33 @@ export default function PricingPage() {
                   <div className="bg-card border border-border rounded-xl h-20"></div>
                 </div>
               ))
-            ) : paginatedCountries.length > 0 ? (
-              paginatedCountries.map((country) => (
+            ) : filtered.length > 0 ? (
+              filtered.map((country: any) => (
                 <div
                   key={country.id}
-                  className="group flex items-center justify-between p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-300"
+                  className="group flex flex-col gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-300"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{countryCodeToFlag(country.countryCode)}</span>
-                    <div>
-                      <div className="font-medium text-foreground text-sm">{country.countryName}</div>
-                      <div className="text-xs text-muted-foreground">{country.countryCode}</div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{countryCodeToFlag(country.countryCode)}</span>
+                      <div>
+                        <div className="font-medium text-foreground text-sm">{country.countryName}</div>
+                        <div className="text-xs text-muted-foreground">{country.countryCode}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-primary text-lg">{country.pricePerSms}</div>
+                      <div className="text-xs text-muted-foreground">/ SMS</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-primary text-lg">{country.pricePerSms}</div>
-                    <div className="text-xs text-muted-foreground">/ SMS</div>
-                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full rounded-lg text-xs"
+                    onClick={() => handleCountryClick(country)}
+                  >
+                    <Wallet size="14" color="currentColor" className="mr-1.5" />
+                    Recharger
+                  </Button>
                 </div>
               ))
             ) : (
@@ -137,32 +199,19 @@ export default function PricingPage() {
               </Button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 7) {
-                    pageNum = i;
-                  } else if (page < 3) {
-                    pageNum = i;
-                  } else if (page > totalPages - 4) {
-                    pageNum = totalPages - 7 + i;
-                  } else {
-                    pageNum = page - 3 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setPage(pageNum)}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        page === pageNum
-                          ? "bg-primary text-white shadow-md shadow-primary/20"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      {pageNum + 1}
-                    </button>
-                  );
-                })}
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      page === i
+                        ? "bg-primary text-white shadow-md shadow-primary/20"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
               </div>
 
               <Button
@@ -178,6 +227,18 @@ export default function PricingPage() {
           )}
         </div>
       </section>
+
+      {/* International Recharge Modal */}
+      <InternationalRechargeModal
+        isOpen={isRechargeOpen}
+        onClose={() => {
+          setIsRechargeOpen(false)
+          setSelectedCountry(null)
+        }}
+        onSubmit={handleRechargeSubmit}
+        isLoading={isSubmitting}
+        selectedCountry={selectedCountry}
+      />
 
       <Footer />
     </div>
