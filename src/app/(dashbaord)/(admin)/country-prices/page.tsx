@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useUserStore } from "@/core/stores/userStore"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
 import type { SmsCountryPriceType } from "@/core/models/sms-country-price"
@@ -22,9 +22,12 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
 
+const PAGE_SIZE = 10
+
 export default function CountryPricesPage() {
   const { isSuperAdmin } = useUserStore()
 
+  const [page, setPage] = useState(0)
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -37,21 +40,24 @@ export default function CountryPricesPage() {
     createMutation,
     updateMutation,
     deleteMutation,
-  } = useSmsCountryPrices()
+  } = useSmsCountryPrices({ page, size: PAGE_SIZE })
 
-  const allPrices = pricesQuery.data || []
-  const totalElements = allPrices.length
+  const rawData = pricesQuery.data
+  const prices: SmsCountryPriceType[] = Array.isArray(rawData)
+    ? rawData
+    : (rawData as any)?.content ?? []
+  const totalElements: number = (rawData as any)?.totalElements ?? prices.length
   const isLoading = pricesQuery.isLoading
 
   const filteredPrices = useMemo(() => {
-    if (!searchTerm) return allPrices
+    if (!searchTerm) return prices
     const lower = searchTerm.toLowerCase()
-    return allPrices.filter(
+    return prices.filter(
       (p) =>
         p.countryName.toLowerCase().includes(lower) ||
         p.countryCode.toLowerCase().includes(lower)
     )
-  }, [allPrices, searchTerm])
+  }, [prices, searchTerm])
 
   const handleEditPrice = (price: SmsCountryPriceType) => {
     setSelectedPrice(price)
@@ -73,6 +79,10 @@ export default function CountryPricesPage() {
       })
     }
   }
+
+  const handlePaginationChange = useCallback((pagination: { pageIndex: number; pageSize: number }) => {
+    setPage(pagination.pageIndex)
+  }, [])
 
   const columns = useMemo(
     () =>
@@ -145,6 +155,10 @@ export default function CountryPricesPage() {
         enablePagination={true}
         enableColumnFilter={false}
         rowSelectable={false}
+        onPaginationChange={handlePaginationChange}
+        initialState={{
+          pagination: { pageIndex: page, pageSize: PAGE_SIZE },
+        }}
       />
 
       {/* Create Modal */}
@@ -176,8 +190,8 @@ export default function CountryPricesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer le tarif pour "
-              {priceToDelete?.countryName}" ({priceToDelete?.countryCode}) ?
+              Êtes-vous sûr de vouloir supprimer le tarif pour &quot;
+              {priceToDelete?.countryName}&quot; ({priceToDelete?.countryCode}) ?
               Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
