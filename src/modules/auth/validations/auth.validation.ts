@@ -13,16 +13,21 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, { message: 'Le mot de passe doit contenir au moins un chiffre' })
     .regex(/[^A-Za-z0-9]/, { message: 'Le mot de passe doit contenir au moins un caractère spécial' }),
   confirmPassword: z.string(),
+  country: z.string().optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  // Enterprise fields
   socialRaison: z.string().optional(),
   activityDomain: z.string().optional(),
   contribuableNumber: z.string().optional(),
-  emailEnterprise: z.string().email().optional(),
-  telephoneEntreprise: z.string().optional(),
   smsESenderId: z.string().optional(),
+  emailEnterprise: z.string().optional(),
+  telephoneEntreprise: z.string().optional(),
   villeEntreprise: z.string().optional(),
   numeroCommerce: z.string().optional(),
   adresseEnterprise: z.string().optional(),
   enterpriseCountryId: z.string().optional(),
+  urlSiteweb: z.string().optional(),
 })
 .superRefine((data, ctx) => {
   if (data.password !== data.confirmPassword) {
@@ -33,17 +38,21 @@ export const registerSchema = z.object({
     });
   }
 
+  // Personal accounts: country, city, address are required
+  if (data.accountType === 'personal') {
+    if (!data.country) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Le pays est requis', path: ['country'] });
+    if (!data.city) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La ville est requise', path: ['city'] });
+    if (!data.address) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "L'adresse est requise", path: ['address'] });
+  }
+
+  // Business accounts: required enterprise fields + personal location
   if (data.accountType === 'business') {
-    if (!data.socialRaison) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La raison sociale est requise', path: ['socialRaison'] });
+    if (!data.country) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Le pays est requis', path: ['country'] });
+    if (!data.city) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La ville est requise', path: ['city'] });
+    if (!data.address) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "L'adresse est requise", path: ['address'] });
     if (!data.activityDomain) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Le domaine d'activité est requis", path: ['activityDomain'] });
     if (!data.contribuableNumber) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Le numéro de contribuable est requis', path: ['contribuableNumber'] });
-    if (!data.emailEnterprise) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "L'e-mail de l'entreprise est requis", path: ['emailEnterprise'] });
-    if (!data.telephoneEntreprise) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Le téléphone de l'entreprise est requis", path: ['telephoneEntreprise'] });
     if (!data.smsESenderId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "L'ID de l'expéditeur SMS est requis", path: ['smsESenderId'] });
-    if (!data.villeEntreprise) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "La ville de l'entreprise est requise", path: ['villeEntreprise'] });
-    if (!data.numeroCommerce) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Le numéro de commerce est requis', path: ['numeroCommerce'] });
-    if (!data.adresseEnterprise) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "L'adresse de l'entreprise est requise", path: ['adresseEnterprise'] });
-    if (!data.enterpriseCountryId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Le pays de l'entreprise est requis", path: ['enterpriseCountryId'] });
   }
 });
 

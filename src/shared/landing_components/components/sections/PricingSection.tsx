@@ -158,11 +158,116 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-12 animate-fade-in-up">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Global size="16" color="currentColor" variant="Bold" />
+            <span className="text-lg">🇨🇲</span>
             {t.pricing.badge}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t.pricing.title}</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">{t.pricing.subtitle}</p>
+        </div>
+
+          {/* Plans Section */}
+        <div className="mt-8">
+          <div className="text-center mb-10 animate-fade-in-up">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.pricing.planTitle}</h3>
+            <p className="text-muted-foreground">{t.pricing.planSubtitle}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {isLoadingPlans ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="bg-card border border-border rounded-2xl h-80"></div>
+                </div>
+              ))
+            ) : activePlans.length > 0 ? (
+              activePlans.map((plan: PricingPlanType, index: number) => {
+                const isPremium = plan.planNameFr?.toLowerCase().includes("premium") || plan.planNameEn?.toLowerCase().includes("premium") || plan.planCode?.toLowerCase().includes("premium");
+                return (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-2xl overflow-hidden bg-card border transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group animate-fade-in-up ${isPremium ? "border-primary/50 shadow-lg shadow-primary/10 scale-[1.02]" : "border-border hover:border-primary/30"}`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {isPremium && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <span className="text-[11px] font-bold bg-primary text-white px-3 py-1 rounded-full shadow-md">
+                        {lang === "fr" ? "Le plus populaire" : "Most popular"}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`h-1 bg-gradient-to-r ${isPremium ? "from-primary via-purple-500 to-amber-500 h-1.5" : "from-primary via-purple-500 to-amber-500"}`}></div>
+                  <div className="flex flex-col h-full p-6 md:p-8">
+                    <div className="mb-6 flex items-center">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary/10 mr-3">
+                        <MessageText1 size="22" color="currentColor" variant="Bulk" className="text-primary" />
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">
+                        {lang === "fr" ? plan.planNameFr : plan.planNameEn}
+                      </h3>
+                    </div>
+                    <div className="mb-6">
+                      <div className="flex items-baseline">
+                        <span className="text-4xl font-bold text-primary">{plan.smsUnitPrice}</span>
+                        <span className="ml-2 text-muted-foreground text-sm">FCFA {t.pricing.perSms}</span>
+                      </div>
+                    </div>
+                    <ul className="space-y-3 mb-8 flex-grow">
+                      <li className="flex items-center text-sm">
+                        <Chart2 size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
+                        <span className="text-foreground">{plan.minSMS} - {plan.maxSMS} SMS</span>
+                      </li>
+                      <li className="flex items-center text-sm">
+                        <Clock size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
+                        <span className="text-foreground">{plan.nbDaysToExpired} {t.pricing.validDays}</span>
+                      </li>
+                      <li className="flex items-center text-sm">
+                        <ShieldTick size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
+                        <span className="text-foreground">{lang === "fr" ? plan.descriptionFr : plan.descriptionEn}</span>
+                      </li>
+                    </ul>
+                    <Button onClick={handleChoosePlan} className="w-full rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200">
+                      <span className="flex items-center justify-center">
+                        {t.pricing.choosePlan}
+                        <ArrowRight2 size="16" color="currentColor" className="ml-2" />
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+                )})
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">{t.pricing.noPlan}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-12 text-center animate-fade-in-up">
+            <p className="text-muted-foreground mb-4">{t.pricing.customSolution}</p>
+            <Button variant="outline" className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 font-semibold active:scale-[0.98] transition-all duration-200" onClick={onContactSales}>
+              <span className="flex items-center">
+                {t.pricing.contactSales}
+                <ArrowRight2 size="16" color="currentColor" className="ml-2" />
+              </span>
+            </Button>
+          </div>
+        </div>
+
+
+
+        {/* International Section Header */}
+        <div className="text-center mb-12 mt-20 animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-sm font-medium mb-6">
+            <Global size="16" color="currentColor" variant="Bold" />
+            {lang === "fr" ? "Envoi international" : "International sending"}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {lang === "fr" ? "SMS à l'international" : "International SMS"}
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            {lang === "fr"
+              ? "Envoyez vos SMS partout dans le monde. Découvrez nos tarifs compétitifs pour les destinations les plus populaires."
+              : "Send your SMS worldwide. Discover our competitive rates for the most popular destinations."}
+          </p>
         </div>
 
         {/* Popular countries */}
@@ -259,92 +364,7 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
           </Button>
         </div>
 
-        {/* Plans Section */}
-        <div className="mt-8">
-          <div className="text-center mb-10 animate-fade-in-up">
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{t.pricing.planTitle}</h3>
-            <p className="text-muted-foreground">{t.pricing.planSubtitle}</p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {isLoadingPlans ? (
-              Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="animate-pulse">
-                  <div className="bg-card border border-border rounded-2xl h-80"></div>
-                </div>
-              ))
-            ) : activePlans.length > 0 ? (
-              activePlans.map((plan: PricingPlanType, index: number) => {
-                const isPremium = plan.planNameFr?.toLowerCase().includes("premium") || plan.planNameEn?.toLowerCase().includes("premium") || plan.planCode?.toLowerCase().includes("premium");
-                return (
-                <div
-                  key={plan.id}
-                  className={`relative rounded-2xl overflow-hidden bg-card border transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group animate-fade-in-up ${isPremium ? "border-primary/50 shadow-lg shadow-primary/10 scale-[1.02]" : "border-border hover:border-primary/30"}`}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {isPremium && (
-                    <div className="absolute top-4 right-4 z-10">
-                      <span className="text-[11px] font-bold bg-primary text-white px-3 py-1 rounded-full shadow-md">
-                        {lang === "fr" ? "Le plus populaire" : "Most popular"}
-                      </span>
-                    </div>
-                  )}
-                  <div className={`h-1 bg-gradient-to-r ${isPremium ? "from-primary via-purple-500 to-amber-500 h-1.5" : "from-primary via-purple-500 to-amber-500"}`}></div>
-                  <div className="flex flex-col h-full p-6 md:p-8">
-                    <div className="mb-6 flex items-center">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary/10 mr-3">
-                        <MessageText1 size="22" color="currentColor" variant="Bulk" className="text-primary" />
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground">
-                        {lang === "fr" ? plan.planNameFr : plan.planNameEn}
-                      </h3>
-                    </div>
-                    <div className="mb-6">
-                      <div className="flex items-baseline">
-                        <span className="text-4xl font-bold text-primary">{plan.smsUnitPrice}</span>
-                        <span className="ml-2 text-muted-foreground text-sm">FCFA {t.pricing.perSms}</span>
-                      </div>
-                    </div>
-                    <ul className="space-y-3 mb-8 flex-grow">
-                      <li className="flex items-center text-sm">
-                        <Chart2 size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
-                        <span className="text-foreground">{plan.minSMS} - {plan.maxSMS} SMS</span>
-                      </li>
-                      <li className="flex items-center text-sm">
-                        <Clock size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
-                        <span className="text-foreground">{plan.nbDaysToExpired} {t.pricing.validDays}</span>
-                      </li>
-                      <li className="flex items-center text-sm">
-                        <ShieldTick size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
-                        <span className="text-foreground">{lang === "fr" ? plan.descriptionFr : plan.descriptionEn}</span>
-                      </li>
-                    </ul>
-                    <Button onClick={handleChoosePlan} className="w-full rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200">
-                      <span className="flex items-center justify-center">
-                        {t.pricing.choosePlan}
-                        <ArrowRight2 size="16" color="currentColor" className="ml-2" />
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-                )})
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">{t.pricing.noPlan}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-12 text-center animate-fade-in-up">
-            <p className="text-muted-foreground mb-4">{t.pricing.customSolution}</p>
-            <Button variant="outline" className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 font-semibold active:scale-[0.98] transition-all duration-200" onClick={onContactSales}>
-              <span className="flex items-center">
-                {t.pricing.contactSales}
-                <ArrowRight2 size="16" color="currentColor" className="ml-2" />
-              </span>
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Login Modal */}
