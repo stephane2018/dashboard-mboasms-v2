@@ -79,7 +79,6 @@ export function DatePicker({
           mode="single"
           selected={date}
           onSelect={handleDateChange}
-          disabled={disabled}
           locale={fr}
         />
       </PopoverContent>
@@ -160,7 +159,6 @@ export function DateRangePicker({
           mode="range"
           selected={{ from: range.from, to: range.to }}
           onSelect={handleRangeChange as any}
-          disabled={disabled}
           locale={fr}
         />
       </PopoverContent>
