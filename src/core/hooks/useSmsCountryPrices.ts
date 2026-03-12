@@ -10,18 +10,18 @@ import {
   type CreateSmsCountryPriceRequest,
 } from "@/core/services/sms-country-price.service"
 
-export function useSmsCountryPrices() {
+export function useSmsCountryPrices(params?: { page?: number; size?: number }) {
   const queryClient = useQueryClient()
 
-  const queryKey = ["sms-country-prices"]
+  const queryKey = ["sms-country-prices", params?.page, params?.size]
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey })
+    queryClient.invalidateQueries({ queryKey: ["sms-country-prices"] })
   }
 
   const pricesQuery = useQuery({
     queryKey,
-    queryFn: getSmsCountryPrices,
+    queryFn: () => getSmsCountryPrices(params),
   })
 
   const createMutation = useMutation({

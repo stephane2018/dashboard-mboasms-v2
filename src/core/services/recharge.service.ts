@@ -2,6 +2,7 @@ import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
 import {
     CreateRechargeRequestType,
+    CreateInternationalRechargeRequestType,
     CreateRechargeTypeResponse,
     CreditAccountRequestType,
     CreditAccountResponseType,
@@ -81,6 +82,15 @@ export const validateRecharge = async (rechargeId: string): Promise<RechargeList
 export const refuseRecharge = async (rechargeId: string): Promise<RechargeListContentType> => {
     try {
         const response = await httpClient.put<RechargeListContentType>(`/api/v1/recharge/${rechargeId}/refused`, {});
+        return response;
+    } catch (error) {
+        return Promise.reject(refractHttpError(error));
+    }
+};
+
+export const createInternationalRecharge = async (data: CreateInternationalRechargeRequestType): Promise<CreateRechargeTypeResponse> => {
+    try {
+        const response = await httpClient.post<CreateRechargeTypeResponse>('/api/v1/recharge/create-international-request', data);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

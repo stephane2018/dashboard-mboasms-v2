@@ -353,6 +353,16 @@ export type CreateRechargeRequestType = {
     couponCode?: string;
 }
 
+export type CreateInternationalRechargeRequestType = {
+    qteMessage: number;
+    amount: number;
+    enterpriseId: string;
+    paymentMethod: string;
+    debitPhoneNumber: string;
+    debitBankAccountNumber?: string;
+    couponCode?: string;
+}
+
 export type CreateRechargeTypeResponse = {
     statusCode: number;
     error: string | null;

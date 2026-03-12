@@ -25,20 +25,20 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
 
   const activePlans = activePlansQuery.data || [];
   const isLoadingPlans = activePlansQuery.isLoading;
-  const allCountryPrices = countryPricesQuery.data || [];
-  const countryPrices = allCountryPrices.slice(0, 12);
+  const rawPrices = countryPricesQuery.data as any;
+  const allCountryPrices: SmsCountryPriceType[] = Array.isArray(rawPrices) ? rawPrices : rawPrices?.content ?? [];
   const isLoadingCountries = countryPricesQuery.isLoading;
-  const totalCountries = allCountryPrices.length;
+  const totalCountries = rawPrices?.totalElements ?? allCountryPrices.length;
 
   const filteredCountries: SmsCountryPriceType[] = useMemo(() => {
-    if (!countrySearch) return countryPrices;
+    if (!countrySearch) return allCountryPrices.slice(0, 12);
     const search = countrySearch.toLowerCase();
-    return countryPrices.filter(
+    return allCountryPrices.filter(
       (c: SmsCountryPriceType) =>
         c.countryName.toLowerCase().includes(search) ||
         c.countryCode.toLowerCase().includes(search)
     );
-  }, [countrySearch, countryPrices]);
+  }, [countrySearch, allCountryPrices]);
 
   return (
     <section id="pricing" className="py-20 md:py-28 px-6 md:px-12 lg:px-24 relative overflow-hidden bg-background">
