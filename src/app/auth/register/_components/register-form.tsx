@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterFormData } from '@/modules/auth/validations';
 import { Button } from '@/shared/ui/button';
 import { Form } from '@/shared/ui/form';
+import { ArrowRight2 } from 'iconsax-react';
 import { Step1AccountType } from './step-1-account-type';
 import { Step2Personal } from './step-2-personal';
 import { Step3Security } from './step-3-security';
@@ -90,7 +91,6 @@ export function RegisterForm() {
     [allSteps, accountType]
   );
 
-  // Reset step if current step exceeds available steps after account type change
   useEffect(() => {
     if (step >= steps.length) {
       setStep(steps.length - 1);
@@ -117,9 +117,9 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-xl text-white">
-      <h2 className="text-3xl font-bold mb-2 text-white">Créez votre compte</h2>
-      <p className="text-gray-400 mb-8">Remplissez les informations ci-dessous pour commencer</p>
+    <div className="w-full max-w-xl text-foreground">
+      <h2 className="text-3xl font-bold mb-2">Créez votre compte</h2>
+      <p className="text-muted-foreground mb-8">Remplissez les informations ci-dessous pour commencer</p>
       <StepIndicator currentStep={step} totalSteps={steps.length} stepNames={steps.map(s => s.name)} />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -137,7 +137,7 @@ export function RegisterForm() {
                 type="button"
                 variant="outline"
                 onClick={prevStep}
-                className="bg-transparent border-gray-600 hover:bg-gray-700"
+                className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 font-semibold active:scale-[0.98] transition-all duration-200"
               >
                 Précédent
               </Button>
@@ -146,17 +146,26 @@ export function RegisterForm() {
               <Button
                 type="button"
                 onClick={nextStep}
-                className="ml-auto bg-primary hover:bg-primary/90"
+                className="ml-auto rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
               >
                 Suivant
+                <ArrowRight2 size="16" color="currentColor" className="ml-2" />
               </Button>
             ) : (
               <Button
                 type="submit"
-                className="ml-auto bg-primary hover:bg-primary/90"
+                className="ml-auto rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
                 disabled={!isValid || registerMutation.isPending}
               >
-                {registerMutation.isPending ? 'Soumission...' : 'Soumettre'}
+                {registerMutation.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Soumission...
+                  </span>
+                ) : 'Soumettre'}
               </Button>
             )}
           </div>

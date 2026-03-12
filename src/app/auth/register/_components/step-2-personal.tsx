@@ -14,11 +14,11 @@ export function Step2Personal() {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-300">Prénom</FormLabel>
+              <FormLabel className="text-foreground">Prénom</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <Input placeholder="Entrez votre prénom" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                  <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input placeholder="Entrez votre prénom" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -30,11 +30,11 @@ export function Step2Personal() {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-300">Nom de famille</FormLabel>
+              <FormLabel className="text-foreground">Nom de famille</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <Input placeholder="Entrez votre nom" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                  <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input placeholder="Entrez votre nom" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -47,11 +47,11 @@ export function Step2Personal() {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-gray-300">Email</FormLabel>
+            <FormLabel className="text-foreground">Email</FormLabel>
             <FormControl>
               <div className="relative">
-                <Sms size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input type="email" placeholder="email@example.com" {...field} className="pl-10 bg-gray-800 border-gray-600 text-white" />
+                <Sms size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input type="email" placeholder="email@example.com" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />

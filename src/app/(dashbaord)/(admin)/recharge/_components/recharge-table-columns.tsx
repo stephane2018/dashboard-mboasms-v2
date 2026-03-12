@@ -283,7 +283,7 @@ export const getColumns = ({
     },
   ]
 
-  // Add actions column only for super admin
+
   if (isSuperAdmin) {
     columns.push({
       id: "actions",

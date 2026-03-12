@@ -10,8 +10,6 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/shared/ui/dialog"
@@ -20,7 +18,6 @@ import {
     FormControl,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
@@ -32,14 +29,16 @@ import {
     SelectValue,
 } from "@/shared/ui/select"
 import { Button } from "@/shared/ui/button"
+import { ProfileAdd, UserEdit, User, Sms, Call, Location } from "iconsax-react"
+import { Loader2 } from "lucide-react"
 
 const contactSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
-    country: z.string().min(1, "Country is required"),
-    city: z.string().min(1, "City is required"),
+    firstName: z.string().min(1, "Le prénom est requis"),
+    lastName: z.string().min(1, "Le nom est requis"),
+    email: z.string().email("Adresse email invalide"),
+    phoneNumber: z.string().min(1, "Le numéro est requis"),
+    country: z.string().min(1, "Le pays est requis"),
+    city: z.string().min(1, "La ville est requise"),
     gender: z.nativeEnum(Gender).optional(),
 })
 
@@ -154,153 +153,199 @@ export function ContactFormModal({
     }
 
     const isPending = isCreating || isUpdating
+    const HeaderIcon = isEditMode ? UserEdit : ProfileAdd
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                    <DialogTitle>
-                        {isEditMode ? "Edit Contact" : "Add New Contact"}
+            <DialogContent className="sm:max-w-[500px] p-0 rounded-2xl overflow-hidden">
+                <DialogHeader className="px-5 pt-5 pb-0">
+                    <DialogTitle className="text-lg flex items-center gap-2">
+                        <div className="rounded-lg bg-primary/10 p-1.5">
+                            <HeaderIcon size={18} variant="Bulk" color="currentColor" className="text-primary" />
+                        </div>
+                        {isEditMode ? "Modifier le contact" : "Nouveau contact"}
                     </DialogTitle>
-                    <DialogDescription>
-                        {isEditMode
-                            ? "Update the contact information below."
-                            : "Fill in the details to create a new contact."}
-                    </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="firstName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="John" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="px-5 py-4 space-y-4">
+                            {/* Name section */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <User size={13} color="currentColor" variant="Bulk" />
+                                    Identité
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="firstName"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Prénom" className="h-9 rounded-xl text-sm" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="lastName"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Nom" className="h-9 rounded-xl text-sm" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
 
+                            {/* Contact section */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Call size={13} color="currentColor" variant="Bulk" />
+                                    Coordonnées
+                                </div>
+                                <div className="space-y-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Sms size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                        <Input
+                                                            type="email"
+                                                            placeholder="Email"
+                                                            className="h-9 pl-9 rounded-xl text-sm"
+                                                            {...field}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="phoneNumber"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Call size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                        <Input
+                                                            placeholder="Numéro de téléphone"
+                                                            className="h-9 pl-9 rounded-xl text-sm"
+                                                            {...field}
+                                                        />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Location section */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Location size={13} color="currentColor" variant="Bulk" />
+                                    Localisation
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="country"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Pays" className="h-9 rounded-xl text-sm" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="city"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Ville" className="h-9 rounded-xl text-sm" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-[11px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Gender */}
                             <FormField
                                 control={form.control}
-                                name="lastName"
+                                name="gender"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Doe" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
+                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
+                                            <User size={13} color="currentColor" variant="Bulk" />
+                                            Genre <span className="text-[11px] text-muted-foreground/60">(optionnel)</span>
+                                        </div>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="h-9 rounded-xl text-sm">
+                                                    <SelectValue placeholder="Sélectionner" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value={Gender.MALE}>Homme</SelectItem>
+                                                <SelectItem value={Gender.FEMALE}>Femme</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage className="text-[11px]" />
                                     </FormItem>
                                 )}
                             />
                         </div>
 
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="email"
-                                            placeholder="john.doe@example.com"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="phoneNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Phone Number</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="+1234567890" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="country"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Country</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="USA" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="city"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>City</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="New York" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <FormField
-                            control={form.control}
-                            name="gender"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Gender (Optional)</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select gender" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value={Gender.MALE}>Male</SelectItem>
-                                            <SelectItem value={Gender.FEMALE}>Female</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <DialogFooter>
+                        {/* Footer */}
+                        <div className="flex items-center gap-2 px-5 py-4 border-t border-border/50 bg-muted/20">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={handleClose}
                                 disabled={isPending}
+                                className="flex-1 sm:flex-none rounded-xl"
                             >
-                                Cancel
+                                Annuler
                             </Button>
-                            <Button type="submit" disabled={isPending} isLoading={isPending}>
-                                {isEditMode ? "Update Contact" : "Create Contact"}
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="flex-1 sm:flex-none sm:min-w-[160px] rounded-xl gap-2"
+                            >
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        {isEditMode ? "Modification..." : "Création..."}
+                                    </>
+                                ) : (
+                                    <>
+                                        <HeaderIcon size={16} color="currentColor" variant="Bulk" />
+                                        {isEditMode ? "Modifier" : "Créer le contact"}
+                                    </>
+                                )}
                             </Button>
-                        </DialogFooter>
+                        </div>
                     </form>
                 </Form>
             </DialogContent>

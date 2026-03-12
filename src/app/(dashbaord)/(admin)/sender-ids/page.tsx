@@ -25,42 +25,45 @@ export default function SenderIdsPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  // React Query hooks - using different endpoints based on role
+  // SUPER_ADMIN: paginated response with content/totalElements
   const { data: allData, isLoading: isLoadingAll, error: errorAll } = useGetAllSenderIds(
     {
       page: pagination.pageIndex,
       size: pagination.pageSize,
-    }
-  )
-  
-  const { data: enterpriseData, isLoading: isLoadingEnterprise, error: errorEnterprise } = useGetSenderIdsByEnterprise(
-    user?.companyId || "",
-    {
-      page: pagination.pageIndex,
-      size: pagination.pageSize,
     },
-    !_isSuperAdmin // enabled for non-SUPER_ADMIN
+    _isSuperAdmin
   )
 
-  // Use appropriate data based on role
-  const data = _isSuperAdmin ? allData : enterpriseData
+  // ADMIN_USER: returns plain SenderId[] array (no pagination)
+  const { data: enterpriseData, isLoading: isLoadingEnterprise, error: errorEnterprise } = useGetSenderIdsByEnterprise(
+    user?.companyId || "",
+    undefined,
+    !_isSuperAdmin
+  )
+
   const isLoading = _isSuperAdmin ? isLoadingAll : isLoadingEnterprise
   const error = _isSuperAdmin ? errorAll : errorEnterprise
+
+  // Normalize data: allData is paginated, enterpriseData is a plain array
+  const senderIds = _isSuperAdmin
+    ? (allData?.content || [])
+    : (enterpriseData || [])
+
+  const rowCount = _isSuperAdmin
+    ? (allData?.totalElements || 0)
+    : senderIds.length
 
   const createSenderIdMutation = useCreateSenderId()
   const updateSenderIdMutation = useUpdateSenderId()
   const updateStatusMutation = useUpdateSenderIdStatus()
   const deleteSenderIdMutation = useDeleteSenderId()
 
-  // Handle errors - show warning about backend not being ready
   useEffect(() => {
     if (error) {
       const errorMessage = (error as any)?.response?.data?.message ||
                           (error as any)?.message ||
                           "Erreur lors du chargement des Sender IDs"
-
-        toast.error(errorMessage)
-      
+      toast.error(errorMessage)
     }
   }, [error])
 
@@ -120,28 +123,27 @@ export default function SenderIdsPage() {
     onChangeStatus: handleChangeStatus,
   })
 
-  const senderIds = data?.content || []
-  const rowCount = data?.totalElements || 0
-
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <MessageText size="32" variant="Bulk" color="currentColor" className="text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">
+    <div className="p-4 md:p-6 space-y-5 ">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-primary/10 p-2.5">
+            <MessageText size={22} variant="Bulk" color="currentColor" className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">
               {_isSuperAdmin ? "Sender IDs (Plateforme)" : "Mes Sender IDs"}
             </h1>
+            <p className="text-xs text-muted-foreground">
+              {_isSuperAdmin
+                ? "Gérez tous les Sender IDs de la plateforme."
+                : "Gérez les Sender IDs de votre entreprise."}
+            </p>
           </div>
-          <p className="text-muted-foreground mt-1">
-            {_isSuperAdmin
-              ? "Gérez tous les Sender IDs de la plateforme."
-              : "Gérez les Sender IDs de votre entreprise."}
-          </p>
         </div>
-        <Button className="gap-2" onClick={handleCreate}>
-          <Add size="20" variant="Bulk" color="currentColor" />
-          Nouveau Sender ID
+        <Button size="sm" className="gap-1.5 rounded-xl" onClick={handleCreate}>
+          <Add size={18} variant="Bulk" color="currentColor" />
+          Nouveau
         </Button>
       </div>
 
@@ -150,8 +152,8 @@ export default function SenderIdsPage() {
         data={senderIds}
         rowCount={rowCount}
         isLoading={isLoading}
-        enablePagination
-        onPaginationChange={setPagination}
+        enablePagination={_isSuperAdmin}
+        onPaginationChange={_isSuperAdmin ? setPagination : undefined}
         initialState={{
           pagination,
         }}

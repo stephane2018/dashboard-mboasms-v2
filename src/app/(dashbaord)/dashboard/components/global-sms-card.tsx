@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import { MessageText1 } from "iconsax-react";
 
 interface GlobalSmsCardProps {
@@ -16,29 +10,22 @@ interface GlobalSmsCardProps {
 
 export function GlobalSmsCard({ label, value, trend }: GlobalSmsCardProps) {
   return (
-    <Card className="border border-border/60 shadow-sm bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <div className="rounded-full bg-blue-100 p-2">
-            <MessageText1 size="18" color="currentColor" variant="Bulk" className="text-blue-600" />
-          </div>
-          <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">
-            {label}
-          </CardTitle>
+    <div className="rounded-2xl border border-border/50 bg-linear-to-br from-blue-50/60 to-indigo-50/40 dark:from-blue-950/15 dark:to-indigo-950/10 p-5 border-l-4 border-l-blue-500 transition-shadow hover:shadow-md">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {label}
+        </span>
+        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/15 px-2 py-0.5 rounded-full">
+          GLOBAL
+        </span>
+      </div>
+      <div className="flex items-center gap-2.5 mb-1">
+        <div className="rounded-xl bg-blue-50 dark:bg-blue-500/10 p-2">
+          <MessageText1 size="18" color="currentColor" variant="Bulk" className="text-blue-600 dark:text-blue-400" />
         </div>
-        <div className="rounded-full bg-blue-100 px-2 py-1">
-          <span className="text-xs font-semibold text-blue-700">GLOBAL</span>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2">
-          <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{value}</p>
-          <div className="flex items-center gap-2">
-            <div className="h-1 w-12 bg-blue-200 rounded-full"></div>
-            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">{trend}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        <p className="text-2xl font-bold text-foreground leading-tight">{value}</p>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">{trend}</p>
+    </div>
   );
 }

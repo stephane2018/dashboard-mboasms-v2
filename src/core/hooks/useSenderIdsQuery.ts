@@ -25,24 +25,25 @@ export const senderIdKeys = {
 /**
  * Hook to get all sender IDs with pagination
  */
-export function useGetAllSenderIds(params?: SenderIdQueryParams) {
+export function useGetAllSenderIds(params?: SenderIdQueryParams, enabled: boolean = true) {
   return useQuery<PaginatedSenderIds, Error>({
     queryKey: senderIdKeys.list(params),
     queryFn: () => senderIdService.getAllSenderIds(params),
+    enabled: enabled,
   })
 }
 
 /**
- * Hook to get sender IDs by enterprise with pagination
+ * Hook to get sender IDs by enterprise (returns plain array)
  */
 export function useGetSenderIdsByEnterprise(
   enterpriseId: string,
   params?: SenderIdQueryParams,
   enabled: boolean = true
 ) {
-  return useQuery<PaginatedSenderIds, Error>({
+  return useQuery<SenderId[], Error>({
     queryKey: senderIdKeys.byEnterprise(enterpriseId, params),
-    queryFn: () => senderIdService.getSenderIdsByEnterprise(enterpriseId, params),
+    queryFn: () => senderIdService.getSenderIdsByEnterprise(enterpriseId),
     enabled: enabled && !!enterpriseId,
   })
 }

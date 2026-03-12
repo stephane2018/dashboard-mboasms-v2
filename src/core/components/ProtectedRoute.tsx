@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { type ReactNode } from "react"
 import { useUserStore } from "@/core/stores"
 import { Role } from "@/core/config/enum"
 import { normalizeRole } from "@/core/utils/role.utils"
+import { tokenManager } from "@/core/lib/token-manager./token-manager"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -21,6 +22,7 @@ export const ProtectedRoute = ({
 
   const router = useRouter()
   const { user, isAuthenticated, isHydrated } = useUserStore()
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     // Wait for store to hydrate from localStorage
@@ -28,7 +30,17 @@ export const ProtectedRoute = ({
       return
     }
 
-    // If not authenticated, redirect to login
+    // Give a small delay to ensure the store state is fully synchronized
+    // This prevents race conditions during client-side navigation
+    const hasToken = tokenManager.hasToken() && !tokenManager.isTokenExpired()
+
+    // If we have a valid token but user is not yet in store, wait for auth provider to fetch profile
+    if (hasToken && !user) {
+      // Don't redirect yet - the auth provider will fetch the profile
+      return
+    }
+
+    // If not authenticated and no valid token, redirect to login
     if (!isAuthenticated || !user) {
       router.push(redirectTo)
       return
@@ -57,10 +69,19 @@ export const ProtectedRoute = ({
       }
       return
     }
+
+    // All checks passed
+    setIsReady(true)
   }, [isHydrated, isAuthenticated, user, allowedRoles, redirectTo, router])
 
   // Show loading state while store is hydrating
   if (!isHydrated) {
+    return null
+  }
+
+  // If we have a valid token but user is not yet loaded, show nothing (auth provider will load it)
+  const hasToken = tokenManager.hasToken() && !tokenManager.isTokenExpired()
+  if (hasToken && !user) {
     return null
   }
 
@@ -78,7 +99,6 @@ export const ProtectedRoute = ({
   const normalizedRole = normalizeRole(user.role)
   const allowedUserRoles = allowedRoles.map(role => normalizeRole(role))
 
-  
   if (!allowedUserRoles.includes(normalizedRole)) {
     return null
   }

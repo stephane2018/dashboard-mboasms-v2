@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight2, CloseCircle, User, Logout, Profile } from 'iconsax-react';
+import { ArrowRight2, CloseCircle, User, Logout, Profile, Sms, Global, CloseSquare } from 'iconsax-react';
 import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { useUserStore } from '@/core/stores/userStore';
+import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
 import {
   Avatar,
@@ -24,10 +27,30 @@ import {
 } from '@/shared/ui/dropdown-menu';
 
 const Header = () => {
+  const pathname = usePathname();
   const { user, clearUser } = useUserStore();
+  const { enterprise } = useEnterpriseStore();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+    const dismissed = localStorage.getItem('mboasms_v2_banner_dismissed');
+    if (!dismissed) {
+      setBannerDismissed(false);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem('mboasms_v2_banner_dismissed', 'true');
+  };
+
+  const logoSrc = mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,18 +122,59 @@ const Header = () => {
     .toUpperCase();
   const userSmsBalance =
     typeof user?.smsBalance === 'number' ? user.smsBalance : null;
+  const enterpriseSmsCredit =
+    typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : null;
 
   const handleProfile = () => {
     window.open(`${API_URL}/profile`, '_blank');
   };
 
   const handleGoToAdmin = () => {
-    window.open("/dashboard", '_blank');
+    window.open("/dashboard");
   };
 
   return (
     <>
-      <header className={`py-4 px-6 md:px-12 lg:px-24 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-background/80 backdrop-blur-md shadow-md dark:bg-background/90' : 'bg-transparent'}`}>
+      {/* Version announcement banner */}
+      <AnimatePresence>
+        {!bannerDismissed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-0 left-0 right-0 z-[60] overflow-hidden"
+          >
+            <div className="bg-linear-to-r from-primary via-fuchsia-500 to-violet-600 text-white px-4 py-2 shadow-lg shadow-primary/20">
+              <div className="container mx-auto flex items-center justify-center gap-2 text-center relative">
+                <p className="text-xs md:text-sm font-medium">
+                  Bienvenue sur la nouvelle version de MboaSMS !
+                  <span className="hidden sm:inline"> Pour revenir à l&apos;ancienne version,</span>
+                  <span className="sm:hidden"> Ancienne version ?</span>
+                  {' '}
+                  <a
+                    href="https://old.mboasms.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-bold hover:text-white/80 transition-colors"
+                  >
+                    cliquez ici
+                  </a>
+                </p>
+                <button
+                  onClick={handleDismissBanner}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                  aria-label="Fermer la bannière"
+                >
+                  <CloseSquare size="18" variant="Bold" color="currentColor" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <header className={`py-4 px-6 md:px-12 lg:px-24 fixed left-0 right-0 z-50 transition-all duration-300 ${!bannerDismissed ? 'top-[36px]' : 'top-0'} ${scrolled ? 'bg-background/80 backdrop-blur-md shadow-md dark:bg-background/90' : 'bg-transparent'}`}>
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center">
             <motion.div
@@ -119,12 +183,12 @@ const Header = () => {
               transition={{ duration: 0.5 }}
               className="flex items-center"
             >
-              <Image 
-                src="/icones/logo.svg" 
-                alt="MboaSMS Logo" 
-                width={120} 
-                height={40} 
-                className="h-10 w-auto"
+              <Image
+                src={logoSrc}
+                alt="MboaSMS Logo"
+                width={120}
+                height={40}
+                className="h-7 md:h-9 w-auto"
               />
             </motion.div>
           </Link>
@@ -135,23 +199,27 @@ const Header = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="hidden md:flex space-x-8"
           >
-            <Link href="/" className="text-foreground hover:text-primary transition-colors relative group">
+            <Link href="/" className={`${pathname === '/' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
               Home
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
-            <Link href="/conditions" className="text-foreground hover:text-primary transition-colors relative group">
+            <Link href="/conditions" className={`${pathname === '/conditions' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
               Conditions d&apos;utilisation
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/conditions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
-            <a 
-              href="#" 
+            <Link href="/api-docs" className={`${pathname === '/api-docs' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
+              Documentation
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/api-docs' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+            </Link>
+            <a
+              href="#"
               onClick={handleContactClick}
               className="text-foreground hover:text-primary transition-colors relative group cursor-pointer"
             >
               Contactez-nous
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
             </a>
-            
+
           </motion.nav>
 
           <div className="flex items-center space-x-4">
@@ -166,7 +234,7 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-3 rounded-full border border-border/70 bg-background/80 px-2 py-1.5 shadow-sm hover:border-primary hover:shadow-primary/10 transition-all duration-200">
                       <div className="relative">
-                        <Avatar className="h-10 w-10 ring-1 ring-border">
+                        <Avatar className="h-8 w-8 ring-1 ring-border">
                           <AvatarImage src={user?.avatar || ''} alt={userDisplayName} />
                           <AvatarFallback>{userInitials || 'US'}</AvatarFallback>
                         </Avatar>
@@ -189,6 +257,28 @@ const Header = () => {
                       <p className="text-sm font-semibold">{userDisplayName}</p>
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <div className="flex items-center justify-around rounded-lg px-3 py-2.5 my-1">
+                          <div className="flex items-center gap-1.5">
+                            <Sms size="14" variant="Bulk" color="currentColor" className="text-primary shrink-0" />
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">National</span>
+                              <span className="text-xs font-bold text-foreground tabular-nums leading-tight">
+                                {(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-px h-6 bg-border/60" />
+                          <div className="flex items-center gap-1.5">
+                            <Global size="14" variant="Bulk" color="currentColor" className="text-purple-500 shrink-0" />
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">International</span>
+                              <span className="text-xs font-bold text-foreground tabular-nums leading-tight">
+                                {(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleProfile} className="flex items-center gap-2">
                       <Profile size="16" variant="Bulk" color="currentColor" className="text-primary" />
@@ -218,15 +308,11 @@ const Header = () => {
                   className="hidden md:block"
                 >
                   <Link
-                    href="/compte"
-                    className="relative overflow-hidden bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-2 rounded-full group inline-flex items-center text-sm font-medium"
+                    href="/auth/register"
+                    className="relative bg-primary text-white px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
                   >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-purple-500 group-hover:from-purple-500 group-hover:to-primary transition-all duration-500"></span>
-                    <span className="absolute -inset-px bg-gradient-to-r from-primary-light to-primary rounded-full animate-gradient-x opacity-50 group-hover:opacity-70 blur-sm transition-opacity duration-500"></span>
-                    <span className="relative flex items-center justify-center">
-                      Créer un compte
-                      <ArrowRight2 size="18" variant="Bulk" color="currentColor"  className=" text-primary  ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
+                    Créer un compte
+                    <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                   </Link>
                 </motion.div>
                 <motion.div
@@ -237,20 +323,18 @@ const Header = () => {
                 >
                   <button
                     onClick={handleLoginClick}
-                    className="relative overflow-hidden px-5 py-2 rounded-full group inline-flex items-center text-sm font-medium"
+                    className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                   >
-                    <span className="absolute inset-0 border border-primary rounded-full group-hover:border-transparent group-hover:bg-primary/10 transition-all duration-300"></span>
-                    <span className="absolute inset-0 border-2 border-transparent bg-gradient-to-r from-primary-light via-primary to-purple-500 opacity-0 group-hover:opacity-100 rounded-full mask-border animate-gradient-x transition-opacity duration-300"></span>
-                    <span className="relative text-primary flex items-center justify-center">
+                    <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
                       Se connecter
-                      <ArrowRight2 size="18" variant="Bulk" color="currentColor" className="text-primary ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                     </span>
                   </button>
                 </motion.div>
               </>
             )}
             <ThemeToggle />
-            <button 
+            <button
               className="md:hidden text-foreground p-1 rounded-full hover:bg-primary/10 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -270,7 +354,7 @@ const Header = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="fixed inset-0 bg-background/95 backdrop-blur-lg z-40 md:hidden"
+              className="fixed inset-0 bg-background z-40 md:hidden"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -285,7 +369,7 @@ const Header = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <Image 
-                      src="/icones/logo.svg" 
+                      src={logoSrc} 
                       alt="MboaSMS Logo" 
                       width={80} 
                       height={28} 
@@ -305,9 +389,9 @@ const Header = () => {
                 </div>
                 
                 <nav className="flex flex-col space-y-6 mt-8">
-                  <Link 
-                    href="/" 
-                    className="text-foreground hover:text-primary transition-colors text-xl font-medium"
+                  <Link
+                    href="/"
+                    className={`${pathname === '/' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors text-xl font-medium`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <motion.div
@@ -317,11 +401,12 @@ const Header = () => {
                       className="flex items-center"
                     >
                       Home
+                      {pathname === '/' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                     </motion.div>
                   </Link>
-                  <Link 
-                    href="/conditions" 
-                    className="text-foreground hover:text-primary transition-colors text-xl font-medium"
+                  <Link
+                    href="/conditions"
+                    className={`${pathname === '/conditions' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors text-xl font-medium`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <motion.div
@@ -331,10 +416,26 @@ const Header = () => {
                       className="flex items-center"
                     >
                       Conditions d&apos;utilisation
+                      {pathname === '/conditions' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                     </motion.div>
                   </Link>
-                  <a 
-                    href="#" 
+                  <Link
+                    href="/api-docs"
+                    className={`${pathname === '/api-docs' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors text-xl font-medium`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.25 }}
+                      className="flex items-center"
+                    >
+                      Documentation
+                      {pathname === '/api-docs' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
+                    </motion.div>
+                  </Link>
+                  <a
+                    href="#"
                     onClick={handleContactClick}
                     className="text-foreground hover:text-primary transition-colors text-xl font-medium cursor-pointer"
                   >
@@ -369,6 +470,33 @@ const Header = () => {
                 <div className="mt-auto space-y-4">
                   {user ? (
                     <>
+                      {/* Mobile SMS Balance */}
+                      {(userSmsBalance !== null || enterpriseSmsCredit !== null) && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.35 }}
+                          className="w-full"
+                        >
+                          <div className="flex items-center justify-around rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <Sms size="18" variant="Bulk" color="currentColor" className="text-primary" />
+                              <div>
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">National</p>
+                                <p className="text-sm font-bold tabular-nums">{(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS</p>
+                              </div>
+                            </div>
+                            <div className="w-px h-8 bg-border/60" />
+                            <div className="flex items-center gap-2">
+                              <Global size="18" variant="Bulk" color="currentColor" className="text-purple-500" />
+                              <div>
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">International</p>
+                                <p className="text-sm font-bold tabular-nums">{(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS</p>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -376,7 +504,7 @@ const Header = () => {
                         className="w-full"
                       >
                         <div className="flex items-center space-x-2 px-4 py-3 rounded-full bg-primary/10">
-                          <User size="16" variant="Bulk" color="currentColor"   className="text-primary" />
+                          <User size="16" variant="Bulk" color="currentColor" className="text-primary" />
                           <span className="text-sm font-medium text-foreground">
                             {user.name || user.email}
                           </span>
@@ -410,15 +538,11 @@ const Header = () => {
                       >
                         <Link
                           href="/compte"
-                          className="relative overflow-hidden bg-gradient-to-r from-primary to-purple-500 text-white px-5 py-3 rounded-full group flex items-center justify-center text-base font-medium w-full"
+                          className="bg-primary text-white px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full shadow-md shadow-primary/25 active:scale-[0.98] transition-all duration-200"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary to-purple-500 group-hover:from-purple-500 group-hover:to-primary transition-all duration-500"></span>
-                          <span className="absolute -inset-px bg-gradient-to-r from-primary-light to-primary rounded-full animate-gradient-x opacity-50 group-hover:opacity-70 blur-sm transition-opacity duration-500"></span>
-                          <span className="relative flex items-center justify-center">
-                            Créer un compte
-                            <ArrowRight2 size="18" variant="Bulk" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                          </span>
+                          Créer un compte
+                          <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                         </Link>
                       </motion.div>
                       <motion.div
@@ -429,13 +553,11 @@ const Header = () => {
                       >
                         <button
                           onClick={handleLoginClick}
-                          className="relative overflow-hidden px-5 py-3 rounded-full group flex items-center justify-center text-base font-medium w-full"
+                          className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                         >
-                          <span className="absolute inset-0 border border-primary rounded-full group-hover:border-transparent group-hover:bg-primary/10 transition-all duration-300"></span>
-                          <span className="absolute inset-0 border-2 border-transparent bg-gradient-to-r from-primary-light via-primary to-purple-500 opacity-0 group-hover:opacity-100 rounded-full mask-border animate-gradient-x transition-opacity duration-300"></span>
-                          <span className="relative text-primary flex items-center justify-center">
+                          <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
                             Se connecter
-                            <ArrowRight2 size="18" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                            <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                           </span>
                         </button>
                       </motion.div>

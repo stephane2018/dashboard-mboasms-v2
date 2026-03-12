@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 import { Send2 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
@@ -16,37 +15,33 @@ export function ActionsSection({
     hasInsufficientBalance,
 }: ActionsSectionProps) {
     return (
-        <Card>
-            <CardContent className="pt-6">
-                <div className="space-y-3">
-                    <Button
-                        onClick={onSend}
-                        // disabled={isSending || !message.trim() || phoneEntries.length === 0 || validRecipientsCount === 0 || hasInsufficientBalance}
-                        className="w-full h-12 bg-primary hover:bg-primary/90"
-                        size="lg"
-                    >
-                        {isSending ? (
-                            <>
-                                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                                Envoi en cours...
-                            </>
-                        ) : (
-                            <>
-                                <Send2 size={20} variant="Bulk" className="mr-2" />
-                                Envoyer le SMS
-                            </>
-                        )}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={onClear}
-                        disabled={isSending}
-                        className="w-full"
-                    >
-                        Effacer tout
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+        <div className="space-y-2">
+            <Button
+                onClick={onSend}
+                className="w-full h-11 rounded-xl gap-2 shadow-sm"
+                size="lg"
+            >
+                {isSending ? (
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Envoi en cours...
+                    </>
+                ) : (
+                    <>
+                        <Send2 size={18} variant="Bulk" />
+                        Envoyer
+                    </>
+                )}
+            </Button>
+            <Button
+                type="button"
+                variant="outline"
+                onClick={onClear}
+                disabled={isSending}
+                className="w-full h-9 rounded-xl text-xs text-muted-foreground"
+            >
+                Effacer tout
+            </Button>
+        </div>
     )
 }

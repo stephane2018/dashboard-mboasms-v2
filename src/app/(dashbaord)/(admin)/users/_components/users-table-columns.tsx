@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Edit2, Trash, More, TickCircle, CloseCircle, Sms } from "iconsax-react"
+import { Edit2, Trash, More, TickCircle, CloseCircle, Sms, Global } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Gender } from "@/core/config/enum"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
@@ -18,7 +18,7 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import { Badge } from "@/shared/ui/badge"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
-import { getPhoneValidationStatus, checkPhoneValidation } from "@/core/utils/phone-validation"
+import { getPhoneValidationStatus, checkPhoneValidation, isCameroonNumber } from "@/core/utils/phone-validation"
 
 interface GetColumnsProps {
     onEdit: (contact: EnterpriseContactResponseType) => void
@@ -78,23 +78,53 @@ export function getColumns({
             },
         },
         {
-            id: "operator",
+            id: "type",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Operator" />
+                <DataTableColumnHeader column={column} label="Type" />
             ),
             cell: ({ row }) => {
                 const phoneNumber = row.original.phoneNumber
-                const operator = checkPhoneValidation(phoneNumber)
-                
-                // Color mapping for operators
-                const operatorColors: Record<string, string> = {
-                    ORANGE: "bg-orange-100 text-orange-800 hover:bg-orange-100",
-                    MTN: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-                    CAMTEL: "bg-blue-100 text-blue-800 hover:bg-blue-100",
-                    NEXTTEL: "bg-red-100 text-red-800 hover:bg-red-100",
-                    UNKNOWN: "bg-gray-100 text-gray-800 hover:bg-gray-100",
+                const isCM = isCameroonNumber(phoneNumber)
+
+                return isCM ? (
+                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-400">
+                        National
+                    </Badge>
+                ) : (
+                    <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-400">
+                        <Global size={12} color="currentColor" variant="Bulk" className="mr-1" />
+                        International
+                    </Badge>
+                )
+            },
+            meta: {
+                label: "Type",
+                className: "w-[130px]",
+            },
+        },
+        {
+            id: "operator",
+            header: ({ column }) => (
+                <DataTableColumnHeader column={column} label="Opérateur" />
+            ),
+            cell: ({ row }) => {
+                const phoneNumber = row.original.phoneNumber
+                const isCM = isCameroonNumber(phoneNumber)
+
+                if (!isCM) {
+                    return <span className="text-muted-foreground">--</span>
                 }
-                
+
+                const operator = checkPhoneValidation(phoneNumber)
+
+                const operatorColors: Record<string, string> = {
+                    ORANGE: "bg-orange-100 text-orange-800 hover:bg-orange-100 dark:bg-orange-500/15 dark:text-orange-400",
+                    MTN: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-500/15 dark:text-yellow-400",
+                    CAMTEL: "bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-400",
+                    NEXTTEL: "bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-500/15 dark:text-red-400",
+                    UNKNOWN: "bg-gray-100 text-gray-800 hover:bg-gray-100 dark:bg-gray-500/15 dark:text-gray-400",
+                }
+
                 return (
                     <Badge className={operatorColors[operator] || operatorColors.UNKNOWN}>
                         {operator}
@@ -102,27 +132,33 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Operator",
+                label: "Opérateur",
                 className: "w-[120px]",
             },
         },
         {
             id: "status",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Status" />
+                <DataTableColumnHeader column={column} label="Statut" />
             ),
             cell: ({ row }) => {
                 const phoneNumber = row.original.phoneNumber
+                const isCM = isCameroonNumber(phoneNumber)
+
+                if (!isCM) {
+                    return <span className="text-muted-foreground">--</span>
+                }
+
                 const status = getPhoneValidationStatus(phoneNumber)
-                
+
                 return (
                     <div className="flex items-center gap-2">
                         {status === "CORRECT" ? (
                             <>
-                                <TickCircle 
-                                    size={16} 
-                                    variant="Bulk" 
-                                    color="currentColor" 
+                                <TickCircle
+                                    size={16}
+                                    variant="Bulk"
+                                    color="currentColor"
                                     className="text-green-600"
                                 />
                                 <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
@@ -131,10 +167,10 @@ export function getColumns({
                             </>
                         ) : (
                             <>
-                                <CloseCircle 
-                                    size={16} 
-                                    variant="Bulk" 
-                                    color="currentColor" 
+                                <CloseCircle
+                                    size={16}
+                                    variant="Bulk"
+                                    color="currentColor"
                                     className="text-red-600"
                                 />
                                 <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
@@ -146,16 +182,18 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Status",
+                label: "Statut",
                 className: "w-[120px]",
             },
         },
         {
             accessorKey: "country",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Country" />
+                <DataTableColumnHeader column={column} label="Pays" />
             ),
             cell: ({ row }) => {
+                const isCM = isCameroonNumber(row.original.phoneNumber)
+                if (!isCM) return <span className="text-muted-foreground">--</span>
                 return <span>{row.original.country}</span>
             },
             meta: {
@@ -167,9 +205,11 @@ export function getColumns({
         {
             accessorKey: "city",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="City" />
+                <DataTableColumnHeader column={column} label="Ville" />
             ),
             cell: ({ row }) => {
+                const isCM = isCameroonNumber(row.original.phoneNumber)
+                if (!isCM) return <span className="text-muted-foreground">--</span>
                 return <span>{row.original.city}</span>
             },
             meta: {

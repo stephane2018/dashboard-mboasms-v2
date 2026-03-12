@@ -81,18 +81,10 @@ export const senderIdService = {
 
   async getSenderIdsByEnterprise(
     enterpriseId: string,
-    params?: SenderIdQueryParams
-  ): Promise<PaginatedSenderIds> {
+  ): Promise<SenderId[]> {
     try {
-      const queryParams = new URLSearchParams()
-      if (params?.status) queryParams.append("status", params.status)
-      if (params?.page !== undefined) queryParams.append("page", params.page.toString())
-      if (params?.size !== undefined) queryParams.append("size", params.size.toString())
-
-      const queryString = queryParams.toString()
-      const url = `/api/v1/sender-ids/enterprise/${enterpriseId}${queryString ? `?${queryString}` : ""}`
-
-      const result = await httpClient.get<PaginatedSenderIds>(url)
+      const url = `/api/v1/sender-ids/enterprise/${enterpriseId}`
+      const result = await httpClient.get<SenderId[]>(url)
       return result
     } catch (error) {
       return Promise.reject(refractHttpError(error))

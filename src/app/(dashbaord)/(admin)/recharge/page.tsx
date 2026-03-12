@@ -22,6 +22,8 @@ import { useActivePlans } from "@/core/hooks"
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
+  const _isAdminUser = user?.role === "ADMIN_USER"
+  const _isAdmin = _isSuperAdmin || _isAdminUser
   const {
     rechargesQuery,
     createRechargeMutation,
@@ -44,6 +46,7 @@ export default function RechargePage() {
   })
 
   const allRecharges = rechargesQuery.data || []
+  console.log(allRecharges);
   
   const isLoadingRecharges = rechargesQuery.isLoading
   const totalElements = allRecharges.length
@@ -238,10 +241,10 @@ export default function RechargePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {_isSuperAdmin ? "Gestion des recharges" : "Mes recharges"}
+            {_isAdmin ? "Gestion des recharges" : "Mes recharges"}
           </h1>
           <p className="text-muted-foreground">
-            {_isSuperAdmin
+            {_isAdmin
               ? "Gérer les demandes de recharge et créditer les comptes"
               : "Suivez vos demandes de recharge"}
           </p>

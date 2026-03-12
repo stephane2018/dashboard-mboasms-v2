@@ -3,34 +3,28 @@
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
-import { Alert, AlertDescription } from "@/shared/ui/alert"
 import {
     Warning2,
     Send2,
-    Profile2User,
     ProfileTick,
     CloseCircle,
-    Messages1,
     UserTag,
     Wallet,
     MessageText1,
     InfoCircle,
 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
-import { Separator } from "@/shared/ui/separator"
 
 interface SMSConfirmationModalProps {
     isOpen: boolean
     onClose: () => void
     onConfirm: () => void
     isLoading?: boolean
-    // Campaign details
     message: string
     totalRecipients: number
     validRecipients: number
@@ -39,11 +33,9 @@ interface SMSConfirmationModalProps {
     totalSmsToSend: number
     senderId: string
     isSenderIdVerified: boolean
-    // Balance
     currentBalance: number
     remainingBalance: number
     hasInsufficientBalance: boolean
-    // Operator breakdown
     mtnCount?: number
     otherOperatorsCount?: number
 }
@@ -71,242 +63,146 @@ export function SMSConfirmationModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] max-h-[95vh] flex flex-col p-0">
-                <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
-                    <DialogTitle className="text-2xl flex items-center gap-2">
-                        <Send2 size={24} variant="Bulk" color="currentColor" className="text-primary" />
-                        Confirmation d'envoi
+            <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 rounded-2xl">
+                <DialogHeader className="px-5 pt-5 pb-0 shrink-0">
+                    <DialogTitle className="text-lg flex items-center gap-2">
+                        <div className="rounded-lg bg-primary/10 p-1.5">
+                            <Send2 size={18} variant="Bulk" color="currentColor" className="text-primary" />
+                        </div>
+                        Confirmation d&apos;envoi
                     </DialogTitle>
-                    <DialogDescription>
-                        Vérifiez les détails de votre campagne SMS avant l'envoi
-                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 py-4 px-6 overflow-y-auto flex-1">
-                    {/* Sender ID Warning (if not verified) */}
+                <div className="space-y-3 py-4 px-5 overflow-y-auto flex-1">
+                    {/* SID warning */}
                     {!isSenderIdVerified && (
-                        <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-                            <Warning2 size={18} color="currentColor" variant="Bulk" className="text-amber-600" />
-                            <AlertDescription className="text-amber-700 dark:text-amber-400">
-                                <p className="font-semibold mb-1">
-                                    Votre SID Mboasms a été pris en compte. Vous pouvez envoyer des SMS.
-                                </p>
-                                <p className="text-sm">
-                                    Mais si plus tard ce SID est refusé par MTN, les SMS vers MTN ne passeront plus.
-                                </p>
-                            </AlertDescription>
-                        </Alert>
+                        <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/15 text-xs">
+                            <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
+                            <div className="text-amber-700 dark:text-amber-400">
+                                <p className="font-medium">SID Mboasms pris en compte.</p>
+                                <p className="mt-0.5 text-amber-600 dark:text-amber-500">Si refusé par MTN, les SMS MTN ne passeront plus.</p>
+                            </div>
+                        </div>
                     )}
 
-                    {/* Sender ID Info */}
-                    <div className="bg-muted/50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <UserTag size={18} color="currentColor" variant="Bulk" className="text-primary" />
-                            <span className="font-semibold">Sender ID</span>
-                        </div>
+                    {/* Sender ID + Message preview */}
+                    <div className="rounded-xl bg-muted/30 p-3.5 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold text-primary">{senderId}</span>
-                            {isSenderIdVerified ? (
-                                <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">
-                                    ✓ Vérifié
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <UserTag size={14} color="currentColor" variant="Bulk" />
+                                Sender ID
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-primary">{senderId}</span>
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isSenderIdVerified ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'}`}>
+                                    {isSenderIdVerified ? "Vérifié" : "En attente"}
                                 </span>
-                            ) : (
-                                <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-full">
-                                    ⏳ En attente
-                                </span>
-                            )}
+                            </div>
+                        </div>
+
+                        <div className="border-t border-border/40 pt-3">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                                <MessageText1 size={14} color="currentColor" variant="Bulk" />
+                                Message
+                            </div>
+                            <div className="bg-background p-3 rounded-lg border border-border/50 text-sm whitespace-pre-wrap break-words">
+                                {messagePreview}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1.5">
+                                {message.length} car. &middot; {smsCount} SMS/dest.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Message Preview */}
-                    <div className="bg-muted/50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-xl bg-muted/30 p-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <ProfileTick size={18} color="currentColor" variant="Bulk" className="text-muted-foreground" />
+                            <p className="text-[11px] text-muted-foreground">Destinataires</p>
+                          </div>
+                            <p className="text-xl font-bold tabular-nums">{validRecipients}</p>
+                        </div>
+                        <div className="rounded-xl bg-primary/5 p-3 text-center">
+                           <div className="flex items-center justify-center gap-1.5">
                             <MessageText1 size={18} color="currentColor" variant="Bulk" className="text-primary" />
-                            <span className="font-semibold">Message</span>
+                            <p className="text-[11px] text-muted-foreground">Total SMS</p>
+                           </div>
+                            <p className="text-xl font-bold text-primary tabular-nums">{totalSmsToSend}</p>
                         </div>
-                        <div className="bg-background p-3 rounded-md border">
-                            <p className="text-sm whitespace-pre-wrap wrap-break-word">{messagePreview}</p>
-                            {message.length > 150 && (
-                                <p className="text-xs text-muted-foreground mt-2 italic">
-                                    (Message tronqué pour l'aperçu)
-                                </p>
-                            )}
-                        </div>
-                        <div className="mt-2 text-sm text-muted-foreground">
-                            {message.length} caractère(s) • {smsCount} SMS par destinataire
+                        <div className={`rounded-xl p-3 text-center ${hasInsufficientBalance ? 'bg-red-50 dark:bg-red-500/5' : 'bg-emerald-50 dark:bg-emerald-500/5'}`}>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Wallet size={16} color="currentColor" variant="Bulk" className={`shrink-0 ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`} />
+                                <p className="text-[11px] text-muted-foreground">Solde après</p>
+                            </div>
+                            <p className={`text-xl font-bold tabular-nums ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                                {remainingBalance.toLocaleString()}
+                            </p>
                         </div>
                     </div>
 
-                    <Separator />
+                    {/* Invalid warning */}
+                    {invalidRecipients > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/5 border border-red-200/60 dark:border-red-500/15 text-xs text-red-600 dark:text-red-400">
+                            <CloseCircle size={14} color="currentColor" variant="Bulk" className="shrink-0" />
+                            {invalidRecipients} numéro(s) invalide(s) ignoré(s)
+                        </div>
+                    )}
 
-                    {/* Campaign Statistics */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                            Détails de la campagne
-                        </h3>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            {/* Total Recipients */}
-                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Profile2User size={16} color="currentColor" variant="Bulk" className="text-muted-foreground" />
-                                    <span className="text-xs text-muted-foreground">Total destinataires</span>
-                                </div>
-                                <p className="text-2xl font-bold">{totalRecipients}</p>
+                    {/* Operator breakdown */}
+                    {(mtnCount > 0 || otherOperatorsCount > 0) && (
+                        <div className="rounded-xl bg-muted/30 p-3 space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                <InfoCircle size={14} color="currentColor" variant="Bulk" />
+                                Répartition opérateurs
                             </div>
-
-                            {/* Valid Recipients */}
-                            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <ProfileTick size={16} color="currentColor" variant="Bulk" className="text-green-600" />
-                                    <span className="text-xs text-muted-foreground">Valides</span>
-                                </div>
-                                <p className="text-2xl font-bold text-green-600">{validRecipients}</p>
-                            </div>
-
-                            {/* Invalid Recipients */}
-                            {invalidRecipients > 0 && (
-                                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <CloseCircle size={16} color="currentColor" variant="Bulk" className="text-red-500" />
-                                        <span className="text-xs text-muted-foreground">Invalides</span>
-                                    </div>
-                                    <p className="text-2xl font-bold text-red-500">{invalidRecipients}</p>
+                            {mtnCount > 0 && (
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">MTN (SID: "infos")</span>
+                                    <span className="font-medium tabular-nums">{mtnCount} × {smsCount} = {mtnCount * smsCount}</span>
                                 </div>
                             )}
-
-                            {/* Total SMS */}
-                            <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Messages1 size={16} color="currentColor" variant="Bulk" className="text-primary" />
-                                    <span className="text-xs text-muted-foreground">Total SMS</span>
+                            {otherOperatorsCount > 0 && (
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">Autres (SID: "{senderId}")</span>
+                                    <span className="font-medium tabular-nums">{otherOperatorsCount} × {smsCount} = {otherOperatorsCount * smsCount}</span>
                                 </div>
-                                <p className="text-2xl font-bold text-primary">{totalSmsToSend}</p>
-                            </div>
-                        </div>
-
-                        {invalidRecipients > 0 && (
-                            <Alert className="border-red-300 bg-red-50 dark:bg-red-900/20">
-                                <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-red-600" />
-                                <AlertDescription className="text-red-700 dark:text-red-400 text-sm">
-                                    {invalidRecipients} numéro(s) invalide(s) seront ignoré(s)
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        {/* Operator Breakdown */}
-                        {(mtnCount > 0 || otherOperatorsCount > 0) && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
-                                    <span className="text-xs text-muted-foreground font-semibold">Répartition par opérateur</span>
-                                </div>
-                                <div className="space-y-1 text-sm">
-                                    {mtnCount > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-blue-700 dark:text-blue-400">
-                                                📡 MTN (Sender ID: "infos")
-                                            </span>
-                                            <span className="font-semibold text-blue-700 dark:text-blue-400">
-                                                {mtnCount} × {smsCount} = {mtnCount * smsCount} SMS
-                                            </span>
-                                        </div>
-                                    )}
-                                    {otherOperatorsCount > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-green-700 dark:text-green-400">
-                                                📱 Autres opérateurs (Sender ID: "{senderId}")
-                                            </span>
-                                            <span className="font-semibold text-green-700 dark:text-green-400">
-                                                {otherOperatorsCount} × {smsCount} = {otherOperatorsCount * smsCount} SMS
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <Separator />
-
-                    {/* Balance Summary */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                            Solde et coût
-                        </h3>
-
-                        <div className={`rounded-lg p-4 ${hasInsufficientBalance ? 'bg-red-50 dark:bg-red-900/20 border border-red-300' : 'bg-muted/50'}`}>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Wallet size={16} color="currentColor" variant="Bulk" className="text-muted-foreground" />
-                                        <span className="text-sm text-muted-foreground">Solde actuel</span>
-                                    </div>
-                                    <span className="font-semibold text-lg">{currentBalance.toLocaleString()}</span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Coût de l'envoi</span>
-                                    <span className="font-semibold text-lg text-amber-600">- {totalSmsToSend.toLocaleString()}</span>
-                                </div>
-
-                                <Separator />
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold">Solde après envoi</span>
-                                    <span className={`font-bold text-2xl ${remainingBalance < 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        {remainingBalance.toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {hasInsufficientBalance && (
-                                <Alert className="mt-3 border-red-400 bg-red-100 dark:bg-red-900/30">
-                                    <Warning2 size={16} color="currentColor" variant="Bulk" className="text-red-600" />
-                                    <AlertDescription className="text-red-700 dark:text-red-400 font-semibold">
-                                        Solde insuffisant pour cet envoi !
-                                    </AlertDescription>
-                                </Alert>
                             )}
                         </div>
-                    </div>
+                    )}
 
-                    <Separator />
-
-                    {/* Confirmation Question */}
-                    <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-4 text-center">
-                        <p className="text-lg font-semibold text-foreground">
-                            Voulez-vous vraiment démarrer la campagne ?
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Cette action enverra {totalSmsToSend} SMS à {validRecipients} destinataire(s)
-                        </p>
-                    </div>
+                    {/* Insufficient balance warning */}
+                    {hasInsufficientBalance && (
+                        <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-500/5 border border-red-300 dark:border-red-500/20 text-xs text-red-600 dark:text-red-400 font-medium">
+                            <Warning2 size={14} color="currentColor" variant="Bulk" className="shrink-0" />
+                            Solde insuffisant pour cet envoi
+                        </div>
+                    )}
                 </div>
 
-                <DialogFooter className="gap-2 px-6 py-4 border-t shrink-0 bg-background">
+                <DialogFooter className="gap-2 px-5 py-4 border-t border-border/50 shrink-0 bg-muted/20">
                     <Button
+                        type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 sm:flex-none rounded-xl"
                     >
                         Annuler
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        // disabled={isLoading || hasInsufficientBalance}
-                        className="flex-1 sm:flex-none sm:min-w-[140px]"
+                        className="flex-1 sm:flex-none sm:min-w-[140px] rounded-xl gap-2"
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Envoi en cours...
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Envoi...
                             </>
                         ) : (
                             <>
-                                <Send2 size={18} variant="Bulk" color="currentcolor" className="mr-2" />
-                                Confirmer l'envoi
+                                <Send2 size={16} variant="Bulk" />
+                                Confirmer l&apos;envoi
                             </>
                         )}
                     </Button>

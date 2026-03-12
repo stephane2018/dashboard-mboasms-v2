@@ -9,7 +9,7 @@ export type CreatePricingPlanRequest = Omit<PricingPlanType, 'id' | 'createdAt' 
 
 export const getAllPlans = async (): Promise<PricingPlanResponseType> => {
     try {
-        const response = await httpClient.get<PricingPlanResponseType>('/api/v1/PricingPlan');
+        const response = await httpClient.get<PricingPlanResponseType>('/api/v1/PricingPlan', { useToken: false });
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -18,7 +18,7 @@ export const getAllPlans = async (): Promise<PricingPlanResponseType> => {
 
 export const getActivePlans = async (): Promise<PricingPlanResponseType> => {
     try {
-        const response = await httpClient.get<PricingPlanResponseType>('/api/v1/PricingPlan/actives');
+        const response = await httpClient.get<PricingPlanResponseType>('/api/v1/PricingPlan/actives', { useToken: false });
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));

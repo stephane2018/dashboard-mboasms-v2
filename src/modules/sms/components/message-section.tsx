@@ -1,8 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Textarea } from "@/shared/ui/textarea"
-import { Alert, AlertDescription } from "@/shared/ui/alert"
 import { MessageText1, Warning2 } from "iconsax-react"
 import type { MessageSectionProps } from "./types"
 
@@ -18,84 +16,69 @@ export function MessageSection({
     userBalance,
     remainingBalance,
 }: MessageSectionProps) {
-    return (
-        <Card>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageText1 size={20} color="currentColor" variant="Bulk" className="text-primary" />
-                    Message
-                </CardTitle>
-                <CardDescription>
-                    Rédigez votre message SMS
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Textarea
-                    placeholder="Entrez votre message ici..."
-                    value={message}
-                    onChange={(e) => onMessageChange(e.target.value)}
-                    disabled={isSending}
-                    className="min-h-40 resize-none"
-                />
+    const maxChars = totalCharCount <= 160 ? 160 : Math.ceil(totalCharCount / 153) * 153
+    const charPercent = Math.min((totalCharCount / maxChars) * 100, 100)
 
-                {/* Special Character Alert */}
+    return (
+        <div className="rounded-2xl border border-border/50 bg-card">
+            <div className="flex items-center gap-2 p-4 pb-3">
+                <MessageText1 size={18} color="currentColor" variant="Bulk" className="text-primary" />
+                <h2 className="text-sm font-semibold text-foreground">Message</h2>
+            </div>
+
+            <div className="px-4 pb-4 space-y-3">
+                <div className="relative">
+                    <Textarea
+                        placeholder="Rédigez votre message SMS ici..."
+                        value={message}
+                        onChange={(e) => onMessageChange(e.target.value)}
+                        disabled={isSending}
+                        className="min-h-36 resize-none rounded-xl border-border/60 focus:border-primary/40 pr-4 pb-10"
+                    />
+                    {/* Inline char counter */}
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <span className="tabular-nums">{totalCharCount} / {maxChars}</span>
+                            <span className="text-primary font-medium">{smsCount} SMS</span>
+                        </div>
+                        {/* Mini progress bar */}
+                        <div className="w-16 h-1 rounded-full bg-muted overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-primary/60 transition-all duration-300"
+                                style={{ width: `${charPercent}%` }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Special char warning — compact */}
                 {specialCharCount > 0 && (
-                    <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-                        <Warning2 size={16} color="currentColor" variant="Bulk" className="text-amber-600" />
-                        <AlertDescription className="text-amber-700 dark:text-amber-400 text-sm">
-                            <strong>Attention :</strong> Votre message contient <strong>{specialCharCount}</strong> caractère(s) spéciaux
-                            qui comptent pour 2 caractères chacun. Cela peut augmenter le nombre de SMS envoyés.
-                        </AlertDescription>
-                    </Alert>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/15">
+                        <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0" />
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                            {specialCharCount} caractère(s) spéciaux (comptent double)
+                        </p>
+                    </div>
                 )}
 
-                {/* SMS Simulation Counter */}
-                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Caractères</span>
-                        <span className="font-medium">{totalCharCount} <span className="text-xs text-muted-foreground">/ {totalCharCount <= 160 ? 160 : Math.ceil(totalCharCount / 153) * 153}</span></span>
+                {/* Balance simulation — compact inline */}
+                {validRecipientsCount > 0 && smsCount > 0 && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2.5 rounded-lg bg-muted/40 text-xs">
+                        <span className="text-muted-foreground">
+                            {validRecipientsCount} dest. × {smsCount} SMS = <span className="font-semibold text-foreground">{totalSmsToSend}</span>
+                        </span>
+                        <span className="text-muted-foreground">
+                            Solde : {userBalance} - {totalSmsToSend} = {" "}
+                            <span className={`font-semibold ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                                {remainingBalance}
+                            </span>
+                        </span>
+                        {remainingBalance < 0 && (
+                            <span className="text-red-500 font-medium">Solde insuffisant</span>
+                        )}
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Nombre de SMS par destinataire</span>
-                        <span className="font-semibold text-primary">{smsCount}</span>
-                    </div>
-
-                    {validRecipientsCount > 0 && smsCount > 0 && (
-                        <>
-                            <div className="border-t pt-3 space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Destinataires valides</span>
-                                    <span className="font-medium text-green-600">{validRecipientsCount}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Total SMS à envoyer</span>
-                                    <span className="font-semibold">{totalSmsToSend}</span>
-                                </div>
-                            </div>
-                            <div className="border-t pt-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Simulation du débit</span>
-                                    <div className="text-right">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-muted-foreground">{userBalance}</span>
-                                            <span className="text-amber-600">- {totalSmsToSend}</span>
-                                            <span className="text-muted-foreground">=</span>
-                                            <span className={`font-bold ${remainingBalance < 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                                {remainingBalance}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                {remainingBalance < 0 && (
-                                    <p className="text-xs text-red-500 mt-1">
-                                        ⚠️ Solde insuffisant pour cet envoi
-                                    </p>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+                )}
+            </div>
+        </div>
     )
 }

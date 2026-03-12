@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
-import { Sms } from "iconsax-react"
+import { Send2 } from "iconsax-react"
 import { SMSConfirmationModal } from "@/shared/common/sms-confirmation-modal"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import type { PhoneEntry } from "@/shared/common/phone-number-input"
@@ -15,7 +15,6 @@ import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { useSMSStore } from "@/core/stores/smsStore"
 import { updateUserSenderId } from "@/core/services/client.service"
 import { useGetSenderIdById, useGetSenderIdsByEnterprise } from "@/core/hooks/useSenderIdsQuery"
-// Import modular components
 import {
     RecipientsSection,
     MessageSection,
@@ -26,13 +25,8 @@ import {
 import { useSendMessage } from "@/core/hooks/useSendMessage"
 import { UseGetConnectedCompagnieData, useMainStatistics } from "@/core/hooks"
 
-// Default temporary sender ID
 const DEFAULT_TEMP_SENDER_ID = "infos"
 
-/**
- * Separates phone entries by operator (MTN vs others)
- * MTN numbers use "infos" sender ID, others use custom sender ID
- */
 function separatePhoneNumbersByOperator(phoneEntries: PhoneEntry[]) {
     const mtnNumbers: string[] = []
     const otherNumbers: string[] = []
@@ -59,29 +53,22 @@ export default function SMSPage() {
     const [newSenderIdInput, setNewSenderIdInput] = useState("")
     const [showSenderIdInput, setShowSenderIdInput] = useState(false)
 
-    // Get prefilled contacts from SMS store
     const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
-
-    // Get user from store
     const { user, updateUser } = useUserStore()
     const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
-  
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
-        user?.companyId || "")
-    // SMS sending hook
+        user?.companyId || "");
+    console.log(senderIdsData);
+    console.log(user?.companyId);
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
-    // User's sender ID (from store)
     const userSenderId = user?.smsSenderId || ""
     const isSenderIdVerified = user?.isSenderIdVerified ?? false
     const hasPrimarySenderId = !!userSenderId
-
-    // Get enterprise SMS credit from enterprise data
     const enterpriseBalance = enterprise?.smsCredit || 0
-    const userBalance = enterpriseBalance // Use enterprise balance instead of statistics
+    const userBalance = enterpriseBalance
 
-    // Sender ID preferences from settings store
     const {
         useTemporarySenderId,
         setUseTemporarySenderId,
@@ -89,7 +76,6 @@ export default function SMSPage() {
         setTemporarySenderId
     } = useSettingsStore()
 
-    // Determine the active sender ID to use
     const activeSenderId = useMemo(() => {
         if (hasPrimarySenderId && isSenderIdVerified && !useTemporarySenderId) {
             return userSenderId
@@ -115,7 +101,6 @@ export default function SMSPage() {
         const newEntries: PhoneEntry[] = phones.map((phoneNumber, index) => {
             const operator = checkPhoneValidation(phoneNumber)
             const status = getPhoneValidationStatus(phoneNumber)
-
             return {
                 id: `prefill_${index}_${phoneNumber}`,
                 phoneNumber,
@@ -143,7 +128,6 @@ export default function SMSPage() {
             const phoneNumber = contact.phoneNumber || ""
             const operator = checkPhoneValidation(phoneNumber)
             const status = getPhoneValidationStatus(phoneNumber)
-
             return {
                 id: `store_${contact.id}`,
                 phoneNumber,
@@ -165,62 +149,51 @@ export default function SMSPage() {
         clearPrefilledContacts()
     }, [prefilledContacts, clearPrefilledContacts])
 
-    // Count special characters
     const specialCharCount = useMemo(() => {
         const specialChars = message.match(/[^a-zA-Z0-9\s]/g) || []
         return specialChars.length
     }, [message])
 
-    // Calculate character count (special chars count as 2)
     const totalCharCount = useMemo(() => {
         const regularChars = message.length - specialCharCount
         return regularChars + specialCharCount * 2
     }, [message, specialCharCount])
 
-    // Calculate SMS count (160 chars per SMS, 153 for multipart)
     const smsCount = useMemo(() => {
         if (totalCharCount === 0) return 0
         if (totalCharCount <= 160) return 1
         return Math.ceil(totalCharCount / 153)
     }, [totalCharCount])
 
-    // Valid recipients count
     const validRecipientsCount = useMemo(() => {
         return phoneEntries.filter(e => e.isValid).length
     }, [phoneEntries])
 
-    // Invalid recipients count
     const invalidRecipientsCount = useMemo(() => {
         return phoneEntries.filter(e => !e.isValid).length
     }, [phoneEntries])
 
-    // Total SMS to be sent
     const totalSmsToSend = useMemo(() => {
         return validRecipientsCount * smsCount
     }, [validRecipientsCount, smsCount])
 
-    // Remaining balance after sending
     const remainingBalance = useMemo(() => {
         return userBalance - totalSmsToSend
     }, [userBalance, totalSmsToSend])
 
-    // Check if balance is sufficient
     const hasInsufficientBalance = remainingBalance < 0
 
-    // Calculate operator counts for modal display
     const { mtnNumbers, otherNumbers } = useMemo(() => {
         return separatePhoneNumbersByOperator(phoneEntries)
     }, [phoneEntries])
-    
+
     const mtnCount = mtnNumbers.length
     const otherOperatorsCount = otherNumbers.length
 
-    // Convert contact from contact-new type to contact type for compatibility
     const convertContactToPhoneEntry = (contact: ContactNewType | ContactType): PhoneEntry => {
         const phoneNumber = contact.phoneNumber || ""
         const operator = checkPhoneValidation(phoneNumber)
         const status = getPhoneValidationStatus(phoneNumber)
-
         return {
             id: `contact_${contact.id}`,
             phoneNumber,
@@ -230,69 +203,51 @@ export default function SMSPage() {
         }
     }
 
-    // Convert contacts from groups to phone entries
     const handleGroupsSelected = (contacts: ContactNewType[]) => {
         const newEntries = contacts.map(convertContactToPhoneEntry)
-
-        // Merge with existing entries, avoiding duplicates
         const existingIds = new Set(phoneEntries.map(e => e.id))
         const existingPhones = new Set(phoneEntries.map(e => e.phoneNumber))
-
         const uniqueNewEntries = newEntries.filter(
             e => !existingIds.has(e.id) && !existingPhones.has(e.phoneNumber)
         )
-
         if (uniqueNewEntries.length > 0) {
             setPhoneEntries([...phoneEntries, ...uniqueNewEntries])
             toast.success(`${uniqueNewEntries.length} contact(s) ajouté(s)`)
         }
     }
 
-    // Handle contacts selected from modal (contact-new type)
     const handleContactsSelected = (contacts: ContactNewType[]) => {
         const newEntries = contacts.map(convertContactToPhoneEntry)
-
-        // Merge with existing entries, avoiding duplicates
         const existingIds = new Set(phoneEntries.map(e => e.id))
         const existingPhones = new Set(phoneEntries.map(e => e.phoneNumber))
-
         const uniqueNewEntries = newEntries.filter(
             e => !existingIds.has(e.id) && !existingPhones.has(e.phoneNumber)
         )
-
         if (uniqueNewEntries.length > 0) {
             setPhoneEntries([...phoneEntries, ...uniqueNewEntries])
             toast.success(`${uniqueNewEntries.length} contact(s) ajouté(s)`)
         }
     }
 
-    // Open confirmation modal
     const handleSend = () => {
         if (!message.trim()) {
             toast.error("Veuillez entrer un message")
             return
         }
-
         const validPhoneNumbers = phoneEntries
             .filter(e => e.isValid)
             .map(e => e.phoneNumber)
-
         if (validPhoneNumbers.length === 0) {
             toast.error("Veuillez ajouter au moins un destinataire valide")
             return
         }
-
         setIsConfirmationModalOpen(true)
     }
 
-    // Confirmed send action
     const handleConfirmSend = async () => {
         try {
-            // Separate phone numbers by operator
             const { mtnNumbers, otherNumbers } = separatePhoneNumbersByOperator(phoneEntries)
-
             const totalRecipients = mtnNumbers.length + otherNumbers.length
-
             if (totalRecipients === 0) {
                 toast.error("Aucun destinataire valide trouvé")
                 return
@@ -301,7 +256,6 @@ export default function SMSPage() {
             let mtnSent = 0
             let othersSent = 0
 
-            // Send to MTN numbers with "infos" sender ID
             if (mtnNumbers.length > 0) {
                 const response = await sendMessage({
                     phoneNumbers: mtnNumbers.toString(),
@@ -312,7 +266,6 @@ export default function SMSPage() {
                 mtnSent = response.mtnSent || mtnNumbers.length
             }
 
-            // Send to other numbers with user's sender ID
             if (otherNumbers.length > 0) {
                 const response = await sendMessage({
                     phoneNumbers: otherNumbers.toString(),
@@ -330,10 +283,7 @@ export default function SMSPage() {
                 : `${othersSent} SMS envoyés avec senderId "${activeSenderId}"`
 
             toast.success(successMessage)
-
-            // Refetch enterprise data to update SMS balance
             refetchEnterprise()
-
             setMessage("")
             setPhoneEntries([])
             setIsConfirmationModalOpen(false)
@@ -347,7 +297,6 @@ export default function SMSPage() {
         setPhoneEntries([])
     }
 
-    // Sender ID handlers
     const handleToggleTempSenderId = () => {
         setUseTemporarySenderId(!useTemporarySenderId)
         if (!useTemporarySenderId) {
@@ -367,7 +316,6 @@ export default function SMSPage() {
             toast.error("Veuillez entrer un Sender ID valide")
             return
         }
-
         setIsSavingSenderId(true)
         try {
             await updateUserSenderId(user.id, newSenderIdInput)
@@ -383,23 +331,23 @@ export default function SMSPage() {
     }
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
+        <div className="  p-4 md:p-6 space-y-5">
+            {/* Page Header — compact */}
+            <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-2.5">
+                    <Send2 size={22} variant="Bulk" color="currentColor" className="text-primary" />
+                </div>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                        <Sms size={32} variant="Bulk" color="currentColor" className="text-primary" />
-                        Envoyer un SMS
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Envoyez des SMS à vos contacts ou à des numéros personnalisés
+                    <h1 className="text-xl font-bold text-foreground">Envoyer un SMS</h1>
+                    <p className="text-xs text-muted-foreground">
+                        Composez et envoyez des SMS à vos contacts
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Form */}
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Main Form — left 2 cols */}
+                <div className="lg:col-span-2 space-y-4">
                     <RecipientsSection
                         phoneEntries={phoneEntries}
                         onPhoneEntriesChange={setPhoneEntries}
@@ -445,8 +393,8 @@ export default function SMSPage() {
                     />
                 </div>
 
-                {/* Summary & Actions */}
-                <div className="space-y-6">
+                {/* Sidebar — right col (sticky) */}
+                <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
                     <SummarySection
                         phoneEntries={phoneEntries}
                         validRecipientsCount={validRecipientsCount}
@@ -470,7 +418,6 @@ export default function SMSPage() {
                 </div>
             </div>
 
-            {/* SMS Confirmation Modal */}
             <SMSConfirmationModal
                 isOpen={isConfirmationModalOpen}
                 onClose={() => setIsConfirmationModalOpen(false)}
