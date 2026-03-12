@@ -1,7 +1,7 @@
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
-import { User, Sms } from 'iconsax-react';
+import { User, Sms, Call } from 'iconsax-react';
 
 export function Step2Personal() {
   const { control } = useFormContext();
@@ -52,6 +52,22 @@ export function Step2Personal() {
               <div className="relative">
                 <Sms size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input type="email" placeholder="email@example.com" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="phoneNumber"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-foreground">Numéro de téléphone</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Call size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Entrez votre numéro" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />

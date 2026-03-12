@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
-import { Call, Lock, Eye, EyeSlash } from 'iconsax-react';
+import { Lock, Eye, EyeSlash, Global, Location, Home2 } from 'iconsax-react';
 
 export function Step3Security() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,22 +11,6 @@ export function Step3Security() {
 
   return (
     <div className="space-y-4">
-      <FormField
-        control={control}
-        name="phoneNumber"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-foreground">Numéro de téléphone</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Call size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Entrez votre numéro de téléphone" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
       <FormField
         control={control}
         name="password"
@@ -91,6 +75,62 @@ export function Step3Security() {
           </FormItem>
         )}
       />
+
+      <div className="pt-2">
+        <p className="text-sm font-medium text-foreground mb-3">Localisation</p>
+        <div className="space-y-4">
+          <FormField
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-foreground">Pays</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Global size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input placeholder="Ex: Cameroun" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground">Ville</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Location size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input placeholder="Ex: Douala" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground">Adresse</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Home2 size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input placeholder="Votre adresse" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

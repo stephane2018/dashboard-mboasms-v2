@@ -32,6 +32,9 @@ export function RegisterForm() {
       phoneNumber: '',
       password: '',
       confirmPassword: '',
+      country: '',
+      city: '',
+      address: '',
       socialRaison: '',
       activityDomain: '',
       contribuableNumber: '',
@@ -42,10 +45,10 @@ export function RegisterForm() {
       adresseEnterprise: '',
       villeEntreprise: '',
       enterpriseCountryId: '',
+      urlSiteweb: '',
     },
   });
 
-  const { isValid } = form.formState;
   const accountType = form.watch('accountType');
 
   const allSteps = useMemo(() => [
@@ -60,28 +63,28 @@ export function RegisterForm() {
       id: 'Step 2',
       name: 'Informations personnelles',
       component: Step2Personal,
-      fields: ['firstName', 'lastName', 'email'],
+      fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
       showFor: ['personal', 'business']
     },
     {
       id: 'Step 3',
-      name: 'Sécurité',
+      name: 'Sécurité & Localisation',
       component: Step3Security,
-      fields: ['phoneNumber', 'password', 'confirmPassword'],
+      fields: ['password', 'confirmPassword', 'country', 'city', 'address'],
       showFor: ['personal', 'business']
     },
     {
       id: 'Step 4',
-      name: 'Entreprise',
+      name: 'Informations entreprise',
       component: Step4Enterprise,
-      fields: ['socialRaison', 'activityDomain', 'contribuableNumber', 'emailEnterprise', 'telephoneEntreprise'],
+      fields: ['socialRaison', 'activityDomain', 'contribuableNumber', 'smsESenderId'],
       showFor: ['business']
     },
     {
       id: 'Step 5',
-      name: 'Configuration SMS',
+      name: 'Détails entreprise',
       component: Step5SmsConfig,
-      fields: ['smsESenderId', 'numeroCommerce', 'adresseEnterprise', 'villeEntreprise', 'enterpriseCountryId'],
+      fields: ['emailEnterprise', 'telephoneEntreprise', 'numeroCommerce', 'adresseEnterprise', 'villeEntreprise', 'urlSiteweb', 'enterpriseCountryId'],
       showFor: ['business']
     },
   ], []);
@@ -155,7 +158,7 @@ export function RegisterForm() {
               <Button
                 type="submit"
                 className="ml-auto rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-                disabled={!isValid || registerMutation.isPending}
+                disabled={registerMutation.isPending}
               >
                 {registerMutation.isPending ? (
                   <span className="flex items-center gap-2">
@@ -163,9 +166,9 @@ export function RegisterForm() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Soumission...
+                    Création en cours...
                   </span>
-                ) : 'Soumettre'}
+                ) : 'Créer mon compte'}
               </Button>
             )}
           </div>

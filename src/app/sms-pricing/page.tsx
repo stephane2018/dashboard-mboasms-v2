@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { ArrowLeft, SearchNormal1, Global, Wallet } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
 import { useAuthContext } from "@/core/providers/auth-provider"
 import { useUserStore } from "@/core/stores/userStore"
 import { createInternationalRecharge } from "@/core/services/recharge.service"
+import { LoginModal } from "@/shared/common/login-modal"
 import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal"
 import Header from "@/shared/landing_components/components/layout/Header"
 import Footer from "@/shared/landing_components/components/layout/Footer"
@@ -27,11 +27,12 @@ const PAGE_SIZE = 250
 export default function PricingPage() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState("")
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isRechargeOpen, setIsRechargeOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<{ countryName: string; countryCode: string; pricePerSms: number } | null>(null)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
-  const router = useRouter()
   const { isConnected } = useAuthContext()
   const user = useUserStore((state) => state.user)
   const { pricesQuery } = useSmsCountryPrices({ page, size: PAGE_SIZE })
@@ -49,18 +50,31 @@ export default function PricingPage() {
     )
   }, [countries, search])
 
-  const handleCountryClick = (country: any) => {
+  const requireAuth = useCallback((action: () => void) => {
     if (!isConnected) {
-      router.push("/auth/login")
+      setPendingAction(() => action)
+      setIsLoginOpen(true)
       return
     }
+    action()
+  }, [isConnected])
 
-    setSelectedCountry({
-      countryName: country.countryName,
-      countryCode: country.countryCode,
-      pricePerSms: country.pricePerSms,
+  const handleLoginSuccess = useCallback(() => {
+    if (pendingAction) {
+      pendingAction()
+      setPendingAction(null)
+    }
+  }, [pendingAction])
+
+  const handleCountryClick = (country: any) => {
+    requireAuth(() => {
+      setSelectedCountry({
+        countryName: country.countryName,
+        countryCode: country.countryCode,
+        pricePerSms: country.pricePerSms,
+      })
+      setIsRechargeOpen(true)
     })
-    setIsRechargeOpen(true)
   }
 
   const handleRechargeSubmit = async (data: InternationalRechargeFormData) => {
@@ -227,6 +241,16 @@ export default function PricingPage() {
           )}
         </div>
       </section>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => {
+          setIsLoginOpen(false)
+          setPendingAction(null)
+        }}
+        onSuccess={handleLoginSuccess}
+      />
 
       {/* International Recharge Modal */}
       <InternationalRechargeModal

@@ -72,11 +72,23 @@ export const getMessages = async (enterpriseId: string, page: number, size: numb
     }
 };
 
-export const getAllMessageHistory = async (page: number = 0, size: number = 10): Promise<PaginatedResponse<MessageHistoryType>> => {
+export interface MessageHistoryParams {
+    page?: number;
+    size?: number;
+    sort?: string;
+    startDate?: string;
+    endDate?: string;
+}
+
+export const getAllMessageHistory = async (params: MessageHistoryParams = {}): Promise<PaginatedResponse<MessageHistoryType>> => {
     try {
+        const { page = 0, size = 10, sort = 'createdAt,desc', startDate, endDate } = params;
+        const queryParams: Record<string, any> = { page, size, sort };
+        if (startDate) queryParams.startDate = startDate;
+        if (endDate) queryParams.endDate = endDate;
         const response = await httpClient.get<PaginatedResponse<MessageHistoryType>>(
             `/api/v1/message`,
-            { params: { page, size } }
+            { params: queryParams }
         );
         return response;
     } catch (error) {

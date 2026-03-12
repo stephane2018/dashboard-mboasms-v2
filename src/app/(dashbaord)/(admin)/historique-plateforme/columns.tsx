@@ -20,60 +20,67 @@ const getStatusClasses = (status: MessageStatus | string) => {
       return `${baseClasses} bg-yellow-100/10 border-yellow-500 text-yellow-500 border-dashed`;
     default:
       return `${baseClasses} bg-gray-100/10 border-gray-500 text-gray-500 border-dashed`;
-  }  
+  }
 };
+
+const statusLabels: Record<string, string> = {
+  [MessageStatus.ACCEPTED]: "Accepté",
+  [MessageStatus.SENT]: "Envoyé",
+  [MessageStatus.DELIVERED]: "Livré",
+  [MessageStatus.FAILED]: "Échoué",
+  [MessageStatus.PENDING]: "En attente",
+}
 
 export const columns: ColumnDef<MessageHistoryType>[] = [
   {
     accessorKey: "sender",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Sender" label="Sender" />,
-    cell: ({ row }) => <div>{row.getValue("sender")}</div>,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Expéditeur" label="Expéditeur" />,
+    cell: ({ row }) => <div className="font-medium">{row.getValue("sender")}</div>,
   },
   {
     accessorKey: "msisdn",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Recipient" label="Recipient" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Destinataire" label="Destinataire" />,
     cell: ({ row }) => <div>{row.getValue("msisdn")}</div>,
   },
   {
     accessorKey: "message",
     header: "Message",
-    cell: ({ row }) => <div className="max-w-xs truncate">{row.getValue("message")}</div>,
+    cell: ({ row }) => <div className="max-w-xs truncate" title={row.getValue("message")}>{row.getValue("message")}</div>,
   },
   {
     accessorKey: "enterprise",
-    header: "Enterprise",
+    header: "Entreprise",
     cell: ({ row }) => {
       const enterprise = row.getValue("enterprise") as MessageHistoryType['enterprise']
-      return <div>{enterprise?.smsESenderId || "N/A"}</div>
+      return <div>{enterprise?.smsESenderId || "—"}</div>
     },
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Statut",
     cell: ({ row }) => {
       const status = row.getValue("status") as MessageStatus;
-      return <div className={getStatusClasses(status)}>{status}</div>;
+      return <div className={getStatusClasses(status)}>{statusLabels[status] || status}</div>;
     },
   },
   {
     accessorKey: "smsCount",
-    header: "SMS Count",
-    cell: ({ row }) => <div>{row.getValue("smsCount")}</div>,
-  },
-  {
-    accessorKey: "archived",
-    header: "Archived",
-    cell: ({ row }) => {
-      const archived = row.getValue("archived") as boolean;
-      return <Badge variant={archived ? "secondary" : "outline"}>{archived ? "Yes" : "No"}</Badge>;
-    },
+    header: "Nb SMS",
+    cell: ({ row }) => <div className="text-center">{row.getValue("smsCount")}</div>,
   },
   {
     accessorKey: "createdAt",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" label="Date" />,
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as string
-      return <div>{new Date(date).toLocaleString()}</div>
+      if (!date) return <div>—</div>
+      return <div className="whitespace-nowrap">{new Date(date).toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })}</div>
     },
   },
 ]
