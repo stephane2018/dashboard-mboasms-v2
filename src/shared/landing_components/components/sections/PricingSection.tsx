@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/shared/ui/button";
 import Link from "next/link";
 import { ArrowRight2, Global, MessageText1, Chart2, Clock, ShieldTick, Wallet } from "iconsax-react";
@@ -10,6 +9,7 @@ import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices";
 import { useAuthContext } from "@/core/providers/auth-provider";
 import { useUserStore } from "@/core/stores/userStore";
 import { createRecharge, createInternationalRecharge } from "@/core/services/recharge.service";
+import { LoginModal } from "@/shared/common/login-modal";
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal";
 import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal";
 import { toast } from "sonner";
@@ -30,14 +30,15 @@ const POPULAR_AFRICA = ["CM", "SN", "CI", "GA", "CD", "ML", "BF", "TG", "BJ", "G
 const POPULAR_INTERNATIONAL = ["FR", "BE", "CH", "CA", "US", "GB", "LU", "MC", "DE", "MA"];
 
 export function PricingSection({ t, lang, onContactSales }: { t: typeof landingContent.fr; lang: Lang; onContactSales: () => void }) {
-  const router = useRouter();
   const { isConnected } = useAuthContext();
   const user = useUserStore((state) => state.user);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRechargeOpen, setIsRechargeOpen] = useState(false);
   const [isIntlRechargeOpen, setIsIntlRechargeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIntlSubmitting, setIsIntlSubmitting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<{ countryName: string; countryCode: string; pricePerSms: number } | null>(null);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const { activePlansQuery } = usePricing();
   const { pricesQuery: countryPricesQuery } = useSmsCountryPrices({ size: 300 });
 
@@ -57,17 +58,31 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
     };
   }, [allCountryPrices]);
 
-  const handleCountryRecharge = (country: SmsCountryPriceType) => {
+  const requireAuth = useCallback((action: () => void) => {
     if (!isConnected) {
-      router.push("/auth/login");
+      setPendingAction(() => action);
+      setIsLoginOpen(true);
       return;
     }
-    setSelectedCountry({
-      countryName: country.countryName,
-      countryCode: country.countryCode,
-      pricePerSms: country.pricePerSms,
+    action();
+  }, [isConnected]);
+
+  const handleLoginSuccess = useCallback(() => {
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  }, [pendingAction]);
+
+  const handleCountryRecharge = (country: SmsCountryPriceType) => {
+    requireAuth(() => {
+      setSelectedCountry({
+        countryName: country.countryName,
+        countryCode: country.countryCode,
+        pricePerSms: country.pricePerSms,
+      });
+      setIsIntlRechargeOpen(true);
     });
-    setIsIntlRechargeOpen(true);
   };
 
   const handleIntlRechargeSubmit = async (data: InternationalRechargeFormData) => {
@@ -101,11 +116,9 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
   };
 
   const handleChoosePlan = () => {
-    if (!isConnected) {
-      router.push("/auth/login");
-      return;
-    }
-    setIsRechargeOpen(true);
+    requireAuth(() => {
+      setIsRechargeOpen(true);
+    });
   };
 
   const handleRechargeSubmit = async (data: RechargeFormData) => {
@@ -333,6 +346,16 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => {
+          setIsLoginOpen(false);
+          setPendingAction(null);
+        }}
+        onSuccess={handleLoginSuccess}
+      />
 
       {/* Recharge Modal */}
       <CreateRechargeModal
