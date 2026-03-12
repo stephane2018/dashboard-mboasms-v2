@@ -192,8 +192,6 @@ export function DataTableDateFilter<TData>({
       <PopoverContent className="w-auto p-0" align="start">
         {multiple ? (
           <Calendar
-            autoFocus
-            captionLayout="dropdown"
             mode="range"
             selected={
               getIsDateRange(selectedDates)
@@ -204,7 +202,6 @@ export function DataTableDateFilter<TData>({
           />
         ) : (
           <Calendar
-            captionLayout="dropdown"
             mode="single"
             selected={
               !getIsDateRange(selectedDates) ? selectedDates[0] : undefined

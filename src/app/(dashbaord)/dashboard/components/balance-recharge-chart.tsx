@@ -171,7 +171,6 @@ export function BalanceRechargeChart() {
                   setStartDate(date);
                   if (date && endDate && date > endDate) setEndDate(date);
                 }}
-                autoFocus
               />
             </PopoverContent>
           </Popover>
@@ -198,8 +197,6 @@ export function BalanceRechargeChart() {
                   setEndDate(date);
                   if (date && startDate && date < startDate) setStartDate(date);
                 }}
-                disabled={(date) => startDate ? date < startDate : false}
-                autoFocus
               />
             </PopoverContent>
           </Popover>

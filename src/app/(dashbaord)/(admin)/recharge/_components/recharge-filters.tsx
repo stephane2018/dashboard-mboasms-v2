@@ -168,7 +168,6 @@ export function RechargeFilters({
                 onSelect={(date) =>
                   onFiltersChange({ ...filters, startDate: date })
                 }
-                initialFocus
                 locale={fr}
               />
             </PopoverContent>
@@ -203,11 +202,7 @@ export function RechargeFilters({
                 onSelect={(date) =>
                   onFiltersChange({ ...filters, endDate: date })
                 }
-                initialFocus
                 locale={fr}
-                disabled={(date) =>
-                  filters.startDate ? date < filters.startDate : false
-                }
               />
             </PopoverContent>
           </Popover>

@@ -200,7 +200,6 @@ export function SmsTransactionChart() {
                   setEndDate(date);
                   if (date && startDate && date < startDate) setStartDate(date);
                 }}
-                disabled={(date) => startDate ? date < startDate : false}
               />
             </PopoverContent>
           </Popover>
