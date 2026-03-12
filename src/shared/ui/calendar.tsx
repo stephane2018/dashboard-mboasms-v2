@@ -1,210 +1,253 @@
+"use client"
+
 import * as React from "react"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react"
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
-
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/shared/ui/button"
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  captionLayout = "label",
-  buttonVariant = "ghost",
-  formatters,
-  components,
-  ...props
-}: React.ComponentProps<typeof DayPicker> & {
-  buttonVariant?: React.ComponentProps<typeof Button>["variant"]
-}) {
-  const defaultClassNames = getDefaultClassNames()
-
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn(
-        "bg-background group/calendar p-4 [--cell-size:2.5rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
-        String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
-        String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
-        className
-      )}
-      captionLayout={captionLayout}
-      formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
-        ...formatters,
-      }}
-      classNames={{
-        root: cn("w-fit", defaultClassNames.root),
-        months: cn(
-          "relative flex flex-col gap-4 md:flex-row",
-          defaultClassNames.months
-        ),
-        month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
-        nav: cn(
-          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
-          defaultClassNames.nav
-        ),
-        button_previous: cn(
-          buttonVariants({ variant: buttonVariant }),
-          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 hover:bg-accent",
-          defaultClassNames.button_previous
-        ),
-        button_next: cn(
-          buttonVariants({ variant: buttonVariant }),
-          "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50 hover:bg-accent",
-          defaultClassNames.button_next
-        ),
-        month_caption: cn(
-          "flex h-[--cell-size] w-full items-center justify-center px-[--cell-size] pt-2",
-          defaultClassNames.month_caption
-        ),
-        dropdowns: cn(
-          "flex h-[--cell-size] w-full items-center justify-center gap-1.5 text-sm font-medium",
-          defaultClassNames.dropdowns
-        ),
-        dropdown_root: cn(
-          "has-focus:border-ring border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] relative rounded-md border",
-          defaultClassNames.dropdown_root
-        ),
-        dropdown: cn(
-          "bg-popover absolute inset-0 opacity-0",
-          defaultClassNames.dropdown
-        ),
-        caption_label: cn(
-          "select-none font-semibold text-base",
-          captionLayout === "label"
-            ? "text-base"
-            : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-base [&>svg]:size-4",
-          defaultClassNames.caption_label
-        ),
-        table: "w-full border-collapse space-y-2",
-        weekdays: cn("grid grid-cols-7 gap-2 mb-2", defaultClassNames.weekdays),
-        weekday: cn(
-          "text-muted-foreground flex items-center justify-center select-none rounded-md text-[0.75rem] font-semibold h-8 uppercase",
-          defaultClassNames.weekday
-        ),
-        week: cn("grid grid-cols-7 gap-2 w-full", defaultClassNames.week),
-        week_number_header: cn(
-          "w-[--cell-size] select-none",
-          defaultClassNames.week_number_header
-        ),
-        week_number: cn(
-          "text-muted-foreground select-none text-[0.8rem]",
-          defaultClassNames.week_number
-        ),
-        day: cn(
-          "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
-          defaultClassNames.day
-        ),
-        range_start: cn(
-          "bg-accent rounded-l-md",
-          defaultClassNames.range_start
-        ),
-        range_middle: cn("rounded-none", defaultClassNames.range_middle),
-        range_end: cn("bg-accent rounded-r-md", defaultClassNames.range_end),
-        today: cn(
-          "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none font-semibold",
-          defaultClassNames.today
-        ),
-        outside: cn(
-          "text-muted-foreground/40 aria-selected:text-muted-foreground",
-          defaultClassNames.outside
-        ),
-        disabled: cn(
-          "text-muted-foreground opacity-30 cursor-not-allowed",
-          defaultClassNames.disabled
-        ),
-        hidden: cn("invisible", defaultClassNames.hidden),
-        ...classNames,
-      }}
-      components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return (
-            <div
-              data-slot="calendar"
-              ref={rootRef}
-              className={cn(className)}
-              {...props}
-            />
-          )
-        },
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return (
-              <ChevronLeftIcon className={cn("size-5", className)} {...props} />
-            )
-          }
-
-          if (orientation === "right") {
-            return (
-              <ChevronRightIcon
-                className={cn("size-5", className)}
-                {...props}
-              />
-            )
-          }
-
-          return (
-            <ChevronRightIcon className={cn("size-5", className)} {...props} />
-          )
-        },
-        DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-[--cell-size] items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          )
-        },
-        ...components,
-      }}
-      {...props}
-    />
-  )
+interface CalendarProps {
+  mode?: "single" | "range"
+  selected?: Date | { from?: Date; to?: Date }
+  onSelect?: (date: any) => void
+  numberOfMonths?: number
+  locale?: any
+  className?: string
 }
 
-function CalendarDayButton({
+const DAYS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"]
+
+export function Calendar({
+  mode = "single",
+  selected,
+  onSelect,
+  numberOfMonths = 1,
+  locale,
   className,
-  day,
-  modifiers,
-  ...props
-}: React.ComponentProps<typeof DayButton>) {
-  const defaultClassNames = getDefaultClassNames()
+}: CalendarProps) {
+  const [currentMonth, setCurrentMonth] = React.useState(new Date())
 
-  const ref = React.useRef<HTMLButtonElement>(null)
-  React.useEffect(() => {
-    if (modifiers.focused) ref.current?.focus()
-  }, [modifiers.focused])
+  const months = React.useMemo(() => {
+    const result = []
+    for (let i = 0; i < numberOfMonths; i++) {
+      const date = new Date(currentMonth)
+      date.setMonth(date.getMonth() + i)
+      result.push(date)
+    }
+    return result
+  }, [currentMonth, numberOfMonths])
 
-  return (
-    <button
-      ref={ref}
-      type="button"
-      data-day={day.date.toLocaleDateString()}
-      data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end &&
-        !modifiers.range_middle
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7 // Adjust so Monday = 0
+
+    const days = []
+
+    // Previous month days
+    const prevMonthLastDay = new Date(year, month, 0).getDate()
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month - 1, prevMonthLastDay - i),
+        isCurrentMonth: false,
+      })
+    }
+
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push({
+        date: new Date(year, month, day),
+        isCurrentMonth: true,
+      })
+    }
+
+    // Next month days to fill the grid
+    const remainingDays = 42 - days.length // 6 rows * 7 days
+    for (let day = 1; day <= remainingDays; day++) {
+      days.push({
+        date: new Date(year, month + 1, day),
+        isCurrentMonth: false,
+      })
+    }
+
+    return days
+  }
+
+  const isDateInRange = (date: Date) => {
+    if (mode !== "range" || !selected || typeof selected === "object") {
+      const range = selected as { from?: Date; to?: Date }
+      if (!range?.from || !range?.to) return false
+      return date >= range.from && date <= range.to
+    }
+    return false
+  }
+
+  const isRangeStart = (date: Date) => {
+    if (mode !== "range" || !selected) return false
+    const range = selected as { from?: Date; to?: Date }
+    return range?.from && isSameDay(date, range.from)
+  }
+
+  const isRangeEnd = (date: Date) => {
+    if (mode !== "range" || !selected) return false
+    const range = selected as { from?: Date; to?: Date }
+    return range?.to && isSameDay(date, range.to)
+  }
+
+  const isSelected = (date: Date) => {
+    if (mode === "single" && selected instanceof Date) {
+      return isSameDay(date, selected)
+    }
+    if (mode === "range") {
+      return isRangeStart(date) || isRangeEnd(date)
+    }
+    return false
+  }
+
+  const isToday = (date: Date) => {
+    return isSameDay(date, new Date())
+  }
+
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getDate() === date2.getDate() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getFullYear() === date2.getFullYear()
+    )
+  }
+
+  const handleDayClick = (date: Date) => {
+    if (mode === "single") {
+      onSelect?.(date)
+    } else if (mode === "range") {
+      const range = selected as { from?: Date; to?: Date } | undefined
+      if (!range?.from || (range.from && range.to)) {
+        onSelect?.({ from: date, to: undefined })
+      } else {
+        if (date < range.from) {
+          onSelect?.({ from: date, to: range.from })
+        } else {
+          onSelect?.({ from: range.from, to: date })
+        }
       }
-      data-range-start={modifiers.range_start}
-      data-range-end={modifiers.range_end}
-      data-range-middle={modifiers.range_middle}
-      className={cn(
-        buttonVariants({ variant: "ghost", size: "icon" }),
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-[--cell-size] w-[--cell-size] items-center justify-center font-medium leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] hover:bg-accent hover:text-accent-foreground transition-colors",
-        defaultClassNames.day,
-        className
-      )}
-      {...props}
-    />
+    }
+  }
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() - 1)
+      return newDate
+    })
+  }
+
+  const goToNextMonth = () => {
+    setCurrentMonth((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() + 1)
+      return newDate
+    })
+  }
+
+  const formatMonthYear = (date: Date) => {
+    const monthNames = [
+      "janvier", "février", "mars", "avril", "mai", "juin",
+      "juillet", "août", "septembre", "octobre", "novembre", "décembre"
+    ]
+    return `${monthNames[date.getMonth()]} ${date.getFullYear()}`
+  }
+
+  return (
+    <div className={cn("p-4", className)}>
+      <div className="flex gap-6">
+        {months.map((month, monthIndex) => (
+          <div key={monthIndex} className="flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 h-10">
+              {monthIndex === 0 && (
+                <button
+                  type="button"
+                  onClick={goToPreviousMonth}
+                  className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />
+                </button>
+              )}
+              {monthIndex > 0 && <div className="w-10" />}
+
+              <div className="flex-1 text-center">
+                <span className="text-sm font-semibold capitalize">
+                  {formatMonthYear(month)}
+                </span>
+              </div>
+
+              {monthIndex === numberOfMonths - 1 && (
+                <button
+                  type="button"
+                  onClick={goToNextMonth}
+                  className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
+              )}
+              {monthIndex < numberOfMonths - 1 && <div className="w-10" />}
+            </div>
+
+            {/* Days header */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {DAYS.map((day) => (
+                <div
+                  key={day}
+                  className="h-9 flex items-center justify-center text-xs font-medium text-muted-foreground"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {getDaysInMonth(month).map((day, dayIndex) => {
+                const inRange = isDateInRange(day.date)
+                const rangeStart = isRangeStart(day.date)
+                const rangeEnd = isRangeEnd(day.date)
+                const selectedDay = isSelected(day.date)
+                const today = isToday(day.date)
+
+                return (
+                  <div
+                    key={dayIndex}
+                    className={cn(
+                      "h-9 flex items-center justify-center relative",
+                      inRange && !selectedDay && "bg-accent",
+                      rangeStart && "rounded-l-md",
+                      rangeEnd && "rounded-r-md"
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleDayClick(day.date)}
+                      disabled={!day.isCurrentMonth}
+                      className={cn(
+                        "h-9 w-9 flex items-center justify-center text-sm rounded-md transition-colors",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        !day.isCurrentMonth && "text-muted-foreground/30 cursor-default hover:bg-transparent",
+                        day.isCurrentMonth && "text-foreground",
+                        selectedDay && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                        today && !selectedDay && "bg-accent font-semibold",
+                        inRange && !selectedDay && "hover:bg-accent/80"
+                      )}
+                    >
+                      {day.date.getDate()}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
-
-export { Calendar, CalendarDayButton }
