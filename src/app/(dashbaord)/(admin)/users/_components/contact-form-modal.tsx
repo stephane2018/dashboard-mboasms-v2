@@ -31,6 +31,7 @@ import {
 import { Button } from "@/shared/ui/button"
 import { ProfileAdd, UserEdit, User, Sms, Call, Location } from "iconsax-react"
 import { Loader2 } from "lucide-react"
+import { CountryCodeWarning } from "@/shared/common/country-code-warning"
 
 const contactSchema = z.object({
     firstName: z.string(),
@@ -172,6 +173,8 @@ export function ContactFormModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <div className="px-5 py-4 space-y-4">
+                            <CountryCodeWarning />
+
                             {/* Name section */}
                             <div className="space-y-2.5">
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

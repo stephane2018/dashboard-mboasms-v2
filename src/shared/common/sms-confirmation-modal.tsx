@@ -19,6 +19,7 @@ import {
     InfoCircle,
 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
+import { CountryCodeWarning } from "./country-code-warning"
 
 interface SMSConfirmationModalProps {
     isOpen: boolean
@@ -74,6 +75,8 @@ export function SMSConfirmationModal({
                 </DialogHeader>
 
                 <div className="space-y-3 py-4 px-5 overflow-y-auto flex-1">
+                    <CountryCodeWarning />
+
                     {/* SID warning */}
                     {!isSenderIdVerified && (
                         <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/15 text-xs">

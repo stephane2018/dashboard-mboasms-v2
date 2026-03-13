@@ -48,11 +48,14 @@ export const sendMessageToGroup = async (payload: SendMessageToGroupPayload): Pr
     }
 };
 
-export const getMessageHistory = async (enterpriseId: string, page: number = 0, size: number = 10): Promise<PaginatedResponse<MessageHistoryType>> => {
+export const getMessageHistory = async (enterpriseId: string, page: number = 0, size: number = 10, startDate?: string, endDate?: string): Promise<PaginatedResponse<MessageHistoryType>> => {
     try {
+        const queryParams: Record<string, any> = { page, size };
+        if (startDate) queryParams.startDate = startDate;
+        if (endDate) queryParams.endDate = endDate;
         const response = await httpClient.get<PaginatedResponse<MessageHistoryType>>(
             `/api/v1/message/enterprise/${enterpriseId}`,
-            { params: { page, size } }
+            { params: queryParams }
         );
         return response;
     } catch (error) {

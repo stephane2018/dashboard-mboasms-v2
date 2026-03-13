@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Edit2, Trash, More, TickCircle, CloseCircle, Sms, Global } from "iconsax-react"
+import { Edit2, Trash, More, TickCircle, CloseCircle, Sms, Global, Warning2 } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Gender } from "@/core/config/enum"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
@@ -17,6 +17,7 @@ import {
     DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import { Badge } from "@/shared/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { getPhoneValidationStatus, checkPhoneValidation, isCameroonNumber } from "@/core/utils/phone-validation"
 
@@ -69,7 +70,29 @@ export function getColumns({
                 <DataTableColumnHeader column={column} label="Phone" />
             ),
             cell: ({ row }) => {
-                return <span className="font-mono text-sm">{row.original.phoneNumber}</span>
+                const phone = row.original.phoneNumber
+                const hasCountryCode = /^\+/.test(phone?.trim() || "")
+
+                if (!hasCountryCode && phone) {
+                    return (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1.5">
+                                        <Warning2 size={14} color="currentColor" variant="Bulk" className="text-red-500 shrink-0" />
+                                        <span className="font-mono text-sm text-red-600 dark:text-red-400 font-bold">{phone}</span>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-[250px] text-xs">
+                                    <p className="font-bold">Indicatif pays manquant !</p>
+                                    <p>Ce numéro risque de ne pas recevoir de SMS. Ajoutez l&apos;indicatif (ex: +237).</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )
+                }
+
+                return <span className="font-mono text-sm">{phone}</span>
             },
             meta: {
                 label: "Phone",

@@ -13,9 +13,11 @@ import { LogOut, Settings } from "lucide-react";
 import { generateAbbreviation } from "@/shared/utils/common";
 import { useAuthContext } from "@/core/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { useEnterpriseStore } from "@/core/stores/enterpriseStore";
 
 export default function UserDropdown() {
   const { user, clearUser } = useAuthContext();
+  const { enterprise } = useEnterpriseStore();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -29,7 +31,7 @@ export default function UserDropdown() {
         <Button variant="ghost" className="h-auto p-0 data-[state=open]:bg-accent data-[state=open]:text-accent-foreground">
           <div className="flex items-center gap-2 px-1.5 py-1">
             <Avatar className="size-8">
-              <AvatarImage src="" />
+              <AvatarImage src={enterprise?.urlImage || ""} />
               <AvatarFallback>{generateAbbreviation(user?.name || "")}</AvatarFallback>
             </Avatar>
           </div>

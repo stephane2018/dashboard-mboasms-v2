@@ -24,6 +24,7 @@ import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { readExcelAsArrays } from "@/shared/utils/excel-secure.utils"
 import { type PhoneEntry } from "./phone-number-input"
+import { CountryCodeWarning } from "./country-code-warning"
 
 // Utility functions (copied from phone-number-input.tsx)
 const cleanPhoneNumber = (phone: string): string => {
@@ -290,6 +291,8 @@ export function PhoneImportModal({
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
+                    <CountryCodeWarning />
+
                     {/* Import Type Selection */}
                     <div className="space-y-3">
                         <Label className="text-sm font-medium">Type d'importation</Label>

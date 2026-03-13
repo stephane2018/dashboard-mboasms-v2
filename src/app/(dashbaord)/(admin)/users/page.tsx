@@ -26,6 +26,7 @@ import { SearchNormal1, UserAdd, DocumentDownload, Sms, Global } from "iconsax-r
 import { getPhoneValidationStatus, isCameroonNumber } from "@/core/utils/phone-validation"
 import { searchContacts } from "@/core/utils/search.utils"
 import { useSMSStore } from "@/core/stores/smsStore"
+import { CountryCodeWarning } from "@/shared/common/country-code-warning"
 
 
 export default function UsersListPage() {
@@ -318,6 +319,8 @@ export default function UsersListPage() {
           </Button>
         </div>
       </div>
+
+      <CountryCodeWarning />
 
       {/* Statistics */}
       {isLoading ? (

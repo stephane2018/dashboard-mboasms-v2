@@ -33,6 +33,7 @@ import {
   AvatarImage,
 } from "@/shared/ui/avatar"
 import { useUserStore } from "@/core/stores/userStore"
+import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { useEffect } from "react"
 import { Info } from "lucide-react"
 import { ImpersonationBanner } from "@/shared/components/impersonation-banner"
@@ -58,6 +59,7 @@ interface MainLayoutProps {
 export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const router = useRouter()
   const { user, clearUser, actingCompanyId, actingCompanyName, setActingCompany, clearActingCompany } = useUserStore()
+  const { enterprise } = useEnterpriseStore()
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -172,7 +174,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                 <button className="flex items-center gap-3 rounded-full border border-border/70 bg-gradient-to-br from-primary/5 to-purple-500/5 px-3 py-2 shadow-sm hover:border-primary hover:shadow-primary/10 transition-all duration-200">
                   <div className="relative">
                     <Avatar className="h-7 w-7 ring-1 ring-border">
-                      <AvatarImage src={user?.avatar || ""} alt={userDisplayName} />
+                      <AvatarImage src={enterprise?.urlImage || user?.avatar || ""} alt={userDisplayName} />
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
                   </div>
@@ -189,7 +191,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                 <DropdownMenuLabel>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12 ring-2 ring-border">
-                      <AvatarImage src={user?.avatar || ""} alt={userDisplayName} />
+                      <AvatarImage src={enterprise?.urlImage || user?.avatar || ""} alt={userDisplayName} />
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
                     <div>

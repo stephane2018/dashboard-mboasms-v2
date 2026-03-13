@@ -59,7 +59,9 @@ export default function HistoriquePage() {
     activeEnterpriseId,
     pagination.pageIndex,
     pagination.pageSize,
-    isFilteringByEnterprise && !isSearching && !!activeEnterpriseId
+    isFilteringByEnterprise && !isSearching && !!activeEnterpriseId,
+    toISO(dateRange?.from),
+    toISO(dateRange?.to, true)
   )
 
   // GET /api/v1/message/phone/{phoneNumber} (search by phone paginated)

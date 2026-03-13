@@ -20,15 +20,15 @@ export const messageKeys = {
   all: ["messages"] as const,
   lists: () => [...messageKeys.all, "list"] as const,
   list: (enterpriseId: string) => [...messageKeys.lists(), { enterpriseId }] as const,
-  history: (enterpriseId: string, page: number, size: number) => [...messageKeys.all, "history", enterpriseId, page, size] as const,
+  history: (enterpriseId: string, page: number, size: number, startDate?: string, endDate?: string) => [...messageKeys.all, "history", enterpriseId, page, size, startDate, endDate] as const,
   allHistory: (params: MessageHistoryParams) => [...messageKeys.all, "all-history", params] as const,
   search: (phone: string, page: number, size: number) => [...messageKeys.all, "search", phone, page, size] as const,
 }
 
-export function useMessageHistory(enterpriseId: string, page: number = 0, size: number = 10, enabled: boolean = true) {
+export function useMessageHistory(enterpriseId: string, page: number = 0, size: number = 10, enabled: boolean = true, startDate?: string, endDate?: string) {
   return useQuery<PaginatedResponse<MessageHistoryType>, Error>({
-    queryKey: messageKeys.history(enterpriseId, page, size),
-    queryFn: () => getMessageHistory(enterpriseId, page, size),
+    queryKey: messageKeys.history(enterpriseId, page, size, startDate, endDate),
+    queryFn: () => getMessageHistory(enterpriseId, page, size, startDate, endDate),
     enabled,
   })
 }
