@@ -33,12 +33,14 @@ import { ProfileAdd, UserEdit, User, Sms, Call, Location } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 
 const contactSchema = z.object({
-    firstName: z.string().min(1, "Le prénom est requis"),
-    lastName: z.string().min(1, "Le nom est requis"),
-    email: z.string().email("Adresse email invalide"),
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.string().refine((val) => val === "" || z.string().email().safeParse(val).success, {
+        message: "Adresse email invalide",
+    }),
     phoneNumber: z.string().min(1, "Le numéro est requis"),
-    country: z.string().min(1, "Le pays est requis"),
-    city: z.string().min(1, "La ville est requise"),
+    country: z.string(),
+    city: z.string(),
     gender: z.nativeEnum(Gender).optional(),
 })
 

@@ -79,7 +79,7 @@ export function SMSConfirmationModal({
                         <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/15 text-xs">
                             <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
                             <div className="text-amber-700 dark:text-amber-400">
-                                <p className="font-medium">SID Mboasms pris en compte.</p>
+                                <p className="font-medium">SID &quot;{senderId}&quot; pris en compte.</p>
                                 <p className="mt-0.5 text-amber-600 dark:text-amber-500">Si refusé par MTN, les SMS MTN ne passeront plus.</p>
                             </div>
                         </div>
