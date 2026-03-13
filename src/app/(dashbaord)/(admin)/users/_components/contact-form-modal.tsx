@@ -31,14 +31,17 @@ import {
 import { Button } from "@/shared/ui/button"
 import { ProfileAdd, UserEdit, User, Sms, Call, Location } from "iconsax-react"
 import { Loader2 } from "lucide-react"
+import { CountryCodeWarning } from "@/shared/common/country-code-warning"
 
 const contactSchema = z.object({
-    firstName: z.string().min(1, "Le prénom est requis"),
-    lastName: z.string().min(1, "Le nom est requis"),
-    email: z.string().email("Adresse email invalide"),
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.string().refine((val) => val === "" || z.string().email().safeParse(val).success, {
+        message: "Adresse email invalide",
+    }),
     phoneNumber: z.string().min(1, "Le numéro est requis"),
-    country: z.string().min(1, "Le pays est requis"),
-    city: z.string().min(1, "La ville est requise"),
+    country: z.string(),
+    city: z.string(),
     gender: z.nativeEnum(Gender).optional(),
 })
 
@@ -170,6 +173,8 @@ export function ContactFormModal({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
                         <div className="px-5 py-4 space-y-4">
+                            <CountryCodeWarning />
+
                             {/* Name section */}
                             <div className="space-y-2.5">
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

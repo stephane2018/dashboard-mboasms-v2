@@ -100,7 +100,7 @@ function GlobeIllustration() {
           <ShieldTick size="16" color="currentColor" className="text-green-400" variant="Bold" />
           <div>
             <div className="text-[10px] text-white/60">Delivrabilite</div>
-            <div className="text-sm font-bold text-white">99.2%</div>
+            <div className="text-sm font-bold text-white">98%</div>
           </div>
         </div>
       </motion.div>
@@ -502,7 +502,7 @@ const services: ServiceItem[] = [
       shadow: 'shadow-purple-500/20',
       iconBg: 'bg-purple-500/20',
     },
-    highlights: ['50+ pays couverts', '99.2% delivrabilite', 'Livraison < 3 secondes'],
+    highlights: ['50+ pays couverts', '98% delivrabilite', 'Livraison < 5 min'],
   },
   {
     id: '02',

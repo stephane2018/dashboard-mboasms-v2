@@ -123,14 +123,30 @@ export function DateRangePicker({
   const [open, setOpen] = React.useState(false)
   const [activePresetLabel, setActivePresetLabel] = React.useState<string | null>(null)
 
+  const [pendingRange, setPendingRange] = React.useState<DateRange | undefined>(value)
+
+  React.useEffect(() => {
+    if (open) {
+      setPendingRange(value)
+    }
+  }, [open])
+
   const handlePreset = (label: string, getDates: () => DateRange) => {
     setActivePresetLabel(label)
-    onChange?.(getDates())
+    const range = getDates()
+    setPendingRange(range)
+    onChange?.(range)
+    setOpen(false)
   }
 
   const handleCalendarSelect = (range: DateRange | undefined) => {
     setActivePresetLabel(null)
-    onChange?.(range)
+    setPendingRange(range)
+  }
+
+  const handleApply = () => {
+    onChange?.(pendingRange)
+    setOpen(false)
   }
 
   return (
@@ -196,11 +212,11 @@ export function DateRangePicker({
             <DayPicker
               key={activePresetLabel ?? "manual"}
               mode="range"
-              selected={value}
+              selected={pendingRange}
               onSelect={handleCalendarSelect}
               numberOfMonths={2}
               locale={fr}
-              defaultMonth={value?.from}
+              defaultMonth={pendingRange?.from}
               showOutsideDays
               components={{
                 Chevron: ({ orientation }) => {
@@ -237,6 +253,39 @@ export function DateRangePicker({
                 disabled: "text-muted-foreground/20 cursor-not-allowed",
               }}
             />
+          </div>
+        </div>
+
+        {/* Footer with Apply button */}
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
+          <p className="text-xs text-muted-foreground">
+            {pendingRange?.from && pendingRange?.to ? (
+              <>
+                {format(pendingRange.from, "dd MMM yyyy", { locale: fr })} – {format(pendingRange.to, "dd MMM yyyy", { locale: fr })}
+              </>
+            ) : pendingRange?.from ? (
+              <>Début : {format(pendingRange.from, "dd MMM yyyy", { locale: fr })}</>
+            ) : (
+              "Sélectionnez une période"
+            )}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs rounded-lg"
+              onClick={() => setOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs rounded-lg"
+              disabled={!pendingRange?.from || !pendingRange?.to}
+              onClick={handleApply}
+            >
+              Appliquer
+            </Button>
           </div>
         </div>
       </PopoverContent>

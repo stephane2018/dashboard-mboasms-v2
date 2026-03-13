@@ -33,7 +33,7 @@ export function PlanDetails() {
   const planName = user.planName ?? 'Plan Business'
   const usagePercent = smsQuota > 0 ? Math.max(0, Math.min(100, 100 - (smsBalance / smsQuota) * 100)) : 100
 
-  const internationalBalance =  0
+  const internationalBalance = enterprise?.internationalCredit ?? 0
 
   const handleRecharge = async (data: RechargeFormData) => {
     if (!user?.companyId) {

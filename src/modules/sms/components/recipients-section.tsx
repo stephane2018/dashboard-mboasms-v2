@@ -7,6 +7,7 @@ import { PhoneNumberInput } from "@/shared/common/phone-number-input"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { GroupSelectionModal } from "@/shared/common/group-selection-modal"
 import type { RecipientsSectionProps } from "./types"
+import { CountryCodeWarning } from "@/shared/common/country-code-warning"
 
 export function RecipientsSection({
     phoneEntries,
@@ -66,7 +67,8 @@ export function RecipientsSection({
                         </Button>
                     </div>
                 </div>
-                <div className="px-4 pb-4">
+                <div className="px-4 pb-4 space-y-3">
+                    <CountryCodeWarning />
                     <PhoneNumberInput
                         entries={phoneEntries}
                         onEntriesChange={onPhoneEntriesChange}

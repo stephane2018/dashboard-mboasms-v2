@@ -27,16 +27,9 @@ export function NavMain({
   const pathname = usePathname()
   const { state } = useSidebar()
 
-  // Enhanced active check: exact match OR starts with the URL path
   const isItemActive = (itemUrl: string) => {
-    // Exact match
     if (pathname === itemUrl) return true
-
-    // For sub-routes: check if pathname starts with itemUrl
-    // But exclude dashboard from matching all routes
     if (itemUrl === '/dashboard') return pathname === '/dashboard'
-
-    // Check if current path starts with the item URL (for sub-routes)
     return pathname.startsWith(itemUrl + '/')
   }
 
