@@ -49,6 +49,7 @@ export interface EnterpriseType extends BaseEntity {
     adresseEnterprise: string;
     smsESenderId: string;
     smsCredit: number;
+    internationalCredit:number
     activityDomain: string;
     contribuableNumber: string;
     pays: CountryType | string;

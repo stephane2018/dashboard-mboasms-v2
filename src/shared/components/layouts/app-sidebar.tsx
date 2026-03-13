@@ -30,7 +30,6 @@ import { useTheme } from 'next-themes'
 import { useUserStore } from '@/core/stores/userStore'
 import { Role } from '@/core/config/enum'
 
-// Main Component
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { user } = useUserStore()

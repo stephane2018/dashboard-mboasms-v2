@@ -9,7 +9,7 @@ export const landingContent = {
       ctaSecondary: "Voir les tarifs",
       stat1: "50+",
       stat1Label: "Pays couverts",
-      stat2: "99.2%",
+      stat2: "98%",
       stat2Label: "Taux de livraison",
       stat3: "10M+",
       stat3Label: "SMS envoyes / mois",
@@ -65,8 +65,8 @@ export const landingContent = {
       items: [
         { value: "50+", label: "Pays couverts" },
         { value: "2,500+", label: "Entreprises actives" },
-        { value: "99.2%", label: "Taux de livraison" },
-        { value: "< 3s", label: "Temps de livraison moyen" },
+        { value: "98%", label: "Taux de livraison" },
+        { value: "< 5min", label: "Temps de livraison moyen" },
       ],
     },
     cta: {
@@ -98,7 +98,7 @@ export const landingContent = {
       ctaSecondary: "View pricing",
       stat1: "50+",
       stat1Label: "Countries covered",
-      stat2: "99.2%",
+      stat2: "98%",
       stat2Label: "Delivery rate",
       stat3: "10M+",
       stat3Label: "SMS sent / month",
@@ -154,7 +154,7 @@ export const landingContent = {
       items: [
         { value: "50+", label: "Countries covered" },
         { value: "2,500+", label: "Active businesses" },
-        { value: "99.2%", label: "Delivery rate" },
+        { value: "98%", label: "Delivery rate" },
         { value: "< 3s", label: "Avg delivery time" },
       ],
     },
