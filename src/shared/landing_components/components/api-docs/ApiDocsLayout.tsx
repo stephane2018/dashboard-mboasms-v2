@@ -35,8 +35,9 @@ const navSections: { key: string; title: string; icon: React.ElementType; items:
     icon: Code1,
     items: [
       { title: "Send SMS", href: "#send-sms", section: "endpoints", method: "POST" },
-      { title: "Send SMS (Basic Auth)", href: "#send-sms-auth", section: "endpoints", method: "POST" },
       { title: "Send Bulk SMS", href: "#send-bulk", section: "endpoints", method: "POST" },
+      { title: "List API Keys", href: "#list-api-keys", section: "endpoints", method: "GET" },
+      { title: "Create API Key", href: "#create-api-key", section: "endpoints", method: "POST" },
     ],
   },
   {
