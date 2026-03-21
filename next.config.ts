@@ -7,8 +7,9 @@ const connectSrc = [
   "'self'",
   "https://dev.mboasms.com",
   "https://*.mboasms.com",
-  "https://*.traefik.me",
-  "http://localhost:*",
+  "https://*.webapptest.cc",
+  ...(isDev ? ["http://localhost:*"] : []),
+  ...(allowTraefik ? ["https://*.traefik.me"] : []),
 ].join(' ');
 
 const securityHeaders = [

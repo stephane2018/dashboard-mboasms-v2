@@ -120,7 +120,7 @@ export function ApiOverview() {
           {[
             { icon: "🚀", title: "Quick Start", desc: "Send your first SMS in under 2 minutes" },
             { icon: "🌍", title: "50+ Countries", desc: "International coverage with local pricing" },
-            { icon: "⚡", title: "< 3s Delivery", desc: "Average delivery time worldwide" },
+            { icon: "⚡", title: "< 5min Delivery", desc: "Average delivery time worldwide" },
           ].map((card) => (
             <div key={card.title} className="p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
               <div className="text-2xl mb-2">{card.icon}</div>
@@ -184,30 +184,32 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send \\
           />
         </div>
 
-        {/* Method 2: Basic Auth */}
+        {/* Method 2: API Key */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">2</span>
-            Basic Authentication
+            API Key Authentication
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            For simpler integrations, use HTTP Basic Authentication with your username and password encoded in Base64. Use the dedicated <code className="font-mono text-xs bg-muted/50 px-1.5 py-0.5 rounded text-foreground">/send-with-auth</code> endpoint.
+            For simpler integrations, generate an API Key via <code className="font-mono text-xs bg-muted/50 px-1.5 py-0.5 rounded text-foreground">POST /api/v1/developer/sms/api-keys</code> and include it in the <code className="font-mono text-xs bg-muted/50 px-1.5 py-0.5 rounded text-foreground">X-API-Key</code> header. No JWT token needed.
           </p>
           <CodeBlock
             language="bash"
-            code={`# Basic Auth: username:password encoded in Base64
-curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
-  -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" \\
+            code={`# Use your API Key in the X-API-Key header
+curl -X POST https://api.mboasms.com/api/v1/developer/sms/send \\
+  -H "X-API-Key: mboa_xxxxxxxxxxxxxxxxxxxx" \\
   -H "Content-Type: application/json" \\
   -d '{
     "phoneNumbers": ["+237670000000"],
-    "message": "Hello from MboaSMS!"
+    "message": "Hello from MboaSMS!",
+    "senderId": "MboaSMS"
   }'`}
           />
         </div>
 
         <InfoCard type="warning" title="Keep your credentials secure">
-          Never expose your JWT tokens or credentials in client-side code. Always make API calls from your backend server.
+          Never expose your JWT tokens or API Keys in client-side code. Always make API calls from your backend server.
+          API Keys are shown only once at creation — store them securely.
         </InfoCard>
       </section>
 
@@ -263,7 +265,7 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
           <EndpointPath path="/api/v1/developer/sms/send" />
         </div>
         <p className="text-muted-foreground mb-6">
-          Send SMS messages to one or more phone numbers. The user and enterprise are identified via JWT token.
+          Send SMS messages to one or more phone numbers.
           Phone numbers can be in international format (<code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">+237</code>, <code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">+33</code>, etc.) or local format (<code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">670...</code>).
         </p>
 
@@ -273,7 +275,7 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0110 0v4" />
           </svg>
-          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Authentication</span></span>
+          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Token</span> or <span className="font-semibold text-foreground">API Key</span></span>
         </div>
 
         {/* Request Body */}
@@ -291,11 +293,26 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
 
         <div className="space-y-4">
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">cURL</div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">cURL (avec JWT)</div>
             <CodeBlock
               language="bash"
               code={`curl -X POST https://api.mboasms.com/api/v1/developer/sms/send \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "phoneNumbers": ["+237670000000", "+33612345678"],
+    "message": "Bonjour! Votre code de verification est: 1234",
+    "senderId": "MboaSMS"
+  }'`}
+            />
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">cURL (avec API Key)</div>
+            <CodeBlock
+              language="bash"
+              code={`curl -X POST https://api.mboasms.com/api/v1/developer/sms/send \\
+  -H "X-API-Key: mboa_xxxxxxxxxxxxxxxxxxxx" \\
   -H "Content-Type: application/json" \\
   -d '{
     "phoneNumbers": ["+237670000000", "+33612345678"],
@@ -314,7 +331,10 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
   {
     method: "POST",
     headers: {
-      "Authorization": "Bearer YOUR_JWT_TOKEN",
+      // Option 1: JWT
+      // "Authorization": "Bearer YOUR_JWT_TOKEN",
+      // Option 2: API Key
+      "X-API-Key": "mboa_xxxxxxxxxxxxxxxxxxxx",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -339,7 +359,10 @@ console.log(data);`}
 response = requests.post(
     "https://api.mboasms.com/api/v1/developer/sms/send",
     headers={
-        "Authorization": "Bearer YOUR_JWT_TOKEN",
+        # Option 1: JWT
+        # "Authorization": "Bearer YOUR_JWT_TOKEN",
+        # Option 2: API Key
+        "X-API-Key": "mboa_xxxxxxxxxxxxxxxxxxxx",
         "Content-Type": "application/json",
     },
     json={
@@ -380,87 +403,6 @@ print(response.json())`}
 
       <SectionDivider />
 
-      {/* ── Endpoint: Send SMS with Basic Auth ────────────────────────── */}
-      <section id="send-sms-auth" className="mb-8">
-        <div className="flex flex-wrap items-center gap-3 mb-2">
-          <h2 className="text-2xl font-bold text-foreground">Send SMS (Basic Auth)</h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <MethodBadge method="POST" />
-          <EndpointPath path="/api/v1/developer/sms/send-with-auth" />
-        </div>
-        <p className="text-muted-foreground mb-6">
-          Send SMS messages using HTTP Basic Authentication (username:password encoded in Base64).
-          This is a simpler alternative when JWT token management is not desired.
-        </p>
-
-        {/* Auth requirement */}
-        <div className="flex items-center gap-2 mb-6 text-sm">
-          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">Basic Authentication</span> header</span>
-        </div>
-
-        {/* Headers */}
-        <h3 className="text-base font-semibold text-foreground mb-3">Headers</h3>
-        <ParamTable
-          params={[
-            { name: "Authorization", type: "string", required: true, description: "Basic {base64(username:password)}" },
-            { name: "Content-Type", type: "string", required: true, description: "application/json" },
-          ]}
-        />
-
-        {/* Request Body */}
-        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Request Body</h3>
-        <ParamTable
-          params={[
-            { name: "phoneNumbers", type: "string[]", required: true, description: "Array of recipient phone numbers" },
-            { name: "message", type: "string", required: true, description: "The SMS message content" },
-            { name: "senderId", type: "string", required: false, description: "Custom sender ID" },
-          ]}
-        />
-
-        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Example</h3>
-        <CodeBlock
-          language="bash"
-          code={`# Encode credentials: echo -n "username:password" | base64
-curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
-  -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "phoneNumbers": ["+237670000000"],
-    "message": "Test message via Basic Auth"
-  }'`}
-        />
-
-        {/* Response */}
-        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Responses</h3>
-        <div className="space-y-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">200</span>
-              <span className="text-sm text-muted-foreground">SMS sent successfully</span>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400">401</span>
-              <span className="text-sm text-muted-foreground">Unauthorized - invalid credentials</span>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">402</span>
-              <span className="text-sm text-muted-foreground">Insufficient credits</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <SectionDivider />
-
       {/* ── Endpoint: Send Bulk SMS ───────────────────────────────────── */}
       <section id="send-bulk" className="mb-8">
         <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -481,7 +423,7 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0110 0v4" />
           </svg>
-          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Authentication</span></span>
+          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Token</span> or <span className="font-semibold text-foreground">API Key</span></span>
         </div>
 
         {/* File format info */}
@@ -511,19 +453,28 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send-with-auth \\
           ]}
         />
 
-        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Example</h3>
-        <CodeBlock
-          language="bash"
-          code={`# With personalized messages in the file
-curl -X POST "https://api.mboasms.com/api/v1/developer/sms/send-bulk" \\
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Examples</h3>
+        <div className="space-y-4">
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">avec JWT</div>
+            <CodeBlock
+              language="bash"
+              code={`curl -X POST "https://api.mboasms.com/api/v1/developer/sms/send-bulk" \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
-  -F "file=@contacts.xlsx"
-
-# With a default message for all recipients
+  -F "file=@contacts.xlsx"`}
+            />
+          </div>
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">avec API Key</div>
+            <CodeBlock
+              language="bash"
+              code={`# With a default message for all recipients
 curl -X POST "https://api.mboasms.com/api/v1/developer/sms/send-bulk?message=Hello%20from%20MboaSMS&senderId=MyApp" \\
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -H "X-API-Key: mboa_xxxxxxxxxxxxxxxxxxxx" \\
   -F "file=@phone_numbers.csv"`}
-        />
+            />
+          </div>
+        </div>
 
         {/* CSV example */}
         <h3 className="text-base font-semibold text-foreground mt-6 mb-3">CSV File Example</h3>
@@ -559,6 +510,140 @@ curl -X POST "https://api.mboasms.com/api/v1/developer/sms/send-bulk?message=Hel
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400">400</span>
               <span className="text-sm text-muted-foreground">Invalid file or request</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionDivider />
+
+      {/* ── Endpoint: List API Keys ──────────────────────────────────── */}
+      <section id="list-api-keys" className="mb-8">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-foreground">List API Keys</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <MethodBadge method="GET" />
+          <EndpointPath path="/api/v1/developer/sms/api-keys" />
+        </div>
+        <p className="text-muted-foreground mb-6">
+          Returns all API Keys belonging to the authenticated user&apos;s enterprise.
+        </p>
+
+        <div className="flex items-center gap-2 mb-6 text-sm">
+          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Token</span></span>
+        </div>
+
+        <h3 className="text-base font-semibold text-foreground mb-3">Example</h3>
+        <CodeBlock
+          language="bash"
+          code={`curl -X GET https://api.mboasms.com/api/v1/developer/sms/api-keys \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"`}
+        />
+
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Response</h3>
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">200</span>
+              <span className="text-sm text-muted-foreground">List of API Keys</span>
+            </div>
+            <CodeBlock
+              language="json"
+              code={`[
+  {
+    "id": "5be6035c-9c95-48d8-b77c-68c3a5a89911",
+    "apiKey": "mboa_e52b...25e2",
+    "name": "Production",
+    "description": null,
+    "enterpriseId": "48f014fa-d1f4-4dcc-92cc-cbbb92d6fa38",
+    "createdAt": "2026-03-14T14:23:58.717100Z"
+  }
+]`}
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400">401</span>
+              <span className="text-sm text-muted-foreground">Unauthorized — JWT required</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionDivider />
+
+      {/* ── Endpoint: Create API Key ─────────────────────────────────── */}
+      <section id="create-api-key" className="mb-8">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-foreground">Create API Key</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <MethodBadge method="POST" />
+          <EndpointPath path="/api/v1/developer/sms/api-keys" />
+        </div>
+        <p className="text-muted-foreground mb-6">
+          Generate a new API Key linked to the authenticated user&apos;s enterprise.
+          The generated key (format <code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">mboa_xxxx</code>) can then be used in the <code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">X-API-Key</code> header to authenticate calls to <code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">POST /send</code> and <code className="font-mono text-xs bg-muted/50 px-1 py-0.5 rounded">POST /send-bulk</code> without a JWT token.
+        </p>
+
+        <div className="flex items-center gap-2 mb-6 text-sm">
+          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+          <span className="text-muted-foreground">Requires <span className="font-semibold text-foreground">JWT Token</span></span>
+        </div>
+
+        <InfoCard type="warning" title="Store your key securely">
+          The API Key value is only returned once at creation. Make sure to copy and store it securely.
+        </InfoCard>
+
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Request Body</h3>
+        <ParamTable
+          params={[
+            { name: "name", type: "string", required: true, description: "A descriptive name for this API Key (e.g. Production, Staging)" },
+          ]}
+        />
+
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Example</h3>
+        <CodeBlock
+          language="bash"
+          code={`curl -X POST https://api.mboasms.com/api/v1/developer/sms/api-keys \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Production"
+  }'`}
+        />
+
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Response</h3>
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">201</span>
+              <span className="text-sm text-muted-foreground">API Key created successfully</span>
+            </div>
+            <CodeBlock
+              language="json"
+              code={`{
+  "id": "5be6035c-9c95-48d8-b77c-68c3a5a89911",
+  "apiKey": "mboa_e52be4e9db504e73a1f4f0cbd63d25e2",
+  "name": "Production",
+  "description": null,
+  "enterpriseId": "48f014fa-d1f4-4dcc-92cc-cbbb92d6fa38",
+  "createdAt": "2026-03-14T14:23:58.717100Z"
+}`}
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400">401</span>
+              <span className="text-sm text-muted-foreground">Unauthorized — JWT required</span>
             </div>
           </div>
         </div>
@@ -629,7 +714,7 @@ curl -X POST "https://api.mboasms.com/api/v1/developer/sms/send-bulk?message=Hel
               {[
                 { code: "200", status: "OK", desc: "Request succeeded — SMS sent or processed", color: "emerald" },
                 { code: "400", status: "Bad Request", desc: "Invalid request — missing or malformed parameters, invalid file format", color: "red" },
-                { code: "401", status: "Unauthorized", desc: "Authentication failed — invalid or missing JWT token / Basic Auth credentials", color: "red" },
+                { code: "401", status: "Unauthorized", desc: "Authentication failed — invalid or missing JWT token or API Key", color: "red" },
                 { code: "402", status: "Payment Required", desc: "Insufficient credits — recharge your account to continue sending", color: "amber" },
                 { code: "429", status: "Too Many Requests", desc: "Rate limit exceeded — wait before retrying", color: "amber" },
                 { code: "500", status: "Server Error", desc: "Internal server error — contact support if the issue persists", color: "red" },

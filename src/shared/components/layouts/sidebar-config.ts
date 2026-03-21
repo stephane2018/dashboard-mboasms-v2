@@ -15,6 +15,7 @@ import {
     Sms,
     TicketDiscount,
     Global,
+    Key,
 } from 'iconsax-react'
 import { Role } from '@/core/config/enum'
 
@@ -132,6 +133,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: Clock,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
+             {
+                title: 'API Keys',
+                url: '/api-keys',
+                icon: Key,
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+            },
         ],
     },
    
@@ -167,6 +174,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 title: 'Recharges',
                 url: '/recharges',
                 icon: WalletMoney,
+                roles: [Role.USER],
+            },
+            {
+                title: 'API Keys',
+                url: '/api-keys',
+                icon: Key,
                 roles: [Role.USER],
             },
             {
