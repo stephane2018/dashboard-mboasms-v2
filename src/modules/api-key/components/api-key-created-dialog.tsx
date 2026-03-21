@@ -27,7 +27,7 @@ export function ApiKeyCreatedDialog({
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    if (!apiKeyData?.key) return
+    if (!apiKeyData?.apiKey) return
     await navigator.clipboard.writeText(apiKeyData.apiKey)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
