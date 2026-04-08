@@ -3,6 +3,7 @@
 import { Button } from "@/shared/ui/button"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { TickCircle, Sms } from "iconsax-react"
+import { useT } from "@/core/hooks"
 import type { ContactData } from "./types"
 
 interface ConfirmStepProps {
@@ -16,6 +17,8 @@ export function ConfirmStep({
   onImportConfirm,
   isProcessing = false,
 }: ConfirmStepProps) {
+  const { t } = useT()
+
   return (
     <div className="space-y-4">
       {/* Summary */}
@@ -24,10 +27,10 @@ export function ConfirmStep({
           <TickCircle size={20} className="text-white shrink-0 mt-0.5" variant="Bulk" color="currentColor"  />
           <div>
             <p className="font-medium text-sm text-white">
-              Prêt à importer {contacts.length} contact{contacts.length > 1 ? "s" : ""}
+              {t('users.readyToImport', { count: contacts.length })}
             </p>
             <p className="text-xs text-white mt-1">
-              Cliquez sur "Importer" pour finaliser l'importation
+              {t('users.clickToImport')}
             </p>
           </div>
         </div>
@@ -35,7 +38,7 @@ export function ConfirmStep({
 
       {/* Contacts Preview */}
       <div className="space-y-2">
-        <p className="text-sm font-medium">Aperçu des contacts à importer:</p>
+        <p className="text-sm font-medium">{t('users.contactsPreview')}</p>
         <ScrollArea className="h-48 w-full rounded-lg border bg-muted/50 p-3">
           <div className="space-y-2">
             {contacts.map((contact, index) => (
@@ -61,7 +64,7 @@ export function ConfirmStep({
       {/* Info */}
       <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
         <p className="text-xs text-blue-900">
-          <span className="font-medium">Note:</span> Les contacts dupliqués seront ignorés lors de l'importation
+          <span className="font-medium">Note:</span> {t('users.duplicatesNote')}
         </p>
       </div>
 
@@ -72,7 +75,7 @@ export function ConfirmStep({
         className="w-full bg-primary/10 text-primary hover:bg-primary/20"
       >
         <Sms size={16} variant="Bulk" className="mr-2"  color="currentColor"  />
-        {isProcessing ? "Importation en cours..." : "Importer les contacts"}
+        {isProcessing ? t('users.importing') : t('users.importBtn')}
       </Button>
     </div>
   )

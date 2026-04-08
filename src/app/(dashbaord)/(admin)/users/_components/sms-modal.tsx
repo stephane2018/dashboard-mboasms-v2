@@ -13,6 +13,7 @@ import { Maximize2, CloseCircle, Sms } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { PhoneNumberInput, type PhoneEntry } from "@/shared/common/phone-number-input"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
+import { useT } from "@/core/hooks"
 import { useSendToContact } from "@/core/hooks/useContactMessage"
 import { useAuthContext } from "@/core/providers"
 import { toast } from "sonner"
@@ -47,11 +48,12 @@ export function SMSModal({
   onSend,
   isLoading = false,
 }: SMSModalProps) {
+  const { t } = useT()
   const [message, setMessage] = useState("")
   const [password, setPassword] = useState("")
   const [isMaximized, setIsMaximized] = useState(false)
   const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
-  
+
   const { sendToContact, isLoading: isSending } = useSendToContact()
   const { user } = useAuthContext()
   
@@ -76,12 +78,12 @@ export function SMSModal({
 
   const handleSend = async () => {
     if (!message.trim()) {
-      toast.error("Veuillez entrer un message")
+      toast.error(t('users.noMessageError'))
       return
     }
 
     if (validPhoneNumbers.length === 0) {
-      toast.error("Aucun numéro de téléphone valide")
+      toast.error(t('users.noValidPhoneError'))
       return
     }
 
@@ -141,7 +143,7 @@ export function SMSModal({
         {/* Header */}
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
           <div>
-            <DialogTitle>Nouveau Message</DialogTitle>
+            <DialogTitle>{t('users.newMessage')}</DialogTitle>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -181,9 +183,9 @@ export function SMSModal({
 
           {/* Message Field */}
           <div className="space-y-2 flex-1 flex flex-col">
-            <label className="text-sm font-medium">Message</label>
+            <label className="text-sm font-medium">{t('users.message')}</label>
             <Textarea
-              placeholder="Entrer le message"
+              placeholder={t('users.messagePlaceholder')}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               disabled={isLoading}
@@ -194,10 +196,10 @@ export function SMSModal({
           {/* Character Counter */}
           <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
             <div className="flex items-center gap-2">
-              <span>Nombre de caractères: {totalCharCount}</span>
+              <span>{t('users.charCount')}: {totalCharCount}</span>
               {specialCharCount > 0 && (
                 <span className="text-amber-600">
-                  (Caractères spéciaux: {specialCharCount})
+                  ({t('users.specialChars')}: {specialCharCount})
                 </span>
               )}
             </div>
@@ -210,7 +212,7 @@ export function SMSModal({
                 className="w-4 h-4 rounded"
               />
               <label htmlFor="specialChars" className="text-xs">
-                Caractères spéciaux détectés
+                {t('users.specialCharsDetected')}
               </label>
             </div>
           </div>
@@ -224,7 +226,7 @@ export function SMSModal({
             disabled={isLoading}
             className="flex-1"
           >
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSend}
@@ -232,7 +234,7 @@ export function SMSModal({
             className="flex-1 bg-pink-600 hover:bg-pink-700"
           >
             <Sms size={16} variant="Bulk" color="currentColor" className="mr-2" />
-            {isSending ? "Envoi en cours..." : "Envoyer"}
+            {isSending ? t('users.sending') : t('users.send')}
           </Button>
         </div>
       </DialogContent>

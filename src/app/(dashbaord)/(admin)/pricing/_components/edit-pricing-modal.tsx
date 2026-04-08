@@ -28,6 +28,7 @@ import { Loader2, Upload, X } from "lucide-react"
 import { Card, CardContent } from "@/shared/ui/card"
 import type { PricingPlanType } from "@/core/models/pricing"
 import type { CreatePricingPlanRequest } from "@/core/services/pricing.service"
+import { useT } from "@/core/hooks"
 
 const editPlanSchema = z.object({
   planNameFr: z.string().min(1, "Le nom français est requis"),
@@ -60,6 +61,7 @@ export function EditPricingModal({
   plan,
   isLoading,
 }: EditPricingModalProps) {
+  const { t } = useT()
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
 
@@ -154,9 +156,9 @@ export function EditPricingModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Modifier le plan tarifaire</DialogTitle>
+          <DialogTitle>{t('pricing.editPlanTitle')}</DialogTitle>
           <DialogDescription>
-            Modifiez les informations du plan tarifaire.
+            {t('pricing.editPlanDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -168,7 +170,7 @@ export function EditPricingModal({
                 name="planNameFr"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du plan (Français)</FormLabel>
+                    <FormLabel>{t('pricing.planNameFr')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Pack Premium" {...field} />
                     </FormControl>
@@ -181,7 +183,7 @@ export function EditPricingModal({
                 name="planNameEn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du plan (Anglais)</FormLabel>
+                    <FormLabel>{t('pricing.planNameEn')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Premium Pack" {...field} />
                     </FormControl>
@@ -197,7 +199,7 @@ export function EditPricingModal({
                 name="descriptionFr"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Français)</FormLabel>
+                    <FormLabel>{t('pricing.descriptionFr')}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Description du plan en français"
@@ -213,7 +215,7 @@ export function EditPricingModal({
                 name="descriptionEn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Anglais)</FormLabel>
+                    <FormLabel>{t('pricing.descriptionEn')}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Description du plan en anglais"
@@ -231,7 +233,7 @@ export function EditPricingModal({
               name="planCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Code du plan</FormLabel>
+                  <FormLabel>{t('pricing.planCode')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: PREMIUM_2024" {...field} />
                   </FormControl>
@@ -246,7 +248,7 @@ export function EditPricingModal({
                 name="minSMS"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Minimum de SMS</FormLabel>
+                    <FormLabel>{t('pricing.minSms')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -264,7 +266,7 @@ export function EditPricingModal({
                 name="maxSMS"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Maximum de SMS</FormLabel>
+                    <FormLabel>{t('pricing.maxSms')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -285,7 +287,7 @@ export function EditPricingModal({
                 name="nbDaysToExpired"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Validité (jours)</FormLabel>
+                    <FormLabel>{t('pricing.validityDaysLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -303,7 +305,7 @@ export function EditPricingModal({
                 name="smsUnitPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Prix unitaire (FCFA)</FormLabel>
+                    <FormLabel>{t('pricing.unitPriceFcfa')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -324,7 +326,7 @@ export function EditPricingModal({
               name="illustrationImgUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Illustration du plan</FormLabel>
+                  <FormLabel>{t('pricing.illustrationLabel')}</FormLabel>
                   <div className="space-y-3">
                     {imagePreview ? (
                       <Card className="relative">
@@ -346,7 +348,7 @@ export function EditPricingModal({
                             </Button>
                           </div>
                           <p className="text-sm text-muted-foreground mt-2">
-                            {imageFile?.name || "Image existante"}
+                            {imageFile?.name || t('pricing.existingImage')}
                           </p>
                         </CardContent>
                       </Card>
@@ -357,10 +359,10 @@ export function EditPricingModal({
                             <Upload className="h-8 w-8 text-muted-foreground" />
                             <div className="text-center">
                               <p className="text-sm font-medium">
-                                Cliquez pour télécharger une illustration
+                                {t('pricing.uploadClick')}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                PNG, JPG, GIF jusqu'à 2 Mo
+                                {t('pricing.uploadHint')}
                               </p>
                             </div>
                             <Input
@@ -391,9 +393,9 @@ export function EditPricingModal({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Statut du plan</FormLabel>
+                    <FormLabel className="text-base">{t('pricing.planStatusLabel')}</FormLabel>
                     <div className="text-sm text-muted-foreground">
-                      {field.value ? "Le plan est actif et disponible" : "Le plan est inactif"}
+                      {field.value ? t('pricing.planActive') : t('pricing.planInactive')}
                     </div>
                   </div>
                   <FormControl>
@@ -413,16 +415,16 @@ export function EditPricingModal({
                 onClick={onClose}
                 disabled={isLoading}
               >
-                Annuler
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Modification...
+                    {t('pricing.modifying')}
                   </>
                 ) : (
-                  "Modifier le plan"
+                  t('pricing.editPlanBtn')
                 )}
               </Button>
             </DialogFooter>

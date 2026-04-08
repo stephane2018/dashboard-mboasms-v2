@@ -16,6 +16,7 @@ import { Textarea } from "@/shared/ui/textarea"
 import { toast } from "sonner"
 import { useCreateCompany } from "@/core/hooks/useCompany"
 import type { EnterpriseType, CreateCompanyRequestType } from "@/core/models/company"
+import { useT } from "@/core/hooks"
 
 interface CompanyFormModalProps {
   isOpen: boolean
@@ -41,13 +42,14 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
     pays: company?.pays ? String(company.pays) : "",
   })
 
+  const { t } = useT()
   const { mutate: createCompany, isPending } = useCreateCompany()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.socialRaison || !formData.emailEnterprise || !formData.telephoneEnterprise) {
-      toast.error("Veuillez remplir les champs obligatoires")
+      toast.error(t("companies.fillRequired"))
       return
     }
 
@@ -85,17 +87,17 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {company ? "Modifier l'entreprise" : "Créer une nouvelle entreprise"}
+            {company ? t("companies.editCompanyTitle") : t("companies.createCompanyTitle")}
           </DialogTitle>
           <DialogDescription>
-            {company ? "Modifiez les informations de l'entreprise" : "Remplissez les informations pour créer une nouvelle entreprise"}
+            {company ? t("companies.editCompanyDesc") : t("companies.createCompanyDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="socialRaison" className="text-right">
-                Raison sociale *
+                {t("companies.socialRaisonLabel")}
               </Label>
               <Input
                 id="socialRaison"
@@ -107,7 +109,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="emailEnterprise" className="text-right">
-                Email *
+                {t("companies.emailLabel")}
               </Label>
               <Input
                 id="emailEnterprise"
@@ -120,7 +122,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="telephoneEnterprise" className="text-right">
-                Téléphone *
+                {t("companies.phoneRequired")}
               </Label>
               <Input
                 id="telephoneEnterprise"
@@ -132,7 +134,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="villeEnterprise" className="text-right">
-                Ville
+                {t("companies.cityLabel")}
               </Label>
               <Input
                 id="villeEnterprise"
@@ -143,7 +145,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="adresseEnterprise" className="text-right">
-                Adresse
+                {t("companies.adresseLabel")}
               </Label>
               <Textarea
                 id="adresseEnterprise"
@@ -154,7 +156,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="smsCredit" className="text-right">
-                Crédit SMS
+                {t("companies.smsCreditLabel")}
               </Label>
               <Input
                 id="smsCredit"
@@ -167,7 +169,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="activityDomain" className="text-right">
-                Domaine d'activité
+                {t("companies.activityDomain")}
               </Label>
               <Input
                 id="activityDomain"
@@ -178,7 +180,7 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="pays" className="text-right">
-                Pays
+                {t("companies.paysLabel")}
               </Label>
               <Input
                 id="pays"
@@ -190,10 +192,10 @@ export function CompanyFormModal({ isOpen, onClose, company, onSuccess }: Compan
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Création..." : company ? "Modifier" : "Créer"}
+              {isPending ? t("companies.creating") : company ? t("common.edit") : t("companies.create")}
             </Button>
           </DialogFooter>
         </form>

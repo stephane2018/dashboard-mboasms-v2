@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import type { AddUserToEnterpriseRequestType } from "@/core/models/company"
 import { Role } from "@/core/config/enum"
+import { useT } from "@/core/hooks"
 
 interface AddUserModalProps {
   isOpen: boolean
@@ -25,6 +26,7 @@ interface AddUserModalProps {
 }
 
 export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUserModalProps) {
+  const { t } = useT()
   const [formData, setFormData] = useState<AddUserToEnterpriseRequestType>({
     firstName: "",
     lastName: "",
@@ -41,12 +43,12 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
     e.preventDefault()
     
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.phoneNumber) {
-      toast.error("Veuillez remplir tous les champs obligatoires")
+      toast.error(t("companies.fillRequiredFields"))
       return
     }
 
     if (!formData.email.includes("@")) {
-      toast.error("Veuillez entrer une adresse email valide")
+      toast.error(t("companies.invalidEmail"))
       return
     }
 
@@ -90,16 +92,16 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Ajouter un utilisateur</DialogTitle>
+          <DialogTitle>{t("companies.addUserTitle")}</DialogTitle>
           <DialogDescription>
-            Créez un nouvel utilisateur pour cette entreprise
+            {t("companies.addUserDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="firstName" className="text-right">
-                Prénom *
+                {t("companies.firstName")}
               </Label>
               <Input
                 id="firstName"
@@ -111,7 +113,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="lastName" className="text-right">
-                Nom *
+                {t("companies.lastName")}
               </Label>
               <Input
                 id="lastName"
@@ -123,7 +125,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
-                Email *
+                {t("companies.emailLabel")}
               </Label>
               <Input
                 id="email"
@@ -136,7 +138,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="password" className="text-right">
-                Mot de passe *
+                {t("companies.passwordLabel")}
               </Label>
               <Input
                 id="password"
@@ -149,7 +151,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phoneNumber" className="text-right">
-                Téléphone *
+                {t("companies.phoneLabel")}
               </Label>
               <Input
                 id="phoneNumber"
@@ -161,7 +163,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="country" className="text-right">
-                Pays
+                {t("companies.countryLabel")}
               </Label>
               <Input
                 id="country"
@@ -172,7 +174,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="city" className="text-right">
-                Ville
+                {t("companies.cityLabel")}
               </Label>
               <Input
                 id="city"
@@ -183,7 +185,7 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="address" className="text-right">
-                Adresse
+                {t("companies.addressLabel")}
               </Label>
               <Input
                 id="address"
@@ -194,26 +196,26 @@ export function AddUserModal({ isOpen, onClose, onSubmit, isSubmitting }: AddUse
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
-                Rôle *
+                {t("companies.roleLabel")}
               </Label>
               <Select value={formData.role} onValueChange={handleRoleChange}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionner un rôle" />
+                  <SelectValue placeholder={t("companies.selectRole")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={Role.USER}>Utilisateur</SelectItem>
-                  <SelectItem value={Role.ADMIN}>Admin</SelectItem>
-                  <SelectItem value={Role.SUPER_ADMIN}>Super Admin</SelectItem>
+                  <SelectItem value={Role.USER}>{t("companies.roleUser")}</SelectItem>
+                  <SelectItem value={Role.ADMIN}>{t("companies.roleAdmin")}</SelectItem>
+                  <SelectItem value={Role.SUPER_ADMIN}>{t("companies.roleSuperAdmin")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose}>
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Ajout..." : "Ajouter"}
+              {isSubmitting ? t("companies.adding") : t("companies.addUser")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useT } from "@/core/hooks"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { UserAdd, User } from "iconsax-react"
@@ -11,6 +12,7 @@ interface UsersTabProps {
 }
 
 export function UsersTab({ enterprise, isLoading }: UsersTabProps) {
+  const { t } = useT()
   const users = enterprise?.user || []
 
   if (isLoading) {
@@ -40,7 +42,7 @@ export function UsersTab({ enterprise, isLoading }: UsersTabProps) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <User className="h-5 w-5 text-primary" variant="Bulk" color="currentColor" />
-                  Utilisateur {index + 1}
+                  {t("companies.userLabel", { index: index + 1 })}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -53,7 +55,7 @@ export function UsersTab({ enterprise, isLoading }: UsersTabProps) {
         <Card>
           <CardContent className="pt-6 text-center">
             <UserAdd className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" variant="Bulk" color="currentColor" />
-            <p className="text-muted-foreground mb-4">Aucun utilisateur trouvé</p>
+            <p className="text-muted-foreground mb-4">{t("companies.noUsersFound")}</p>
           </CardContent>
         </Card>
       )}

@@ -24,6 +24,7 @@ import { getPhoneValidationStatus, checkPhoneValidation } from "@/core/utils/pho
 import { GroupSelectWithCreate } from "@/shared/common/group-select-with-create"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 
 interface ContactEditPopoverProps {
     contact: EnterpriseContactResponseType
@@ -51,6 +52,7 @@ export function ContactEditPopover({
     onUpdate,
     children,
 }: ContactEditPopoverProps) {
+    const { t } = useT()
     const [isOpen, setIsOpen] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
     const { mutate: updateContact } = useUpdateContact()
@@ -91,7 +93,7 @@ export function ContactEditPopover({
 
     const handleSave = () => {
         if (!isPhoneValid) {
-            toast.error("Veuillez entrer un numéro de téléphone valide")
+            toast.error(t('contactEdit.phoneRequired'))
             return
         }
 
@@ -129,7 +131,7 @@ export function ContactEditPopover({
                         gender: formData.gender as any,
                     }
                     onUpdate(updatedContact)
-                    toast.success("Contact mis à jour avec succès")
+                    toast.success(t('contactEdit.saveSuccess'))
                     setIsOpen(false)
                     setIsUpdating(false)
                 },
@@ -153,7 +155,7 @@ export function ContactEditPopover({
             >
                 <div className="space-y-4 overflow-y-auto p-4 flex-1 min-h-0">
                     <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm">Modifier le contact</h4>
+                        <h4 className="font-medium text-sm">{t('contactEdit.title')}</h4>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -168,7 +170,7 @@ export function ContactEditPopover({
                     {!isPhoneValid && formData.phoneNumber && (
                         <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs p-2 rounded">
                             <Warning2 size={14} color="currentColor" variant="Bulk" />
-                            Numéro invalide
+                            {t('contactEdit.invalidPhone')}
                         </div>
                     )}
 
@@ -182,7 +184,7 @@ export function ContactEditPopover({
                     {/* Form fields */}
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                            <Label className="text-xs">Prénom</Label>
+                            <Label className="text-xs">{t('contactEdit.firstName')}</Label>
                             <Input
                                 value={formData.firstName}
                                 onChange={(e) => handleInputChange("firstName", e.target.value)}
@@ -190,7 +192,7 @@ export function ContactEditPopover({
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label className="text-xs">Nom</Label>
+                            <Label className="text-xs">{t('contactEdit.lastName')}</Label>
                             <Input
                                 value={formData.lastName}
                                 onChange={(e) => handleInputChange("lastName", e.target.value)}
@@ -200,7 +202,7 @@ export function ContactEditPopover({
                     </div>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">Téléphone *</Label>
+                        <Label className="text-xs">{t('contactEdit.phone')}</Label>
                         <Input
                             type="tel"
                             value={formData.phoneNumber}
@@ -213,7 +215,7 @@ export function ContactEditPopover({
                     </div>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">Email</Label>
+                        <Label className="text-xs">{t('contactEdit.email')}</Label>
                         <Input
                             type="email"
                             value={formData.email}
@@ -224,7 +226,7 @@ export function ContactEditPopover({
 
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                            <Label className="text-xs">Pays</Label>
+                            <Label className="text-xs">{t('contactEdit.country')}</Label>
                             <Input
                                 value={formData.country}
                                 onChange={(e) => handleInputChange("country", e.target.value)}
@@ -232,7 +234,7 @@ export function ContactEditPopover({
                             />
                         </div>
                         <div className="space-y-1">
-                            <Label className="text-xs">Ville</Label>
+                            <Label className="text-xs">{t('contactEdit.city')}</Label>
                             <Input
                                 value={formData.city}
                                 onChange={(e) => handleInputChange("city", e.target.value)}
@@ -242,21 +244,21 @@ export function ContactEditPopover({
                     </div>
 
                     <div className="space-y-1">
-                        <Label className="text-xs">Genre</Label>
+                        <Label className="text-xs">{t('contactEdit.gender')}</Label>
                         <Select value={formData.gender} onValueChange={(v) => handleInputChange("gender", v)}>
                             <SelectTrigger className="h-8 text-sm">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="MALE">Homme</SelectItem>
-                                <SelectItem value="FEMALE">Femme</SelectItem>
+                                <SelectItem value="MALE">{t('contactEdit.male')}</SelectItem>
+                                <SelectItem value="FEMALE">{t('contactEdit.female')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     {/* Group selector */}
                     <div className="space-y-1">
-                        <Label className="text-xs">Groupe</Label>
+                        <Label className="text-xs">{t('contactEdit.group')}</Label>
                         <GroupSelectWithCreate
                             enterpriseId={enterpriseId}
                             value={formData.groupId}
@@ -277,7 +279,7 @@ export function ContactEditPopover({
                             ) : (
                                 <>
                                     <TickCircle size={14} variant="Bulk" color="currentColor" className="mr-1" />
-                                    Enregistrer
+                                    {t('contactEdit.save')}
                                 </>
                             )}
                         </Button>
@@ -286,7 +288,7 @@ export function ContactEditPopover({
                             className="h-8"
                             onClick={() => setIsOpen(false)}
                         >
-                            Annuler
+                            {t('contactEdit.cancel')}
                         </Button>
                     </div>
             </PopoverContent>

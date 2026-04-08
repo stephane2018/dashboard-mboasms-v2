@@ -6,6 +6,7 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Button } from "@/shared/ui/button"
 import { Separator } from "@/shared/ui/separator"
 import { X } from "lucide-react"
+import { useT } from "@/core/hooks"
 
 interface BulkActionsToolbarProps {
     table: Table<EnterpriseContactResponseType>
@@ -22,6 +23,7 @@ export function BulkActionsToolbar({
     onDeleteSelected,
     onExport,
 }: BulkActionsToolbarProps) {
+    const { t } = useT()
     const selectedRows = table.getFilteredSelectedRowModel().rows
     const selectedCount = selectedRows.length
     const selectedContacts = selectedRows.map((row) => row.original)
@@ -32,7 +34,9 @@ export function BulkActionsToolbar({
         <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg border">
             <div className="flex items-center gap-2 flex-1">
                 <span className="text-sm font-medium">
-                    {selectedCount} contact{selectedCount > 1 ? "s" : ""} selected
+                    {selectedCount > 1
+                        ? t("users.selectedCountPlural", { count: selectedCount })
+                        : t("users.selectedCount", { count: selectedCount })}
                 </span>
                 <Separator orientation="vertical" className="h-4" />
                 <div className="flex items-center gap-2">
@@ -43,7 +47,7 @@ export function BulkActionsToolbar({
                         className="h-8"
                     >
                         <MessageText size={16} variant="Bulk" className="mr-2" />
-                        Send SMS
+                        {t("users.sendSms")}
                     </Button>
                     <Button
                         variant="outline"
@@ -52,7 +56,7 @@ export function BulkActionsToolbar({
                         className="h-8"
                     >
                         <Element3 size={16} variant="Bulk" className="mr-2" />
-                        Create Group
+                        {t("users.createGroup")}
                     </Button>
                     <Button
                         variant="outline"
@@ -61,7 +65,7 @@ export function BulkActionsToolbar({
                         className="h-8"
                     >
                         <DocumentDownload size={16} variant="Bulk" className="mr-2" />
-                        Export
+                        {t("users.export")}
                     </Button>
                     <Separator orientation="vertical" className="h-4" />
                     <Button
@@ -71,7 +75,7 @@ export function BulkActionsToolbar({
                         className="h-8 text-red-600 hover:text-red-600 hover:bg-red-50"
                     >
                         <Trash size={16} variant="Bulk" className="mr-2" />
-                        Delete
+                        {t("users.delete")}
                     </Button>
                 </div>
             </div>

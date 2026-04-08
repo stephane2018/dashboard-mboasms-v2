@@ -1,5 +1,6 @@
 "use client"
 
+import { useT } from "@/core/hooks"
 import { useGroups } from "@/core/hooks/useGroups"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -10,13 +11,14 @@ interface GroupsTabProps {
 }
 
 export function GroupsTab({ enterpriseId }: GroupsTabProps) {
+  const { t } = useT()
   const { groups, isLoading, error } = useGroups({ enterpriseId })
 
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="pt-6">
-          <p className="text-sm text-red-600">Erreur lors du chargement des groupes</p>
+          <p className="text-sm text-red-600">{t("companies.loadGroupsError")}</p>
         </CardContent>
       </Card>
     )
@@ -50,9 +52,9 @@ export function GroupsTab({ enterpriseId }: GroupsTabProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{group.description || "Pas de description"}</p>
+                  <p className="text-sm text-muted-foreground">{group.description || t("companies.noDescription")}</p>
                   <p className="text-sm font-medium">
-                    Membres: <span className="text-primary">{group.memberCount || 0}</span>
+                    {t("companies.members")}: <span className="text-primary">{group.memberCount || 0}</span>
                   </p>
                 </div>
               </CardContent>
@@ -63,7 +65,7 @@ export function GroupsTab({ enterpriseId }: GroupsTabProps) {
         <Card>
           <CardContent className="pt-6 text-center">
             <People className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" variant="Bulk" color="currentColor" />
-            <p className="text-muted-foreground">Aucun groupe trouvé</p>
+            <p className="text-muted-foreground">{t("companies.noGroupsFound")}</p>
           </CardContent>
         </Card>
       )}

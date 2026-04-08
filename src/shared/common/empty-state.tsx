@@ -1,4 +1,7 @@
-import React from "react"
+"use client";
+
+import React from "react";
+import { useT } from "@/core/hooks";
 
 interface EmptyStateProps {
   title?: string
@@ -8,11 +11,14 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  title = "Aucune donnée",
-  description = "Il n'y a aucune donnée à afficher pour le moment.",
+  title,
+  description,
   icon,
   className = "",
 }: EmptyStateProps) {
+  const { t } = useT();
+  const resolvedTitle = title ?? t('common.emptyStateTitle');
+  const resolvedDescription = description ?? t('common.emptyStateDescription');
   return (
     <div className={`flex flex-col items-center justify-center py-12 px-4 ${className}`}>
       <div className="mb-4">
@@ -60,9 +66,9 @@ export function EmptyState({
           </svg>
         )}
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-1">{resolvedTitle}</h3>
       <p className="text-sm text-muted-foreground text-center max-w-sm">
-        {description}
+        {resolvedDescription}
       </p>
     </div>
   )

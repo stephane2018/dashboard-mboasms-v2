@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
+import { useT } from "@/core/hooks"
 import {
   Card,
   CardContent,
@@ -54,6 +55,7 @@ function groupHistoryByDay(history: HistoryItem[]) {
 }
 
 export function MessagesAreaChart({ history }: { history: HistoryItem[] }) {
+  const { t } = useT()
   const [timeRange, setTimeRange] = React.useState("30d")
 
   const aggregated = React.useMemo(() => groupHistoryByDay(history), [history])
@@ -77,22 +79,22 @@ export function MessagesAreaChart({ history }: { history: HistoryItem[] }) {
     <Card className="pt-0">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
-          <CardTitle>Envois SMS</CardTitle>
-          <CardDescription>Volume d'envoi sur la période sélectionnée</CardDescription>
+          <CardTitle>{t("companies.smsSentTitle")}</CardTitle>
+          <CardDescription>{t("companies.smsSentDesc")}</CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex" aria-label="Select a value">
-            <SelectValue placeholder="Derniers 30 jours" />
+            <SelectValue placeholder={t("companies.last30Days")} />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="90d" className="rounded-lg">
-              Derniers 3 mois
+              {t("companies.last3Months")}
             </SelectItem>
             <SelectItem value="30d" className="rounded-lg">
-              Derniers 30 jours
+              {t("companies.last30Days")}
             </SelectItem>
             <SelectItem value="7d" className="rounded-lg">
-              Derniers 7 jours
+              {t("companies.last7Days")}
             </SelectItem>
           </SelectContent>
         </Select>

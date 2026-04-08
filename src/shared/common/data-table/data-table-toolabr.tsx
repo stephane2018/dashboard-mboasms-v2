@@ -11,6 +11,7 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { cn } from "@/core/lib/utils";
+import { useT } from "@/core/hooks";
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
@@ -22,6 +23,7 @@ export function DataTableToolbar<TData>({
   className,
   ...props
 }: DataTableToolbarProps<TData>) {
+  const { t } = useT();
   const isFiltered = table.getState().columnFilters.length > 0;
 
   const columns = React.useMemo(
@@ -44,13 +46,13 @@ export function DataTableToolbar<TData>({
       {...props}
     >
       <div className="flex flex-1 flex-wrap items-center gap-2">
-        <span className="font-medium">Filtres : </span>
+        <span className="font-medium">{t('dataTable.filtersLabel')}</span>
         {columns.map((column) => (
           <DataTableToolbarFilter key={column.id} column={column} />
         ))}
         {isFiltered && (
           <Button
-            aria-label="Reset filters"
+            aria-label={t('dataTable.resetFilters')}
             variant="outline"
             size="sm"
             className="border-dashed"
@@ -58,7 +60,7 @@ export function DataTableToolbar<TData>({
             onClick={onReset}
           >
             <CloseCircle size={16} variant="Bulk" color="currentColor" />
-            Reset
+            {t('dataTable.resetFilters')}
           </Button>
         )}
       </div>

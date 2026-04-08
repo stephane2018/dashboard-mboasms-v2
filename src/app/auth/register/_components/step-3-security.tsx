@@ -1,14 +1,18 @@
+"use client"
+
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Lock, Eye, EyeSlash, Location, Home2 } from 'iconsax-react';
 import { CountrySelect } from '@/shared/common/country-select';
+import { useT } from '@/core/hooks';
 
 export function Step3Security() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { control, setValue } = useFormContext();
+  const { t } = useT();
 
   return (
     <div className="space-y-4">
@@ -17,7 +21,7 @@ export function Step3Security() {
         name="password"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-foreground">Mot de passe</FormLabel>
+            <FormLabel className="text-foreground">{t('auth.password')}</FormLabel>
             <FormControl>
               <div className="relative">
                 <Lock size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -49,7 +53,7 @@ export function Step3Security() {
         name="confirmPassword"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-foreground">Confirmer le mot de passe</FormLabel>
+            <FormLabel className="text-foreground">{t('auth.confirmPassword')}</FormLabel>
             <FormControl>
               <div className="relative">
                 <Lock size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -78,14 +82,14 @@ export function Step3Security() {
       />
 
       <div className="pt-2">
-        <p className="text-sm font-medium text-foreground mb-3">Localisation</p>
+        <p className="text-sm font-medium text-foreground mb-3">{t('auth.locationSection')}</p>
         <div className="space-y-4">
           <FormField
             control={control}
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-foreground">Pays</FormLabel>
+                <FormLabel className="text-foreground">{t('common.country')}</FormLabel>
                 <FormControl>
                   <CountrySelect
                     value={field.value}
@@ -105,11 +109,11 @@ export function Step3Security() {
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-foreground">Ville</FormLabel>
+                  <FormLabel className="text-foreground">{t('common.city')}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Location size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input placeholder="Ex: Douala" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                      <Input placeholder={t('auth.cityPlaceholder')} {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -121,11 +125,11 @@ export function Step3Security() {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-foreground">Adresse</FormLabel>
+                  <FormLabel className="text-foreground">{t('common.address')}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Home2 size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input placeholder="Votre adresse" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                      <Input placeholder={t('auth.addressPlaceholder')} {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                     </div>
                   </FormControl>
                   <FormMessage />

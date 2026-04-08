@@ -28,9 +28,10 @@ interface ColumnsProps {
   onRefuse: (recharge: RechargeListContentType) => void
   onCredit: (recharge: RechargeListContentType) => void
   isSuperAdmin: boolean
+  t: (key: string) => string
 }
 
-const getPaymentMethodConfig = (method: string) => {
+const getPaymentMethodConfig = (method: string, t: (key: string) => string) => {
   const configs: Record<string, {
     label: string
     icon: any
@@ -41,7 +42,7 @@ const getPaymentMethodConfig = (method: string) => {
     borderStyle: string
   }> = {
     [PaymentMethod.CASH]: {
-      label: "Espèces",
+      label: t('recharge.cash'),
       icon: MoneyRecive,
       bgColor: "bg-green-50 dark:bg-green-900/20",
       textColor: "text-green-700 dark:text-green-400",
@@ -50,7 +51,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-solid",
     },
     [PaymentMethod.ORANGE_MONEY]: {
-      label: "Orange Money",
+      label: t('recharge.orangeMoney'),
       icon: Mobile,
       bgColor: "bg-orange-50 dark:bg-orange-900/20",
       textColor: "text-orange-700 dark:text-orange-400",
@@ -59,7 +60,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-dashed",
     },
     [PaymentMethod.MTN_MONEY]: {
-      label: "MTN Money",
+      label: t('recharge.mtnMoney'),
       icon: Mobile,
       bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
       textColor: "text-yellow-700 dark:text-yellow-400",
@@ -68,7 +69,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-dotted",
     },
     [PaymentMethod.BANK_ACCOUNT]: {
-      label: "Compte bancaire",
+      label: t('recharge.bankAccountLabel'),
       icon: Bank,
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
       textColor: "text-blue-700 dark:text-blue-400",
@@ -77,7 +78,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-double",
     },
     [PaymentMethod.PAYPAL]: {
-      label: "PayPal",
+      label: t('recharge.paypal'),
       icon: Wallet,
       bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
       textColor: "text-indigo-700 dark:text-indigo-400",
@@ -98,7 +99,7 @@ const getPaymentMethodConfig = (method: string) => {
   }
 }
 
-const getStatusConfig = (status: string) => {
+const getStatusConfig = (status: string, t: (key: string) => string) => {
   const configs: Record<string, {
     label: string
     icon: any
@@ -109,7 +110,7 @@ const getStatusConfig = (status: string) => {
     borderStyle: string
   }> = {
     [RechargeStatus.PENDING]: {
-      label: "En attente",
+      label: t('recharge.pendingStatus'),
       icon: Clock,
       bgColor: "bg-amber-50 dark:bg-amber-900/20",
       textColor: "text-amber-700 dark:text-amber-400",
@@ -118,7 +119,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-dashed",
     },
     [RechargeStatus.VALIDATED]: {
-      label: "Validée",
+      label: t('recharge.validatedStatus'),
       icon: TickCircle,
       bgColor: "bg-green-50 dark:bg-green-900/20",
       textColor: "text-green-700 dark:text-green-400",
@@ -127,7 +128,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-solid",
     },
     [RechargeStatus.REFUSED]: {
-      label: "Refusée",
+      label: t('recharge.refusedStatus'),
       icon: CloseCircle,
       bgColor: "bg-red-50 dark:bg-red-900/20",
       textColor: "text-red-700 dark:text-red-400",
@@ -136,7 +137,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-solid",
     },
     [RechargeStatus.REFUSE]: {
-      label: "Refusée",
+      label: t('recharge.refusedStatus'),
       icon: CloseCircle,
       bgColor: "bg-red-50 dark:bg-red-900/20",
       textColor: "text-red-700 dark:text-red-400",
@@ -162,11 +163,12 @@ export const getColumns = ({
   onRefuse,
   onCredit,
   isSuperAdmin,
+  t,
 }: ColumnsProps): ColumnDef<RechargeListContentType>[] => {
   const columns: ColumnDef<RechargeListContentType>[] = [
     {
       accessorKey: "enterprise.socialRaison",
-      header: "Entreprise",
+      header: t('recharge.enterprise'),
       cell: ({ row }) => {
         const name = row.original.enterprise?.socialRaison || "N/A"
         return (
@@ -181,7 +183,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "qteMessage",
-      header: "Quantité SMS",
+      header: t('recharge.smsQuantityCol'),
       cell: ({ row }) => (
         <span className="font-mono font-semibold">
           {row.original.qteMessage.toLocaleString()}
@@ -190,7 +192,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "messagePriceUnit",
-      header: "Prix unitaire",
+      header: t('recharge.unitPrice'),
       cell: ({ row }) => (
         <span className="font-mono text-sm">
           {row.original.messagePriceUnit} FCFA
@@ -199,7 +201,7 @@ export const getColumns = ({
     },
     {
       id: "totalAmount",
-      header: "Montant total",
+      header: t('recharge.totalAmount'),
       cell: ({ row }) => {
         const total = row.original.qteMessage * row.original.messagePriceUnit
         return (
@@ -211,10 +213,10 @@ export const getColumns = ({
     },
     {
       accessorKey: "paymentMethod",
-      header: "Méthode de paiement",
+      header: t('recharge.paymentMethod'),
       cell: ({ row }) => {
         const method = row.original.paymentMethod
-        const config = getPaymentMethodConfig(method)
+        const config = getPaymentMethodConfig(method, t)
         const Icon = config.icon
 
         return (
@@ -234,7 +236,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "debitPhoneNumber",
-      header: "Téléphone",
+      header: t('common.phone'),
       cell: ({ row }) => (
         <span className="font-mono text-sm">
           {row.original.debitPhoneNumber || "N/A"}
@@ -243,10 +245,10 @@ export const getColumns = ({
     },
     {
       accessorKey: "status",
-      header: "Statut",
+      header: t('common.status'),
       cell: ({ row }) => {
         const status = row.original.status
-        const config = getStatusConfig(status)
+        const config = getStatusConfig(status, t)
         const Icon = config.icon
 
         return (
@@ -266,7 +268,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "createdAt",
-      header: "Date de création",
+      header: t('common.createdAt'),
       cell: ({ row }) => {
         const date = new Date(row.original.createdAt)
         return (
@@ -287,7 +289,7 @@ export const getColumns = ({
   if (isSuperAdmin) {
     columns.push({
       id: "actions",
-      header: "Actions",
+      header: t('common.actions'),
       cell: ({ row }) => {
         const recharge = row.original
         const isPending = recharge.status === RechargeStatus.PENDING
@@ -306,14 +308,14 @@ export const getColumns = ({
                     className="cursor-pointer"
                   >
                     <TickCircle    color="currentColor" size={16} className="mr-2 text-green-600" />
-                    Valider
+                    {t('recharge.validate')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onRefuse(recharge)}
                     className="cursor-pointer"
                   >
                     <CloseCircle color="currentColor" size={16} className="mr-2 text-red-600" />
-                    Refuser
+                    {t('recharge.refuse')}
                   </DropdownMenuItem>
                 </>
               )}
@@ -323,7 +325,7 @@ export const getColumns = ({
                   className="cursor-pointer"
                 >
                   <Wallet color="currentColor" size={16} className="mr-2 text-blue-600" />
-                  Créditer le compte
+                  {t('recharge.creditAccount')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

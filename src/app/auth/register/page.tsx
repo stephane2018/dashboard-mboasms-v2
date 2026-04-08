@@ -1,9 +1,14 @@
+"use client"
+
 import Link from 'next/link';
 import { RegisterForm } from './_components/register-form';
 import { AnimatedPanel } from './_components/animated-panel';
 import { ThemeToggle } from '@/shared/landing_components/components/ui/theme-toggle';
+import { useT } from '@/core/hooks';
 
 export default function RegisterPage() {
+  const { t } = useT();
+
   return (
     <div className="h-screen grid grid-cols-1 lg:grid-cols-2">
       <AnimatedPanel />
@@ -15,16 +20,16 @@ export default function RegisterPage() {
           <RegisterForm />
           <div className="mt-8 flex flex-col items-center gap-3">
             <p className="text-sm text-center text-muted-foreground">
-              Vous avez déjà un compte?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <Link href="/auth/login" className="font-semibold text-primary hover:underline transition-colors">
-                Se connecter
+                {t('auth.login')}
               </Link>
             </p>
             <Link
               href="/"
               className="text-sm font-semibold text-primary hover:underline transition-colors"
             >
-              Retour à l&apos;accueil
+              {t('auth.backToHome')}
             </Link>
           </div>
         </div>

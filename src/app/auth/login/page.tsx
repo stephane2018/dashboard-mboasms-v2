@@ -28,6 +28,7 @@ import {
   FormMessage,
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
+import { useT } from "@/core/hooks"
 
 interface LoginResponse {
   token: string
@@ -43,37 +44,23 @@ interface LoginResponse {
   }
 }
 
-const slides = [
-  {
-    title: "SMS Marketing Power",
-    description: "Reach your customers instantly with bulk SMS campaigns. Send promotional messages, alerts, and notifications with 98% open rates."
-  },
-  {
-    title: "Global SMS Gateway",
-    description: "Connect with customers worldwide through our reliable SMS gateway. Support for multiple countries and carriers with real-time delivery tracking."
-  },
-  {
-    title: "Automated Messaging",
-    description: "Schedule SMS campaigns, set up auto-responses, and create automated workflows to engage your audience at the perfect time."
-  },
-  {
-    title: "Analytics & Reports",
-    description: "Track delivery rates, measure campaign performance, and get detailed insights into your SMS marketing efforts with comprehensive analytics."
-  },
-  {
-    title: "Professional Network",
-    description: "Join a qualified ecosystem of professionals and experts. Develop your business activity by collaborating with trusted experts and multiply your business opportunities thanks to an active and engaged network."
-  }
-]
-
 export default function LoginPage() {
   const router = useRouter()
   const { resolvedTheme } = useTheme()
+  const { t } = useT()
   const [mounted, setMounted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<{ message: string } | null>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
   const { setUser } = useUserStore()
+
+  const slides = [
+    { title: t('auth.loginSlideTitle1'), description: t('auth.loginSlideDesc1') },
+    { title: t('auth.loginSlideTitle2'), description: t('auth.loginSlideDesc2') },
+    { title: t('auth.loginSlideTitle3'), description: t('auth.loginSlideDesc3') },
+    { title: t('auth.loginSlideTitle4'), description: t('auth.loginSlideDesc4') },
+    { title: t('auth.loginSlideTitle5'), description: t('auth.loginSlideDesc5') },
+  ]
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -103,14 +90,14 @@ export default function LoginPage() {
         companyId: data.userEnterprise?.id,
       })
 
-      toast.success("Login successful!")
+      toast.success(t('auth.loginSuccess'))
       setError(null)
 
       const dashboardUrl = getDefaultDashboardUrl()
       router.push(dashboardUrl)
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Login failed. Please check your credentials."
+      const errorMessage = error?.response?.data?.message || t('auth.loginFailed')
       setError({ message: errorMessage })
       toast.error(errorMessage)
     },
@@ -281,9 +268,9 @@ export default function LoginPage() {
 
           <div className="space-y-2">
             <h2 className="text-3xl font-bold text-foreground">
-              Bon retour sur <span className="text-primary">MboaSMS</span>
+              {t('auth.welcomeBack')} <span className="text-primary">MboaSMS</span>
             </h2>
-            <p className="text-sm text-muted-foreground">Connectez-vous pour continuer</p>
+            <p className="text-sm text-muted-foreground">{t('auth.loginSubtitle')}</p>
           </div>
 
           <Form {...form}>
@@ -293,7 +280,7 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-foreground">Email</FormLabel>
+                    <FormLabel className="text-sm font-medium text-foreground">{t('auth.email')}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="username"
@@ -313,12 +300,12 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between mb-2">
-                      <FormLabel className="text-sm font-medium text-foreground">Mot de passe</FormLabel>
+                      <FormLabel className="text-sm font-medium text-foreground">{t('auth.password')}</FormLabel>
                       <Link
                         href="/auth/forgot-password"
                         className="text-xs font-medium text-primary hover:underline transition-all"
                       >
-                        Mot de passe oublié ?
+                        {t('auth.forgotPassword')}
                       </Link>
                     </div>
                     <FormControl>
@@ -371,23 +358,23 @@ export default function LoginPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Connexion...
+                    {t('auth.loginLoading')}
                   </span>
                 ) : (
                   <span className="flex items-center justify-center">
-                    Se connecter
+                    {t('auth.login')}
                     <ArrowRight2 size="18" color="currentColor" className="ml-2" />
                   </span>
                 )}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground pt-2">
-                Vous n&apos;avez pas de compte ?{" "}
+                {t('auth.noAccount')}{" "}
                 <Link
                   href="/auth/register"
                   className="font-semibold text-primary hover:underline transition-colors"
                 >
-                  Créer un compte
+                  {t('auth.register')}
                 </Link>
               </p>
               <p className="text-center text-sm text-muted-foreground">
@@ -395,7 +382,7 @@ export default function LoginPage() {
                   href="/"
                   className="font-semibold text-primary hover:underline transition-colors"
                 >
-                  Retour à l&apos;accueil
+                  {t('auth.backToHome')}
                 </Link>
               </p>
             </form>

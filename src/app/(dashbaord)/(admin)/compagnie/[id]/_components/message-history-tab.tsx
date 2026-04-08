@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import type { PaginationState, ColumnDef } from "@tanstack/react-table"
+import { useT } from "@/core/hooks"
 import { useMessageHistory } from "@/core/hooks/useMessage"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -15,6 +16,7 @@ interface MessageHistoryTabProps {
 }
 
 export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
+  const { t } = useT()
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -30,12 +32,12 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
     () => [
       {
         accessorKey: "msisdn",
-        header: "Destinataire",
+        header: t("companies.columnRecipient"),
         cell: ({ row }) => <div className="font-medium">{row.getValue("msisdn") || "—"}</div>,
       },
       {
         accessorKey: "message",
-        header: "Message",
+        header: t("companies.columnMessage"),
         cell: ({ row }) => (
           <div className="text-sm text-muted-foreground max-w-[420px] truncate">
             {row.getValue("message") || "—"}
@@ -44,19 +46,19 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
       },
       {
         accessorKey: "smsCount",
-        header: "SMS",
+        header: t("companies.columnSmsCount"),
         cell: ({ row }) => <div className="text-sm">{row.getValue("smsCount") ?? 0}</div>,
         meta: { className: "w-20" },
       },
       {
         accessorKey: "status",
-        header: "Statut",
+        header: t("companies.columnStatus"),
         cell: ({ row }) => <SmsStatusPill status={row.getValue("status") as string | undefined} />,
         meta: { className: "w-28" },
       },
       {
         accessorKey: "createdAt",
-        header: "Date",
+        header: t("companies.columnDate"),
         cell: ({ row }) => {
           const raw = row.getValue("createdAt") as string | undefined
           if (!raw) return <div className="text-sm">—</div>
@@ -66,14 +68,14 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
         meta: { className: "w-44" },
       },
     ],
-    []
+    [t]
   )
 
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="pt-6">
-          <p className="text-sm text-red-600">Erreur lors du chargement de l'historique des messages</p>
+          <p className="text-sm text-red-600">{t("companies.loadHistoryError")}</p>
         </CardContent>
       </Card>
     )
@@ -84,7 +86,7 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sms className="h-5 w-5 text-primary" variant="Bulk" color="currentColor" />
-          Historique des messages
+          {t("companies.messageHistoryTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -110,7 +112,7 @@ export function MessageHistoryTab({ enterpriseId }: MessageHistoryTabProps) {
             rowSelectable={false}
             onPaginationChange={setPagination}
             initialState={{ pagination }}
-            emptyMessage="Aucun message trouvé"
+            emptyMessage={t("companies.noMessagesFound")}
           />
         )}
       </CardContent>

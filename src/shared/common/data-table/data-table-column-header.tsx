@@ -10,6 +10,7 @@ import {
   EyeSlash,
   CloseCircle,
 } from "iconsax-react";
+import { useT } from "@/core/hooks";
 
 
 
@@ -25,6 +26,7 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   ...props
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const { t } = useT();
   if (!column.getCanSort() && !column.getCanHide()) {
     return <div className={cn("text-xs sm:text-sm font-medium", className)}>{label}</div>;
   }
@@ -57,7 +59,7 @@ export function DataTableColumnHeader<TData, TValue>({
               onClick={() => column.toggleSorting(false)}
             >
               <ArrowUp size={12} variant="Bulk" />
-              <span className="text-xs sm:text-sm">Croissant</span>
+              <span className="text-xs sm:text-sm">{t('dataTable.sortAscending')}</span>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               className="relative pr-7 gap-2 sm:pr-8 pl-1.5 sm:pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
@@ -65,7 +67,7 @@ export function DataTableColumnHeader<TData, TValue>({
               onClick={() => column.toggleSorting(true)}
             >
               <ArrowDown size={12} variant="Bulk" className="group-hover:text-white focus-within:text-white group-data-[state=open]:text-white" />
-              <span className="text-xs sm:text-sm">Décroissant</span>
+              <span className="text-xs sm:text-sm">{t('dataTable.sortDescending')}</span>
             </DropdownMenuCheckboxItem>
             {column.getIsSorted() && (
               <DropdownMenuItem
@@ -73,7 +75,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 onClick={() => column.clearSorting()}
               >
                 <CloseCircle size={12} variant="Bulk" className="group-hover:text-white focus-within:text-white group-data-[state=open]:text-white" />
-                <span className="text-xs sm:text-sm">Reset</span>
+                <span className="text-xs sm:text-sm">{t('dataTable.resetSort')}</span>
               </DropdownMenuItem>
             )}
           </>
@@ -86,7 +88,7 @@ export function DataTableColumnHeader<TData, TValue>({
             onClick={() => column.toggleVisibility(false)}
           >
             <EyeSlash size={12} variant="Bulk" />
-            <span className="text-xs sm:text-sm">Cacher</span>
+            <span className="text-xs sm:text-sm">{t('dataTable.hideColumn')}</span>
           </DropdownMenuCheckboxItem>
         )}
       </DropdownMenuContent>

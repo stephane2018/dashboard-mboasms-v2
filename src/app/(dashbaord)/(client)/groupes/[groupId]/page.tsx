@@ -19,6 +19,7 @@ import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { toast } from "sonner"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useGroups } from "@/core/hooks"
+import { useT } from "@/core/hooks"
 import { groupsService } from "@/core/services/groups.service"
 import { ContactEditPopover } from "@/shared/common/contact-edit-popover"
 import { AddCircle } from "iconsax-react"
@@ -26,6 +27,7 @@ import { AddCircle } from "iconsax-react"
 export default function GroupeDetailsPage() {
   const params = useParams<{ groupId: string }>()
   const router = useRouter()
+  const { t } = useT()
 
   const { groups, isLoading, loadGroups } = useGroups()
 
@@ -58,7 +60,7 @@ export default function GroupeDetailsPage() {
   const handleSendSms = (contactsToSend: EnterpriseContactResponseType[]) => {
     const phones = contactsToSend.map((c) => c.phoneNumber).filter(Boolean)
     if (phones.length === 0) {
-      toast.error("Aucun numéro valide")
+      toast.error(t("groups.noValidPhone"))
       return
     }
 
@@ -72,10 +74,10 @@ export default function GroupeDetailsPage() {
     setIsMutating(true)
     try {
       await groupsService.deleteGroup(groupId)
-      toast.success("Groupe supprimé")
+      toast.success(t("groups.deleted"))
       router.push("/groupes")
-    } catch (e) {
-      toast.error("Erreur lors de la suppression du groupe")
+    } catch {
+      toast.error(t("groups.deleteGroupError"))
     } finally {
       setIsMutating(false)
       setIsDeleteDialogOpen(false)
@@ -85,8 +87,9 @@ export default function GroupeDetailsPage() {
   const handleContactUpdated = async () => {
     try {
       await loadGroups()
-      toast.success("Contact mis à jour")
-    } catch (e) {
+      toast.success(t("groups.contactUpdated"))
+    } catch {
+      // silently ignore
     }
   }
 
@@ -95,10 +98,10 @@ export default function GroupeDetailsPage() {
     setIsMutating(true)
     try {
       await groupsService.removeContactFromGroup(groupId, contactToRemove.id)
-      toast.success("Contact supprimé du groupe")
+      toast.success(t("groups.deleteContactError"))
       await loadGroups()
-    } catch (e) {
-      toast.error("Erreur lors de la suppression du contact")
+    } catch {
+      toast.error(t("groups.deleteContactError"))
     } finally {
       setIsMutating(false)
       setIsRemoveDialogOpen(false)
@@ -113,10 +116,10 @@ export default function GroupeDetailsPage() {
     setIsMutating(true)
     try {
       await groupsService.addContactsToGroup(groupId, ids)
-      toast.success(`${ids.length} contact(s) ajouté(s)`) 
+      toast.success(t("groups.contactsAdded", { count: ids.length }))
       await loadGroups()
-    } catch (e) {
-      toast.error("Erreur lors de l'ajout des contacts")
+    } catch {
+      toast.error(t("groups.addContactsError"))
     } finally {
       setIsMutating(false)
     }
@@ -126,14 +129,20 @@ export default function GroupeDetailsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{group?.name || "Groupe"}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{group?.name || t("groups.title")}</h1>
           <p className="text-muted-foreground mt-1">{group?.code || ""}</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => router.push("/groupes")}>Retour</Button>
-          <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(true)} disabled={!groupId || isMutating}>
-            Supprimer
+          <Button variant="outline" onClick={() => router.push("/groupes")}>
+            {t("groups.back")}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            disabled={!groupId || isMutating}
+          >
+            {t("common.delete")}
           </Button>
         </div>
       </div>
@@ -142,34 +151,43 @@ export default function GroupeDetailsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-lg">Contacts ({contacts.length})</CardTitle>
-              <CardDescription>Sélectionnez des contacts pour envoyer un SMS ou gérez le groupe</CardDescription>
+              <CardTitle className="text-lg">
+                {t("groups.addContactsBtn")} ({contacts.length})
+              </CardTitle>
+              <CardDescription>{t("groups.selectContacts")}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setIsContactModalOpen(true)} disabled={isLoading || isMutating}>
-                <AddCircle variant="Bulk" color="currentColor"  className="mr-2 h-4 w-4"  />
-                Ajouter des contacts
+              <Button
+                variant="outline"
+                onClick={() => setIsContactModalOpen(true)}
+                disabled={isLoading || isMutating}
+              >
+                <AddCircle variant="Bulk" color="currentColor" className="mr-2 h-4 w-4" />
+                {t("groups.addContactsBtn")}
               </Button>
-              <Button onClick={() => handleSendSms(selectedContacts)} disabled={selectedContacts.length === 0}>
-                Envoyer SMS ({selectedContacts.length})
+              <Button
+                onClick={() => handleSendSms(selectedContacts)}
+                disabled={selectedContacts.length === 0}
+              >
+                {t("groups.addContactsBtn")} SMS ({selectedContacts.length})
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-sm text-muted-foreground">Chargement...</div>
+            <div className="text-sm text-muted-foreground">{t("groups.loading")}</div>
           ) : contacts.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Aucun contact dans ce groupe</div>
+            <div className="text-sm text-muted-foreground">{t("groups.noContactInGroup")}</div>
           ) : (
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10"></TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead className="w-40">Actions</TableHead>
+                    <TableHead>{t("contactColumns.name")}</TableHead>
+                    <TableHead>{t("contactColumns.phone")}</TableHead>
+                    <TableHead className="w-40">{t("contactColumns.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -193,8 +211,12 @@ export default function GroupeDetailsPage() {
                               enterpriseId={group?.enterprise || ""}
                               onUpdate={handleContactUpdated as any}
                             >
-                              <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
-                                Éditer
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {t("groups.editBtn")}
                               </Button>
                             </ContactEditPopover>
                             <Button variant="outline" size="sm" onClick={() => handleSendSms([c])}>
@@ -209,7 +231,7 @@ export default function GroupeDetailsPage() {
                               }}
                               disabled={isMutating}
                             >
-                              Retirer
+                              {t("groups.remove")}
                             </Button>
                           </div>
                         </TableCell>
@@ -232,15 +254,13 @@ export default function GroupeDetailsPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer ce groupe ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action est irréversible.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("groups.deleteGroupConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("groups.deleteGroupConfirmDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMutating}>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteGroup} disabled={isMutating}>
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -249,15 +269,13 @@ export default function GroupeDetailsPage() {
       <AlertDialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Retirer le contact du groupe ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Le contact ne sera plus associé à ce groupe.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("groups.removeContactTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("groups.removeContactDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMutating}>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveContact} disabled={isMutating}>
-              Retirer
+              {t("groups.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

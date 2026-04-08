@@ -1,5 +1,6 @@
 "use client"
 
+import { useT } from "@/core/hooks"
 import type { MessageStatus } from "@/core/models/history"
 import { CloseCircle, Sms, TickCircle, Timer1 } from "iconsax-react"
 
@@ -11,9 +12,7 @@ interface SmsStatusPillProps {
 const baseClassName =
   "inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium border border-dashed"
 
-function getStatusMeta(statusRaw?: string | null) {
-  const status = (statusRaw || "").toUpperCase()
-
+function getStatusMeta(status: string, labels: { delivered: string; sent: string; pending: string; failed: string }) {
   if (!status) {
     return {
       label: "—",
@@ -24,7 +23,7 @@ function getStatusMeta(statusRaw?: string | null) {
 
   if (status === "DELIVERED") {
     return {
-      label: "Livré",
+      label: labels.delivered,
       className: "border-emerald-500 bg-emerald-50 text-emerald-700",
       icon: TickCircle,
     }
@@ -32,7 +31,7 @@ function getStatusMeta(statusRaw?: string | null) {
 
   if (status === "SENT" || status === "ACCEPTED") {
     return {
-      label: "Envoyé",
+      label: labels.sent,
       className: "border-blue-500 bg-blue-500 text-blue-50",
       icon: Sms,
     }
@@ -40,7 +39,7 @@ function getStatusMeta(statusRaw?: string | null) {
 
   if (status === "PENDING") {
     return {
-      label: "En attente",
+      label: labels.pending,
       className: "border-amber-500 bg-amber-50 text-amber-800",
       icon: Timer1,
     }
@@ -48,7 +47,7 @@ function getStatusMeta(statusRaw?: string | null) {
 
   if (status === "FAILED") {
     return {
-      label: "Échec",
+      label: labels.failed,
       className: "border-red-500 bg-red-50 text-red-700",
       icon: CloseCircle,
     }
@@ -62,7 +61,17 @@ function getStatusMeta(statusRaw?: string | null) {
 }
 
 export function SmsStatusPill({ status, className }: SmsStatusPillProps) {
-  const meta = getStatusMeta(status == null ? "" : String(status))
+  const { t } = useT()
+
+  const labels = {
+    delivered: t("companies.statusDelivered"),
+    sent: t("companies.statusSent"),
+    pending: t("companies.statusPending"),
+    failed: t("companies.statusFailed"),
+  }
+
+  const normalised = (status == null ? "" : String(status)).toUpperCase()
+  const meta = getStatusMeta(normalised, labels)
   const Icon = meta.icon
 
   return (

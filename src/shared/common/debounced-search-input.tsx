@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { SearchIcon, XCircle } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { useDebounceCallback } from "usehooks-ts";
 import { cn } from "@/core/lib/utils";
+import { useT } from "@/core/hooks";
 
 export interface DebouncedSearchInputProps {
   value: string;
@@ -16,10 +19,12 @@ export interface DebouncedSearchInputProps {
 export function DebouncedSearchInput({
   value,
   onChange,
-  placeholder = "Rechercher...",
+  placeholder,
   delay = 500,
   className,
 }: DebouncedSearchInputProps) {
+  const { t } = useT();
+  const resolvedPlaceholder = placeholder ?? t('common.searchPlaceholder');
   const [localValue, setLocalValue] = useState(value);
 
   const debouncedOnChange = useDebounceCallback(onChange, delay);
@@ -39,7 +44,7 @@ export function DebouncedSearchInput({
   return (
     <div className={cn("relative", className)}>
       <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-      <Input placeholder={placeholder} value={localValue} onChange={handleInputChange} className="pl-8 pr-10" />
+      <Input placeholder={resolvedPlaceholder} value={localValue} onChange={handleInputChange} className="pl-8 pr-10" />
       {localValue && (
         <Button
           type="button"

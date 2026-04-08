@@ -20,6 +20,7 @@ import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { PaymentMethod, RechargeStatus } from "@/core/models/recharges"
+import { useT } from "@/core/hooks"
 
 export interface RechargeFilters {
   paymentMethod: string
@@ -34,27 +35,29 @@ interface RechargeFiltersProps {
   onReset: () => void
 }
 
-const paymentMethods = [
-  { value: "all", label: "Toutes les méthodes" },
-  { value: PaymentMethod.CASH, label: "Espèces (CASH)" },
-  { value: PaymentMethod.ORANGE_MONEY, label: "Orange Money" },
-  { value: PaymentMethod.MTN_MONEY, label: "MTN Money" },
-  { value: PaymentMethod.BANK_ACCOUNT, label: "Compte bancaire" },
-  { value: PaymentMethod.PAYPAL, label: "PayPal" },
-]
-
-const statuses = [
-  { value: "all", label: "Tous les statuts" },
-  { value: RechargeStatus.PENDING, label: "En attente" },
-  { value: RechargeStatus.VALIDATED, label: "Validée" },
-  { value: RechargeStatus.REFUSED, label: "Refusée" },
-]
-
 export function RechargeFilters({
   filters,
   onFiltersChange,
   onReset,
 }: RechargeFiltersProps) {
+  const { t } = useT()
+
+  const paymentMethods = [
+    { value: "all", label: t('recharge.allMethods') },
+    { value: PaymentMethod.CASH, label: t('recharge.cash') },
+    { value: PaymentMethod.ORANGE_MONEY, label: t('recharge.orangeMoney') },
+    { value: PaymentMethod.MTN_MONEY, label: t('recharge.mtnMoney') },
+    { value: PaymentMethod.BANK_ACCOUNT, label: t('recharge.bankAccountLabel') },
+    { value: PaymentMethod.PAYPAL, label: t('recharge.paypal') },
+  ]
+
+  const statuses = [
+    { value: "all", label: t('recharge.allStatuses') },
+    { value: RechargeStatus.PENDING, label: t('recharge.pendingStatus') },
+    { value: RechargeStatus.VALIDATED, label: t('recharge.validatedStatus') },
+    { value: RechargeStatus.REFUSED, label: t('recharge.refusedStatus') },
+  ]
+
   const hasActiveFilters =
     filters.paymentMethod !== "all" ||
     filters.status !== "all" ||
@@ -73,7 +76,7 @@ export function RechargeFilters({
       <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Filtres
+            {t('common.filter')}
           </span>
           {activeCount > 0 && (
             <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
@@ -89,14 +92,14 @@ export function RechargeFilters({
             className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
           >
             <FilterRemove size={14} className="mr-1.5" />
-            Réinitialiser
+            {t('common.reset')}
           </Button>
         )}
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4">
         <div className="space-y-1.5">
           <Label htmlFor="payment-method-filter" className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-            Méthode de paiement
+            {t('recharge.paymentMethod')}
           </Label>
           <Select
             value={filters.paymentMethod}
@@ -119,7 +122,7 @@ export function RechargeFilters({
 
         <div className="space-y-1.5">
           <Label htmlFor="status-filter" className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-            Statut
+            {t('common.status')}
           </Label>
           <Select
             value={filters.status}
@@ -142,7 +145,7 @@ export function RechargeFilters({
 
         <div className="space-y-1.5">
           <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-            Date de début
+            {t('recharge.startDate')}
           </Label>
           <Popover>
             <PopoverTrigger asChild>
@@ -157,7 +160,7 @@ export function RechargeFilters({
                 {filters.startDate ? (
                   format(filters.startDate, "dd MMM yyyy", { locale: fr })
                 ) : (
-                  <span>Sélectionner...</span>
+                  <span>{t('recharge.selectDate')}</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -176,7 +179,7 @@ export function RechargeFilters({
 
         <div className="space-y-1.5">
           <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-            Date de fin
+            {t('recharge.endDate')}
           </Label>
           <Popover>
             <PopoverTrigger asChild>
@@ -191,7 +194,7 @@ export function RechargeFilters({
                 {filters.endDate ? (
                   format(filters.endDate, "dd MMM yyyy", { locale: fr })
                 ) : (
-                  <span>Sélectionner...</span>
+                  <span>{t('recharge.selectDate')}</span>
                 )}
               </Button>
             </PopoverTrigger>

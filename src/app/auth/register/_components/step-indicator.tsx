@@ -1,4 +1,7 @@
+"use client"
+
 import React from 'react';
+import { useT } from '@/core/hooks';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -7,12 +10,14 @@ interface StepIndicatorProps {
 }
 
 export function StepIndicator({ currentStep, totalSteps, stepNames }: StepIndicatorProps) {
+  const { t } = useT();
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-2">
         <p className="text-sm font-medium text-foreground">{stepNames[currentStep]}</p>
         <p className="text-sm text-muted-foreground">
-          Étape {currentStep + 1} sur {totalSteps}
+          {t('auth.stepOf', { current: currentStep + 1, total: totalSteps })}
         </p>
       </div>
       <div className="flex items-center gap-2">

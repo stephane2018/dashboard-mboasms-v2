@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CodeBlock } from './CodeBlock';
+import { useT } from "@/core/hooks";
 
 // ─── Reusable Components ─────────────────────────────────────────────────────
 
@@ -30,15 +31,16 @@ function EndpointPath({ path }: { path: string }) {
 }
 
 function ParamTable({ params }: { params: { name: string; type: string; required: boolean; description: string }[] }) {
+  const { t } = useT();
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-muted/30 dark:bg-muted/10 border-b border-border">
-            <th className="px-4 py-2.5 text-left font-semibold text-foreground">Parameter</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-foreground">Type</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-foreground">Required</th>
-            <th className="px-4 py-2.5 text-left font-semibold text-foreground">Description</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-foreground">{t('landing.apiDocs.paramTable.parameter')}</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-foreground">{t('landing.apiDocs.paramTable.type')}</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-foreground">{t('landing.apiDocs.paramTable.required')}</th>
+            <th className="px-4 py-2.5 text-left font-semibold text-foreground">{t('landing.apiDocs.paramTable.description')}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,9 +52,9 @@ function ParamTable({ params }: { params: { name: string; type: string; required
               </td>
               <td className="px-4 py-2.5">
                 {p.required ? (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-500 font-semibold uppercase">Required</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-500 font-semibold uppercase">{t('landing.apiDocs.paramTable.requiredBadge')}</span>
                 ) : (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground font-medium uppercase">Optional</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground font-medium uppercase">{t('landing.apiDocs.paramTable.optionalBadge')}</span>
                 )}
               </td>
               <td className="px-4 py-2.5 text-muted-foreground">{p.description}</td>

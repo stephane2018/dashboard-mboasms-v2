@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { People, UserAdd, Global, TickCircle } from "iconsax-react"
+import { useT } from "@/core/hooks"
 
 interface UsersStatisticsProps {
     totalUsers: number
@@ -16,36 +17,38 @@ export function UsersStatistics({
     newUsersThisMonth,
     countriesCount,
 }: UsersStatisticsProps) {
+    const { t } = useT()
+
     const stats = [
         {
-            title: "Total Contacts",
+            title: t("users.statTotalContacts"),
             value: totalUsers,
             icon: People,
-            description: "All contacts in the system",
+            description: t("users.statTotalDesc"),
             color: "text-blue-600",
             bgColor: "bg-blue-50",
         },
         {
-            title: "Active Contacts",
+            title: t("users.statActiveContacts"),
             value: activeUsers,
             icon: TickCircle,
-            description: "Currently active contacts",
+            description: t("users.statActiveDesc"),
             color: "text-green-600",
             bgColor: "bg-green-50",
         },
         {
-            title: "New This Month",
+            title: t("users.statNewThisMonth"),
             value: newUsersThisMonth,
             icon: UserAdd,
-            description: "Added in the last 30 days",
+            description: t("users.statNewDesc"),
             color: "text-purple-600",
             bgColor: "bg-purple-50",
         },
         {
-            title: "Countries",
+            title: t("users.statCountries"),
             value: countriesCount,
             icon: Global,
-            description: "Unique countries represented",
+            description: t("users.statCountriesDesc"),
             color: "text-orange-600",
             bgColor: "bg-orange-50",
         },

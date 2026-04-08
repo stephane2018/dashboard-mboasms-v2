@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Global, Sms, Code1 } from 'iconsax-react';
+import { useT } from "@/core/hooks";
 
 const Footer = () => {
+  const { t } = useT();
+
   return (
     <footer className="bg-card border-t border-border py-16 px-6 md:px-12 lg:px-24">
       <div className="container mx-auto">
@@ -21,12 +24,12 @@ const Footer = () => {
               />
             </div>
             <p className="text-muted-foreground mb-4 leading-relaxed">
-              La plateforme SMS internationale la plus complete. Envoyez des SMS dans plus de 50 pays avec des tarifs locaux competitifs.
+              {t('landing.footer.tagline')}
             </p>
             <div className="flex items-center gap-2 mb-4">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium">
                 <Global size="12" color="currentColor" variant="Bold" />
-                50+ pays
+                {t('landing.footer.countriesCount')}
               </div>
             </div>
             <div className="flex space-x-4">
@@ -50,31 +53,31 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Navigation</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">{t('landing.footer.navTitle')}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Accueil
+                  {t('landing.footer.navHome')}
                 </Link>
               </li>
               <li>
                 <Link href="/#pricing" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Tarifs par pays
+                  {t('landing.footer.navPricing')}
                 </Link>
               </li>
               <li>
                 <Link href="/api-docs" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Documentation API
+                  {t('landing.footer.navApiDocs')}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Contact
+                  {t('landing.footer.navContact')}
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Conditions d&apos;utilisation
+                  {t('landing.footer.navTerms')}
                 </Link>
               </li>
             </ul>
@@ -82,35 +85,35 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Services</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">{t('landing.footer.servicesTitle')}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/compte" className="text-muted-foreground hover:text-primary transition-colors text-sm inline-flex items-center gap-1.5">
                   <Sms size="14" color="currentColor" />
-                  SMS Marketing
+                  {t('landing.footer.serviceSmsMarketing')}
                 </Link>
               </li>
               <li>
                 <Link href="/api-docs" className="text-muted-foreground hover:text-primary transition-colors text-sm inline-flex items-center gap-1.5">
                   <Code1 size="14" color="currentColor" />
-                  API SMS
+                  {t('landing.footer.serviceApiSms')}
                 </Link>
               </li>
               <li>
                 <Link href="/compte" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Campagnes SMS
+                  {t('landing.footer.serviceCampaigns')}
                 </Link>
               </li>
               <li>
                 <Link href="/#pricing" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Forfaits SMS
+                  {t('landing.footer.servicePackages')}
                 </Link>
               </li>
             </ul>
 
             {/* Covered regions */}
             <div className="mt-6">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Couverture</h4>
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('landing.footer.coverageTitle')}</h4>
               <div className="flex flex-wrap gap-1">
                 {["🇨🇲", "🇸🇳", "🇨🇮", "🇳🇬", "🇬🇭", "🇿🇦", "🇫🇷", "🇺🇸", "🇬🇧", "🇧🇪", "🇨🇦", "🇲🇦"].map((flag, i) => (
                   <span key={i} className="text-sm" title="Pays couvert">{flag}</span>
@@ -122,14 +125,14 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Contact</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">{t('landing.footer.contactTitle')}</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
                 <svg className="w-4 h-4 text-primary mr-2.5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-muted-foreground text-sm">Douala, Cameroun</span>
+                <span className="text-muted-foreground text-sm">{t('landing.footer.contactLocation')}</span>
               </li>
               <li className="flex items-start">
                 <svg className="w-4 h-4 text-primary mr-2.5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,12 +156,12 @@ const Footer = () => {
 
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} MboaSMS. Tous droits reserves.
+            &copy; {new Date().getFullYear()} MboaSMS. {t('landing.footer.copyright')}
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-primary transition-colors">Politique de confidentialite</Link>
-            <Link href="#" className="hover:text-primary transition-colors">CGU</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Mentions legales</Link>
+            <Link href="#" className="hover:text-primary transition-colors">{t('landing.footer.privacyPolicy')}</Link>
+            <Link href="#" className="hover:text-primary transition-colors">{t('landing.footer.cgu')}</Link>
+            <Link href="#" className="hover:text-primary transition-colors">{t('landing.footer.legalNotice')}</Link>
           </div>
         </div>
       </div>

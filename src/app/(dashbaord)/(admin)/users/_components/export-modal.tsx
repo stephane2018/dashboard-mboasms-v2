@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
+import { useT } from "@/core/hooks"
 import { DocumentDownload, DocumentText, TickCircle } from "iconsax-react"
 
 interface ExportModalProps {
@@ -24,31 +25,32 @@ export function ExportModal({
   onExport,
   isLoading = false,
 }: ExportModalProps) {
+  const { t } = useT()
+
   const exportOptions = [
     {
       id: "excel",
-      title: "Importer depuis Excel",
-      description: "Télécharger un fichier Excel (.xlsx) pour importer des contacts",
+      title: t('users.importFromExcel'),
+      description: t('users.importFromExcelDesc'),
       icon: DocumentDownload,
       color: "bg-green-100 text-green-600",
     },
     {
       id: "csv",
-      title: "Exporter en CSV",
-      description: "Télécharger les contacts au format CSV",
+      title: t('users.exportCsv'),
+      description: t('users.exportCsvDesc'),
       icon: DocumentText,
       color: "bg-blue-100 text-blue-600",
     },
-
   ]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Actions sur les contacts</DialogTitle>
+          <DialogTitle>{t('users.contactActions')}</DialogTitle>
           <DialogDescription>
-            Choisissez une action à effectuer sur vos contacts
+            {t('users.contactActionsDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -85,7 +87,7 @@ export function ExportModal({
             disabled={isLoading}
             className="flex-1"
           >
-            Annuler
+            {t('common.cancel')}
           </Button>
         </div>
       </DialogContent>

@@ -1,9 +1,13 @@
+"use client";
+
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useId } from "react";
+import { useT } from "@/core/hooks";
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useT();
   const id = useId();
 
   return (
@@ -11,7 +15,7 @@ export function ModeToggle() {
       className="group hover:bg-accent cursor-pointer text-foreground relative inline-flex size-9 items-center justify-center rounded-md shadow-none transition-[color,box-shadow] outline-none"
       htmlFor={id}
       role="button"
-      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      aria-label={theme === "dark" ? t('layout.switchThemeToLight') : t('layout.switchThemeToDark')}
       onClick={() => {
         setTheme((prev: string) => (prev === "dark" ? "light" : "dark"));
       }}

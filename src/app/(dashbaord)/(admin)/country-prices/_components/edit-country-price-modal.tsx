@@ -25,6 +25,7 @@ import { Button } from "@/shared/ui/button"
 import { Loader2 } from "lucide-react"
 import type { CreateSmsCountryPriceRequest } from "@/core/services/sms-country-price.service"
 import type { SmsCountryPriceType } from "@/core/models/sms-country-price"
+import { useT } from "@/core/hooks"
 
 const editSchema = z.object({
   countryCode: z
@@ -53,6 +54,7 @@ export function EditCountryPriceModal({
   price,
   isLoading,
 }: EditCountryPriceModalProps) {
+  const { t } = useT()
   const form = useForm<EditFormData>({
     resolver: zodResolver(editSchema),
     defaultValues: {
@@ -86,9 +88,9 @@ export function EditCountryPriceModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Modifier le prix</DialogTitle>
+          <DialogTitle>{t('countryPrices.editTitle')}</DialogTitle>
           <DialogDescription>
-            Modifiez les informations de tarification pour ce pays.
+            {t('countryPrices.editDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -100,7 +102,7 @@ export function EditCountryPriceModal({
                 name="countryCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Code pays (ISO)</FormLabel>
+                    <FormLabel>{t('countryPrices.countryCodeIso')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Ex: CM"
@@ -118,7 +120,7 @@ export function EditCountryPriceModal({
                 name="countryName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du pays</FormLabel>
+                    <FormLabel>{t('countryPrices.countryName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Cameroun" {...field} />
                     </FormControl>
@@ -133,7 +135,7 @@ export function EditCountryPriceModal({
               name="pricePerSms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Prix par SMS (FCFA)</FormLabel>
+                  <FormLabel>{t('countryPrices.pricePerSmsFcfa')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -155,16 +157,16 @@ export function EditCountryPriceModal({
                 onClick={onClose}
                 disabled={isLoading}
               >
-                Annuler
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Modification...
+                    {t('countryPrices.modifying')}
                   </>
                 ) : (
-                  "Modifier"
+                  t('countryPrices.editBtn')
                 )}
               </Button>
             </DialogFooter>

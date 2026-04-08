@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import {
@@ -14,8 +16,10 @@ import { generateAbbreviation } from "@/shared/utils/common";
 import { useAuthContext } from "@/core/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore";
+import { useT } from "@/core/hooks";
 
 export default function UserDropdown() {
+  const { t } = useT();
   const { user, clearUser } = useAuthContext();
   const { enterprise } = useEnterpriseStore();
   const router = useRouter();
@@ -51,13 +55,13 @@ export default function UserDropdown() {
             }}
           >
             <Settings aria-hidden="true" />
-            <span>Mise a jour du profile</span>
+            <span>{t('layout.updateProfile')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut aria-hidden="true" />
-          <span>Deconnexion</span>
+          <span>{t('layout.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

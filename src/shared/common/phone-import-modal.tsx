@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 import { readExcelAsArrays } from "@/shared/utils/excel-secure.utils"
 import { type PhoneEntry } from "./phone-number-input"
 import { CountryCodeWarning } from "./country-code-warning"
+import { useT } from "@/core/hooks"
 
 // Utility functions (copied from phone-number-input.tsx)
 const cleanPhoneNumber = (phone: string): string => {
@@ -87,6 +88,7 @@ export function PhoneImportModal({
     onClose,
     onImport,
 }: PhoneImportModalProps) {
+    const { t } = useT()
     const [selectedType, setSelectedType] = useState<ImportType>("text")
     const [textInput, setTextInput] = useState("")
     const [isProcessing, setIsProcessing] = useState(false)
@@ -113,18 +115,18 @@ export function PhoneImportModal({
         setSuccess(null)
 
         if (!textInput.trim()) {
-            setError("Veuillez entrer au moins un numéro de téléphone")
+            setError(t('phoneImport.errorEnterPhone'))
             return
         }
 
         const phones = extractPhoneNumbers(textInput)
 
         if (phones.length === 0) {
-            setError("Aucun numéro de téléphone valide trouvé dans le texte")
+            setError(t('phoneImport.errorNoValidPhone'))
             return
         }
 
-        setSuccess(`${phones.length} numéro(s) trouvé(s) avec succès`)
+        setSuccess(t('phoneImport.successFound', { count: phones.length }))
         onImport(phones)
 
         // Reset and close after a delay
@@ -207,7 +209,7 @@ export function PhoneImportModal({
                 const lines = text.split(/[\n\r]+/).filter(line => line.trim())
 
                 if (lines.length === 0) {
-                    setError("Le fichier CSV est vide")
+                    setError(t('phoneImport.errorCsvEmpty'))
                     setIsProcessing(false)
                     return
                 }
@@ -251,12 +253,12 @@ export function PhoneImportModal({
             }
 
             if (extractedPhones.length === 0) {
-                setError("Aucun numéro de téléphone valide trouvé dans le fichier")
+                setError(t('phoneImport.errorNoValidPhoneFile'))
                 setIsProcessing(false)
                 return
             }
 
-            setSuccess(`${extractedPhones.length} numéro(s) importé(s) avec succès`)
+            setSuccess(t('phoneImport.successImported', { count: extractedPhones.length }))
             onImport(extractedPhones)
 
             // Reset and close after a delay
@@ -264,7 +266,7 @@ export function PhoneImportModal({
                 handleClose()
             }, 1000)
         } catch (error) {
-            setError("Erreur lors de la lecture du fichier. Vérifiez le format du fichier.")
+            setError(t('phoneImport.errorFileRead'))
         }
 
         setIsProcessing(false)
@@ -277,7 +279,7 @@ export function PhoneImportModal({
         // Limit file size to 5MB
         const MAX_FILE_SIZE = 5 * 1024 * 1024
         if (file.size > MAX_FILE_SIZE) {
-            setError("Le fichier ne doit pas dépasser 5 Mo")
+            setError(t('phoneImport.errorFileSize'))
             return
         }
 
@@ -290,10 +292,10 @@ export function PhoneImportModal({
                 <DialogHeader>
                     <DialogTitle className="text-2xl flex items-center gap-2">
                         <DocumentUpload size={24} color="currentColor" variant="Bulk" className="text-primary" />
-                        Importer des numéros
+                        {t('phoneImport.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        Choisissez le type d'importation et ajoutez vos numéros de téléphone
+                        {t('phoneImport.description')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -302,7 +304,7 @@ export function PhoneImportModal({
 
                     {/* Import Type Selection */}
                     <div className="space-y-3">
-                        <Label className="text-sm font-medium">Type d'importation</Label>
+                        <Label className="text-sm font-medium">{t('phoneImport.importType')}</Label>
                         <div className="grid grid-cols-3 gap-3">
                             {/* Text Import */}
                             <button
@@ -327,7 +329,7 @@ export function PhoneImportModal({
                                     "text-sm font-medium",
                                     selectedType === "text" ? "text-primary" : "text-muted-foreground"
                                 )}>
-                                    Texte
+                                    {t('phoneImport.text')}
                                 </span>
                             </button>
 
@@ -354,7 +356,7 @@ export function PhoneImportModal({
                                     "text-sm font-medium",
                                     selectedType === "excel" ? "text-primary" : "text-muted-foreground"
                                 )}>
-                                    Excel
+                                    {t('phoneImport.excel')}
                                 </span>
                             </button>
 
@@ -381,7 +383,7 @@ export function PhoneImportModal({
                                     "text-sm font-medium",
                                     selectedType === "csv" ? "text-primary" : "text-muted-foreground"
                                 )}>
-                                    CSV
+                                    {t('phoneImport.csv')}
                                 </span>
                             </button>
                         </div>
@@ -411,32 +413,32 @@ export function PhoneImportModal({
                     {selectedType === "text" ? (
                         <div className="space-y-3">
                             <Label htmlFor="text-input">
-                                Entrez les numéros (un par ligne ou séparés par des virgules)
+                                {t('phoneImport.textInputLabel')}
                             </Label>
                             <Textarea
                                 id="text-input"
                                 value={textInput}
                                 onChange={(e) => setTextInput(e.target.value)}
-                                placeholder="Exemple:&#10;+237612345678&#10;+237699887766&#10;ou&#10;+237612345678, +237699887766"
+                                placeholder={t('phoneImport.textInputPlaceholder')}
                                 className="min-h-[200px] resize-none font-mono text-sm"
                                 disabled={isProcessing}
                             />
                             <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
                                 <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
                                 <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs">
-                                    Les numéros peuvent être séparés par des virgules, points-virgules, ou des retours à la ligne.
+                                    {t('phoneImport.textInputInfo')}
                                 </AlertDescription>
                             </Alert>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             <Label>
-                                {selectedType === "excel" ? "Sélectionnez un fichier Excel (.xlsx, .xls)" : "Sélectionnez un fichier CSV (.csv)"}
+                                {selectedType === "excel" ? t('phoneImport.selectExcelFile') : t('phoneImport.selectCsvFile')}
                             </Label>
                             <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-8 hover:border-primary/50 transition-colors">
                                 <DocumentUpload size={48} variant="Bulk" className="text-muted-foreground mb-4" />
                                 <p className="text-sm text-muted-foreground mb-4 text-center">
-                                    Cliquez sur le bouton ci-dessous pour sélectionner un fichier
+                                    {t('phoneImport.clickToSelect')}
                                 </p>
                                 <Button
                                     onClick={() => fileInputRef.current?.click()}
@@ -446,12 +448,12 @@ export function PhoneImportModal({
                                     {isProcessing ? (
                                         <>
                                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                            Traitement...
+                                            {t('phoneImport.processing')}
                                         </>
                                     ) : (
                                         <>
                                             <DocumentUpload size={16} variant="Bulk" color="currentcolor" className="mr-2" />
-                                            Choisir un fichier
+                                            {t('phoneImport.chooseFile')}
                                         </>
                                     )}
                                 </Button>
@@ -467,8 +469,8 @@ export function PhoneImportModal({
                                 <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
                                 <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs">
                                     {selectedType === "excel"
-                                        ? "Le fichier Excel doit contenir une colonne avec les numéros de téléphone. Les en-têtes comme 'téléphone', 'phone', 'mobile' sont automatiquement détectés."
-                                        : "Le fichier CSV doit contenir une colonne avec les numéros de téléphone. Les séparateurs virgule, point-virgule et tabulation sont supportés."}
+                                        ? t('phoneImport.excelInfo')
+                                        : t('phoneImport.csvInfo')}
                                 </AlertDescription>
                             </Alert>
                         </div>
@@ -483,7 +485,7 @@ export function PhoneImportModal({
                             onClick={handleClose}
                             disabled={isProcessing}
                         >
-                            Annuler
+                            {t('phoneImport.cancel')}
                         </Button>
                         <Button
                             onClick={handleTextImport}
@@ -492,12 +494,12 @@ export function PhoneImportModal({
                             {isProcessing ? (
                                 <>
                                     <Loader2  className="h-4 w-4 animate-spin mr-2" />
-                                    Importation...
+                                    {t('phoneImport.importing')}
                                 </>
                             ) : (
                                 <>
                                     <TickCircle  size={16} color="currentColor" variant="Bulk" className="mr-2" />
-                                    Importer
+                                    {t('phoneImport.import')}
                                 </>
                             )}
                         </Button>

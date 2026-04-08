@@ -13,13 +13,14 @@ import { Step3Security } from './step-3-security';
 import { Step4Enterprise } from './step-4-enterprise';
 import { Step5SmsConfig } from './step-5-sms-config';
 import { StepIndicator } from './step-indicator';
-import { useRegister } from '@/core/hooks';
+import { useRegister, useT } from '@/core/hooks';
 
 type FormData = RegisterFormData;
 
 export function RegisterForm() {
   const [step, setStep] = useState(0);
   const registerMutation = useRegister();
+  const { t } = useT();
   const form = useForm<FormData>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
@@ -54,40 +55,40 @@ export function RegisterForm() {
   const allSteps = useMemo(() => [
     {
       id: 'Step 1',
-      name: 'Type de compte',
+      name: t('auth.accountType'),
       component: Step1AccountType,
       fields: ['accountType'],
       showFor: ['personal', 'business']
     },
     {
       id: 'Step 2',
-      name: 'Informations personnelles',
+      name: t('auth.personalInfo'),
       component: Step2Personal,
       fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
       showFor: ['personal', 'business']
     },
     {
       id: 'Step 3',
-      name: 'Sécurité & Localisation',
+      name: t('auth.security'),
       component: Step3Security,
       fields: ['password', 'confirmPassword', 'country', 'city', 'address'],
       showFor: ['personal', 'business']
     },
     {
       id: 'Step 4',
-      name: 'Informations entreprise',
+      name: t('auth.enterpriseStepName'),
       component: Step4Enterprise,
       fields: ['socialRaison', 'activityDomain', 'contribuableNumber', 'smsESenderId'],
       showFor: ['business']
     },
     {
       id: 'Step 5',
-      name: 'Détails entreprise',
+      name: t('auth.enterpriseDetailsStepName'),
       component: Step5SmsConfig,
       fields: ['emailEnterprise', 'telephoneEntreprise', 'numeroCommerce', 'adresseEnterprise', 'villeEntreprise', 'urlSiteweb', 'enterpriseCountryId'],
       showFor: ['business']
     },
-  ], []);
+  ], [t]);
 
   const steps = useMemo(() =>
     allSteps.filter(s => s.showFor.includes(accountType)),
@@ -134,8 +135,8 @@ export function RegisterForm() {
 
   return (
     <div className="w-full max-w-xl text-foreground">
-      <h2 className="text-3xl font-bold mb-2">Créez votre compte</h2>
-      <p className="text-muted-foreground mb-8">Remplissez les informations ci-dessous pour commencer</p>
+      <h2 className="text-3xl font-bold mb-2">{t('auth.createAccount')}</h2>
+      <p className="text-muted-foreground mb-8">{t('auth.createAccountDesc')}</p>
       <StepIndicator currentStep={step} totalSteps={steps.length} stepNames={steps.map(s => s.name)} />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -155,7 +156,7 @@ export function RegisterForm() {
                 onClick={prevStep}
                 className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 font-semibold active:scale-[0.98] transition-all duration-200"
               >
-                Précédent
+                {t('common.previous')}
               </Button>
             )}
             {step < steps.length - 1 ? (
@@ -164,7 +165,7 @@ export function RegisterForm() {
                 onClick={nextStep}
                 className="ml-auto rounded-xl bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
               >
-                Suivant
+                {t('common.next')}
                 <ArrowRight2 size="16" color="currentColor" className="ml-2" />
               </Button>
             ) : (
@@ -179,9 +180,9 @@ export function RegisterForm() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Création en cours...
+                    {t('auth.creatingAccount')}
                   </span>
-                ) : 'Créer mon compte'}
+                ) : t('auth.createMyAccount')}
               </Button>
             )}
           </div>
