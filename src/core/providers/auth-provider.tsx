@@ -1,14 +1,11 @@
 "use client"
 
-import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState, useRef } from "react";
+import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState } from "react";
 import { httpClient } from "../lib/http-client";
-import { tokenManager } from "../lib/token-manager./token-manager";
+import { tokenManager } from "../lib/token-manager/token-manager";
 import { useUserStore } from "../stores";
 import { getProfile } from "../services/auth.service";
 import type { Role } from "../config/enum";
-
-// Check token expiration every minute
-const TOKEN_CHECK_INTERVAL = 60 * 1000;
 
 interface User {
   id: string;
@@ -74,18 +71,16 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const { user, isAuthenticated, setUser, clearUser: clearUserStore, isHydrated } = useUserStore();
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
-  const tokenCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isTokenHydrated, setIsTokenHydrated] = useState(false);
+
+  // Hydrate tokens from httpOnly cookies on mount -- must complete before any API call
+  useEffect(() => {
+    tokenManager.hydrateFromServer().then(() => setIsTokenHydrated(true));
+  }, []);
 
   const clearUser = useCallback(() => {
-    // Clear tokens
     tokenManager.clearTokens();
-
-    // Clear Zustand store
     clearUserStore();
-
-    // Clear legacy localStorage
-    localStorage.removeItem("caisse-post-role");
-    localStorage.removeItem("user");
   }, [clearUserStore]);
 
   const updateUser = useCallback((newUser: User | null) => {
@@ -107,45 +102,10 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
   }, [clearUser]);
 
-  // Continuous token expiration monitoring
-  // This runs every minute to check if the token has expired
-  useEffect(() => {
-    const checkTokenExpiration = () => {
-      const token = tokenManager.getToken();
-
-      if (!token) {
-        // No token, nothing to monitor
-        return;
-      }
-
-      if (tokenManager.isTokenExpired()) {
-        clearUser();
-        return;
-      }
-
-    };
-
-    // Only start monitoring if user is authenticated
-    if (isAuthenticated && user) {
-      // Check immediately
-      checkTokenExpiration();
-
-      // Set up interval for continuous checking
-      tokenCheckIntervalRef.current = setInterval(checkTokenExpiration, TOKEN_CHECK_INTERVAL);
-    }
-
-    return () => {
-      if (tokenCheckIntervalRef.current) {
-        clearInterval(tokenCheckIntervalRef.current);
-        tokenCheckIntervalRef.current = null;
-      }
-    };
-  }, [isAuthenticated, user, clearUser]);
-
   // Fetch profile if token exists but user is not in store
   useEffect(() => {
-    // Wait for store to be hydrated before making decisions
-    if (!isHydrated) {
+    // Wait for both store and token hydration before making decisions
+    if (!isHydrated || !isTokenHydrated) {
       return;
     }
 
@@ -163,13 +123,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      // Check if token is expired
-      if (tokenManager.isTokenExpired()) {
-        clearUser();
-        setHasFetchedProfile(true);
-        return;
-      }
-
       setIsLoadingProfile(true);
       try {
         const profileData = await getProfile() as ProfileApiResponse | null;
@@ -180,8 +133,14 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
           // Profile fetch returned invalid data, clear user
           clearUser();
         }
-      } catch (error) {
-        clearUser();
+      } catch (error: any) {
+        // Only clear user on auth errors (401/403) - not on transient network issues
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          clearUser();
+        }
+        // For other errors (network, 500, etc.), keep the user from sessionStorage
+        // They'll get a proper error on their next API call
       } finally {
         setIsLoadingProfile(false);
         setHasFetchedProfile(true);
@@ -189,7 +148,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
 
     fetchUserProfile();
-  }, [isHydrated, user, hasFetchedProfile, setUser, clearUser]);
+  }, [isHydrated, isTokenHydrated, user, hasFetchedProfile, setUser, clearUser]);
 
   const providerValue = useMemo(
     () => ({

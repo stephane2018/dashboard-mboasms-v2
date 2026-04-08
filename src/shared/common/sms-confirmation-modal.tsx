@@ -83,7 +83,7 @@ export function SMSConfirmationModal({
                             <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
                             <div className="text-amber-700 dark:text-amber-400">
                                 <p className="font-medium">SID &quot;{senderId}&quot; pris en compte.</p>
-                                <p className="mt-0.5 text-amber-600 dark:text-amber-500">Si refusé par MTN, les SMS MTN ne passeront plus.</p>
+                                <p className="mt-0.5 text-amber-600 dark:text-amber-500">Si refusé par MTN, les SMS MTN seront envoyer avec le senderId <b>infos</b>.</p>
                             </div>
                         </div>
                     )}
@@ -199,12 +199,12 @@ export function SMSConfirmationModal({
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin"  color="currentColor" />
                                 Envoi...
                             </>
                         ) : (
                             <>
-                                <Send2 size={16} variant="Bulk" />
+                                <Send2 size={16} variant="Bulk" color="currentColor"/>
                                 Confirmer l&apos;envoi
                             </>
                         )}

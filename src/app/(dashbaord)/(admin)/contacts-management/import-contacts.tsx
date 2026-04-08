@@ -44,7 +44,7 @@ export function ImportContacts() {
         <DialogHeader>
           <DialogTitle>Import Contacts</DialogTitle>
           <DialogDescription>
-            Upload a CSV file to import new contacts for an enterprise.
+            Importez un fichier CSV ou Excel (.xlsx, .xls) pour ajouter des contacts.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -65,7 +65,7 @@ export function ImportContacts() {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="contacts-file" className="text-right">File</Label>
-            <Input id="contacts-file" type="file" onChange={handleFileChange} accept=".csv" className="col-span-3" />
+            <Input id="contacts-file" type="file" onChange={handleFileChange} accept=".csv,.xlsx,.xls" className="col-span-3" />
           </div>
         </div>
         <DialogFooter>

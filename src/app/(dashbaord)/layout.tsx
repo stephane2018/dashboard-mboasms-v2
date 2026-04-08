@@ -2,6 +2,7 @@
 
 import { MainLayout } from "@/shared/components/layouts"
 import { ProtectedRoute } from "@/core/components"
+import { NetworkStatusProvider } from "@/core/providers/network-status-provider"
 import { Role } from "@/core/config/enum"
 
 export default function DashboardLayout({
@@ -11,7 +12,9 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={[Role.ADMIN, Role.ADMIN_USER, Role.SUPER_ADMIN, Role.USER]}>
-      <MainLayout>{children}</MainLayout>
+      <NetworkStatusProvider>
+        <MainLayout>{children}</MainLayout>
+      </NetworkStatusProvider>
     </ProtectedRoute>
   )
 }

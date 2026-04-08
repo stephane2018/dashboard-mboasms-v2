@@ -86,9 +86,15 @@ export function CreatePricingModal({
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      // Limit file size to 2MB
+      const MAX_IMAGE_SIZE = 2 * 1024 * 1024
+      if (file.size > MAX_IMAGE_SIZE) {
+        form.setError('illustrationImgUrl', { message: "L'image ne doit pas dépasser 2 Mo" })
+        return
+      }
       if (file.type.startsWith('image/')) {
         setImageFile(file)
-        
+
         // Create preview
         const reader = new FileReader()
         reader.onloadend = () => {
@@ -97,7 +103,7 @@ export function CreatePricingModal({
         }
         reader.readAsDataURL(file)
       } else {
-        // Handle error - file is not an image
+        form.setError('illustrationImgUrl', { message: "Le fichier doit être une image" })
       }
     }
   }
@@ -335,7 +341,7 @@ export function CreatePricingModal({
                                 Cliquez pour télécharger une illustration
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                PNG, JPG, GIF jusqu'à 10MB
+                                PNG, JPG, GIF jusqu'à 2 Mo
                               </p>
                             </div>
                             <Input

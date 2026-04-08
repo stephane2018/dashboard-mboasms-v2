@@ -2,8 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { DataTable } from "@/shared/common/data-table/table"
+import { DataTableToolbar } from "@/shared/common/data-table/data-table-toolabr"
 
 import { useAuthContext } from "@/core/providers"
+import { Role } from "@/core/config/enum"
 import { MessageText, Add } from "iconsax-react"
 import { createColumns } from "./columns"
 import type { PaginationState } from "@tanstack/react-table"
@@ -121,6 +123,7 @@ export default function SenderIdsPage() {
     onEdit: handleEdit,
     onDelete: handleDelete,
     onChangeStatus: handleChangeStatus,
+    userRole: user?.role as Role | undefined,
   })
 
   return (
@@ -152,8 +155,10 @@ export default function SenderIdsPage() {
         data={senderIds}
         rowCount={rowCount}
         isLoading={isLoading}
+        enableColumnFilter
         enablePagination={_isSuperAdmin}
         onPaginationChange={_isSuperAdmin ? setPagination : undefined}
+        toolbar={(table) => <DataTableToolbar table={table} />}
         initialState={{
           pagination,
         }}

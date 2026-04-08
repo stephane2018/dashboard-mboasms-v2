@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Role } from '@/core/config/enum';
-import { tokenManager } from '@/core/lib/token-manager./token-manager';
+import { tokenManager } from '@/core/lib/token-manager/token-manager';
 
 interface User {
   id: string;
@@ -105,21 +105,28 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'user-storage',
+      storage: {
+        getItem: (name) => {
+          if (typeof window === 'undefined') return null;
+          const value = window.sessionStorage.getItem(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: (name, value) => {
+          if (typeof window === 'undefined') return;
+          window.sessionStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          if (typeof window === 'undefined') return;
+          window.sessionStorage.removeItem(name);
+        },
+      },
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Only validate token on the client side (localStorage is available)
-          if (typeof window !== 'undefined') {
-            try {
-              const token = tokenManager.getToken();
-              if (state.user && (!token || tokenManager.isTokenExpired())) {
-                state.clearUser();
-              }
-            } catch {
-              // If token validation fails (e.g., localStorage not ready), don't clear user
-              // The auth provider will handle validation when it's ready
-            }
-          }
-
+          // Do NOT validate token here — tokenManager stores tokens in memory
+          // and hydrateFromServer() (which loads them from httpOnly cookies)
+          // runs later in AuthProvider. Checking here would always find null
+          // tokens and incorrectly clear the user.
+          // Token validation is handled by AuthProvider after hydration.
           state.setHydrated(true);
         }
       },

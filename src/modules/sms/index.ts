@@ -4,6 +4,7 @@ export { MessageSection } from './components/message-section'
 export { SenderIdSection } from './components/sender-id-section'
 export { SummarySection } from './components/summary-section'
 export { ActionsSection } from './components/actions-section'
+export { RechargeSection } from './components/recharge-section'
 export type { 
     RecipientsSectionProps, 
     MessageSectionProps, 

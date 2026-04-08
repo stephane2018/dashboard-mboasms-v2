@@ -126,11 +126,11 @@ const Header = () => {
     typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : null;
 
   const handleProfile = () => {
-    window.open(`${API_URL}/profile`, '_blank');
+    window.open(`${API_URL}/profile`, '_blank', 'noopener,noreferrer');
   };
 
   const handleGoToAdmin = () => {
-    window.open("/dashboard");
+    window.open("/dashboard", '_self');
   };
 
   return (
@@ -174,7 +174,7 @@ const Header = () => {
         )}
       </AnimatePresence>
 
-      <header className={`py-4 px-6 md:px-12 lg:px-24 fixed left-0 right-0 z-50 transition-all duration-300 ${!bannerDismissed ? 'top-[36px]' : 'top-0'} ${scrolled ? 'bg-background/80 backdrop-blur-md shadow-md dark:bg-background/90' : 'bg-transparent'}`}>
+      <header className={`py-4 px-6 md:px-12 lg:px-24 fixed left-0 right-0 z-50 transition-all duration-300 ${!bannerDismissed ? 'top-[36px]' : 'top-0'} ${mobileMenuOpen ? 'bg-background shadow-md' : scrolled ? 'bg-background/80 backdrop-blur-md shadow-md dark:bg-background/90' : 'bg-transparent'}`}>
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center">
             <motion.div
@@ -354,7 +354,7 @@ const Header = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="fixed inset-0 bg-background z-40 md:hidden"
+              className="fixed inset-0 bg-background z-50 md:hidden"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

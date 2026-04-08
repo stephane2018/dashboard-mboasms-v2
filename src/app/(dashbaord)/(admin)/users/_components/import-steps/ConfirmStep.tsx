@@ -19,14 +19,14 @@ export function ConfirmStep({
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-        <div className="flex items-start gap-3">
-          <TickCircle size={20} className="text-green-600 shrink-0 mt-0.5" variant="Bulk" />
+      <div className="p-4 rounded-lg bg-primary/10   border border-dashed border-primary text-white ">
+        <div className="flex items-start gap-3 ">
+          <TickCircle size={20} className="text-white shrink-0 mt-0.5" variant="Bulk" color="currentColor"  />
           <div>
-            <p className="font-medium text-sm text-green-900">
+            <p className="font-medium text-sm text-white">
               Prêt à importer {contacts.length} contact{contacts.length > 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-green-700 mt-1">
+            <p className="text-xs text-white mt-1">
               Cliquez sur "Importer" pour finaliser l'importation
             </p>
           </div>
@@ -41,10 +41,10 @@ export function ConfirmStep({
             {contacts.map((contact, index) => (
               <div
                 key={index}
-                className="p-2 rounded bg-white border border-border text-xs"
+                className="p-2 rounded bg-primary border border-border text-xs"
               >
                 <div className="flex items-center gap-2">
-                  <TickCircle size={14} className="text-green-600 shrink-0" variant="Bulk" />
+                  <TickCircle size={14} className="text-green-600 shrink-0" variant="Bulk" color="currentColor" />
                   <span className="font-mono font-medium">{contact.phoneNumber}</span>
                   {contact.firstname && (
                     <span className="text-muted-foreground">
@@ -69,9 +69,9 @@ export function ConfirmStep({
       <Button
         onClick={onImportConfirm}
         disabled={isProcessing}
-        className="w-full bg-green-600 hover:bg-green-700"
+        className="w-full bg-primary/10 text-primary hover:bg-primary/20"
       >
-        <Sms size={16} variant="Bulk" className="mr-2" />
+        <Sms size={16} variant="Bulk" className="mr-2"  color="currentColor"  />
         {isProcessing ? "Importation en cours..." : "Importer les contacts"}
       </Button>
     </div>

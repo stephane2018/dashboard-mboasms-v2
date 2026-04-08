@@ -24,7 +24,7 @@ export const couponService = {
 
   async createCoupon(input: CreateCouponInput): Promise<Coupon> {
     try {
-      return await httpClient.post<Coupon>("/api/v1/coupons", input as any)
+      return await httpClient.post<Coupon>("/api/v1/coupons", input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }
@@ -32,7 +32,7 @@ export const couponService = {
 
   async updateCoupon(id: string, input: UpdateCouponInput): Promise<Coupon> {
     try {
-      return await httpClient.put<Coupon>(`/api/v1/coupons/${id}`, input as any)
+      return await httpClient.put<Coupon>(`/api/v1/coupons/${id}`, input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }

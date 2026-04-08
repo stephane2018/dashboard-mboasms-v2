@@ -23,11 +23,11 @@ const securityHeaders = [
   },
   {
     key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    value: '0'
   },
   {
     key: 'X-Frame-Options',
-    value: 'SAMEORIGIN'
+    value: 'DENY'
   },
   {
     key: 'X-Content-Type-Options',
@@ -42,17 +42,31 @@ const securityHeaders = [
     value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()'
   },
   {
+    key: 'Cross-Origin-Opener-Policy',
+    value: 'same-origin'
+  },
+  {
+    key: 'Cross-Origin-Resource-Policy',
+    value: 'same-origin'
+  },
+  {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+      `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
+      "img-src 'self' data: blob: https://*.mboasms.com https://*.webapptest.cc",
       "font-src 'self' data:",
       `connect-src ${connectSrc}`,
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
+      "object-src 'none'",
+      "worker-src 'self'",
+      "manifest-src 'self'",
+      "media-src 'self'",
+      "child-src 'none'",
+      ...(isDev ? [] : ["upgrade-insecure-requests"]),
     ].join('; ')
   }
 ];

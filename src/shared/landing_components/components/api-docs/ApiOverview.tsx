@@ -215,6 +215,177 @@ curl -X POST https://api.mboasms.com/api/v1/developer/sms/send \\
 
       <SectionDivider />
 
+      {/* ── Login ────────────────────────────────────────────────────── */}
+      <section id="login" className="mb-8">
+        <div className="flex flex-wrap items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-foreground">Login</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <MethodBadge method="POST" />
+          <EndpointPath path="/api/v1/auth/login" />
+        </div>
+        <p className="text-muted-foreground mb-6">
+          Authenticate with your email and password to obtain a JWT token. Use this token in the{" "}
+          <code className="font-mono text-xs bg-muted/50 px-1.5 py-0.5 rounded text-foreground">Authorization: Bearer</code>{" "}
+          header for all subsequent API requests.
+        </p>
+
+        {/* Request Body */}
+        <h3 className="text-base font-semibold text-foreground mb-3">Request Body</h3>
+        <ParamTable
+          params={[
+            { name: "email", type: "string", required: true, description: "Your account email address" },
+            { name: "password", type: "string", required: true, description: "Your account password" },
+          ]}
+        />
+
+        {/* Examples */}
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Examples</h3>
+        <div className="space-y-4">
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">cURL</div>
+            <CodeBlock
+              language="bash"
+              code={`curl -X POST https://api.mboasms.com/api/v1/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "your@email.com",
+    "password": "your_password"
+  }'`}
+            />
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">JavaScript (Node.js)</div>
+            <CodeBlock
+              language="javascript"
+              code={`const response = await fetch(
+  "https://api.mboasms.com/api/v1/auth/login",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "your@email.com",
+      password: "your_password",
+    }),
+  }
+);
+
+const data = await response.json();
+
+// Save the token for subsequent requests
+const token = data.token;
+const refreshToken = data.refreshToken;
+
+// Use the token in your API calls
+const smsResponse = await fetch(
+  "https://api.mboasms.com/api/v1/developer/sms/send",
+  {
+    method: "POST",
+    headers: {
+      "Authorization": \`Bearer \${token}\`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      phoneNumbers: ["+237670000000"],
+      message: "Hello from MboaSMS!",
+      senderId: "MboaSMS",
+    }),
+  }
+);`}
+            />
+          </div>
+
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Python</div>
+            <CodeBlock
+              language="python"
+              code={`import requests
+
+# Step 1: Login to get the token
+login_response = requests.post(
+    "https://api.mboasms.com/api/v1/auth/login",
+    json={
+        "email": "your@email.com",
+        "password": "your_password",
+    },
+)
+
+data = login_response.json()
+token = data["token"]
+refresh_token = data["refreshToken"]
+
+# Step 2: Use the token to send SMS
+sms_response = requests.post(
+    "https://api.mboasms.com/api/v1/developer/sms/send",
+    headers={
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "phoneNumbers": ["+237670000000"],
+        "message": "Hello from MboaSMS!",
+        "senderId": "MboaSMS",
+    },
+)
+
+print(sms_response.json())`}
+            />
+          </div>
+        </div>
+
+        {/* Response */}
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Response</h3>
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">200</span>
+              <span className="text-sm text-muted-foreground">Login successful</span>
+            </div>
+            <CodeBlock
+              language="json"
+              code={`{
+  "statusCode": 0,
+  "error": null,
+  "message": null,
+  "id": "770a40b1-a1c2-438e-a69f-e1eada720305",
+  "createdAt": "2026-03-21T20:29:06.154065Z",
+  "updatedAt": "2026-03-21T20:29:06.154068Z",
+  "version": 1,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}`}
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400">401</span>
+              <span className="text-sm text-muted-foreground">Invalid credentials</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Response fields */}
+        <h3 className="text-base font-semibold text-foreground mt-6 mb-3">Response Fields</h3>
+        <ParamTable
+          params={[
+            { name: "token", type: "string", required: true, description: "JWT token to use in the Authorization: Bearer header for all API calls" },
+            { name: "refreshToken", type: "string", required: true, description: "Token to obtain a new JWT when the current one expires" },
+            { name: "id", type: "string", required: true, description: "Unique identifier of the authenticated user" },
+          ]}
+        />
+
+        <InfoCard type="tip" title="Using your token">
+          After login, include the <code className="font-mono text-xs bg-muted/30 px-1 rounded">token</code> in all
+          subsequent requests as:{" "}
+          <code className="font-mono text-xs bg-muted/30 px-1 rounded">Authorization: Bearer YOUR_JWT_TOKEN</code>.
+          When the token expires, use the <code className="font-mono text-xs bg-muted/30 px-1 rounded">refreshToken</code> to
+          obtain a new one without re-entering your credentials.
+        </InfoCard>
+      </section>
+
+      <SectionDivider />
+
       {/* ── Rate Limiting ─────────────────────────────────────────────── */}
       <section id="rate-limiting" className="mb-8">
         <h2 className="text-2xl font-bold text-foreground mb-4">Rate Limiting</h2>

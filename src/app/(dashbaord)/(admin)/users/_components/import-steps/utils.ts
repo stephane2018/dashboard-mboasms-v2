@@ -117,9 +117,11 @@ export async function validateAndExtractContacts(
       (h) =>
         h.includes("phone") ||
         h.includes("téléphone") ||
+        h.includes("telephone") ||
         h.includes("tel") ||
         h.includes("mobile") ||
-        h.includes("numéro")
+        h.includes("numéro") ||
+        h.includes("numero")
     )
 
     if (phoneColumnIndex !== 0) {
@@ -130,7 +132,7 @@ export async function validateAndExtractContacts(
 
     if (phoneColumnIndex === -1) {
       structureErrors.push(
-        "Aucune colonne 'Numéro de téléphone' trouvée. Les colonnes doivent inclure: Téléphone, Tel, Mobile ou Numéro"
+        "Aucune colonne 'Numéro de téléphone' trouvée. Les colonnes doivent inclure: Téléphone, Telephone, Tel, Phone, Mobile ou Numéro"
       )
     }
 

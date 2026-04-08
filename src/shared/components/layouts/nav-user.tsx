@@ -4,6 +4,7 @@ import {
   Bell,
   LogOut,
 } from "lucide-react"
+import Image from "next/image"
 
 import {
   Avatar,
@@ -57,7 +58,7 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-sm">
                 {userAvatar ? (
-                  <img src={userAvatar} alt={userName} className="aspect-square h-full w-full rounded-sm object-cover" />
+                  <Image src={userAvatar} alt={userName} width={32} height={32} className="aspect-square h-full w-full rounded-sm object-cover" />
                 ) : (
                   <AvatarFallback className="rounded-sm">{userName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                 )}

@@ -1,5 +1,6 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
+import { extractContent } from '@/core/utils/extract-content';
 import {
     CreateRechargeRequestType,
     CreateInternationalRechargeRequestType,
@@ -26,9 +27,8 @@ export const getRechargesByEnterprise = async (enterpriseId: string, page: numbe
         queryParams.append("page", page.toString())
         queryParams.append("size", size.toString())
 
-        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/enterprise?${queryParams.toString()}`);
-        console.log(response)
-        return response;
+        const response = await httpClient.get(`/api/v1/recharge/enterprise?${queryParams.toString()}`);
+        return extractContent<RechargeListContentType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
@@ -36,8 +36,8 @@ export const getRechargesByEnterprise = async (enterpriseId: string, page: numbe
 
 export const getRecharges = async (enterpriseId: string): Promise<RechargeListContentType[]> => {
     try {
-        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/${enterpriseId}/all`);
-        return response;
+        const response = await httpClient.get(`/api/v1/recharge/${enterpriseId}/all`);
+        return extractContent<RechargeListContentType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
@@ -45,8 +45,8 @@ export const getRecharges = async (enterpriseId: string): Promise<RechargeListCo
 
 export const getAllRecharges = async (): Promise<RechargeListContentType[]> => {
     try {
-        const response = await httpClient.get<RechargeListContentType[]>(`/api/v1/recharge/all`);
-        return response;
+        const response = await httpClient.get(`/api/v1/recharge/all`);
+        return extractContent<RechargeListContentType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }

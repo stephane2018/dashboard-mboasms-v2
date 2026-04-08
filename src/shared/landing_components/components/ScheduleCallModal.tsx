@@ -157,7 +157,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
       ? generateGoogleCalendarLink(eventData)
       : generateWhatsAppLink(eventData);
 
-    window.open(link, "_blank");
+    window.open(link, "_blank", "noopener,noreferrer");
     handleClose();
   };
 

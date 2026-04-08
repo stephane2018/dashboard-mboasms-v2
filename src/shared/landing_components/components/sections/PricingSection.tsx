@@ -26,7 +26,7 @@ function countryCodeToFlag(code: string): string {
 }
 
 // Popular country codes — Cameroon first, then francophone Africa, then international francophone + others
-const POPULAR_AFRICA = ["CM", "SN", "CI", "GA", "CD", "ML", "BF", "TG", "BJ", "GN"];
+const POPULAR_AFRICA = ["SN", "CI", "GA", "CD", "ML", "BF", "TG", "BJ", "GN"];
 const POPULAR_INTERNATIONAL = ["FR", "BE", "CH", "CA", "US", "GB", "LU", "MC", "DE", "MA"];
 
 export function PricingSection({ t, lang, onContactSales }: { t: typeof landingContent.fr; lang: Lang; onContactSales: () => void }) {
@@ -293,11 +293,6 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
                       key={country.id}
                       className="group relative flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] lg:w-[calc(20%-10px)]"
                     >
-                      {country.countryCode === "CM" && (
-                        <span className="absolute -top-2 -right-2 text-[10px] font-bold bg-primary text-white px-2 py-0.5 rounded-full shadow-sm">
-                          {lang === "fr" ? "Populaire" : "Popular"}
-                        </span>
-                      )}
                       <span className="text-3xl">{countryCodeToFlag(country.countryCode)}</span>
                       <div className="text-center">
                         <div className="font-medium text-foreground text-sm">{country.countryName}</div>
