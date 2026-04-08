@@ -1155,5 +1155,32 @@
         "optionalBadge": "Optional"
       }
     }
+  },
+  "scheduleCall": {
+    "title": "Schedule a call",
+    "step1Subtitle": "Choose a date and time",
+    "step2Subtitle": "Select call type",
+    "step3Subtitle": "Confirm your appointment",
+    "chooseDate": "Choose a date",
+    "chooseTime": "Choose a time",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "continue": "Continue",
+    "back": "Back",
+    "howContact": "How would you like to be contacted?",
+    "calendarDesc": "Add the event to your calendar",
+    "whatsappDesc": "Schedule directly via WhatsApp",
+    "scheduled": "Call scheduled!",
+    "scheduledDesc": "Your {{type}} call has been successfully scheduled.",
+    "openCalendar": "Open calendar",
+    "openWhatsapp": "Open WhatsApp",
+    "daySun": "Sun",
+    "dayMon": "Mon",
+    "dayTue": "Tue",
+    "dayWed": "Wed",
+    "dayThu": "Thu",
+    "dayFri": "Fri",
+    "daySat": "Sat",
+    "whatsappMessage": "Hello! I would like to schedule a call on {{date}} at {{time}}.\n\n{{title}}\n{{description}}"
   }
 }

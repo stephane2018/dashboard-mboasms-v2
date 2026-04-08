@@ -6,6 +6,7 @@ import { CloseCircle, Calendar, Clock, ArrowRight2, ArrowLeft2, TickCircle, What
 import { Button } from './ui/button';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useT } from '@/core/hooks';
 
 type CallType = 'calendar' | 'whatsapp';
 
@@ -22,6 +23,7 @@ interface ScheduleCallModalProps {
 }
 
 const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
+  const { t } = useT();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -44,7 +46,6 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -138,7 +139,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
 
   const generateWhatsAppLink = (eventData: EventData): string => {
     const message = encodeURIComponent(
-      `Bonjour! Je souhaite planifier un appel le ${format(eventData.date, "d MMMM", { locale: fr })} à ${eventData.time}.\n\n${eventData.title}\n${eventData.description}`
+      `${t('scheduleCall.whatsappMessage', { date: format(eventData.date, "d MMMM", { locale: fr }), time: eventData.time, title: eventData.title, description: eventData.description })}`
     );
     return `https://wa.me/237670424589?text=${message}`;
   };
@@ -161,7 +162,11 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     handleClose();
   };
 
-  // Step indicator
+  const dayNames = [
+    t('scheduleCall.daySun'), t('scheduleCall.dayMon'), t('scheduleCall.dayTue'),
+    t('scheduleCall.dayWed'), t('scheduleCall.dayThu'), t('scheduleCall.dayFri'), t('scheduleCall.daySat'),
+  ];
+
   const StepIndicator = () => (
     <div className="flex items-center justify-center gap-2 mb-6">
       {[1, 2, 3].map((s) => (
@@ -187,13 +192,12 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
 
   const renderStep1 = () => (
     <div className="flex flex-col space-y-5">
-      {/* Calendar */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Calendar size="16" variant="Bulk" color="currentColor" className="text-primary" />
           </div>
-          <h3 className="text-sm font-semibold text-foreground">Choisissez une date</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t('scheduleCall.chooseDate')}</h3>
         </div>
 
         <div className="rounded-xl border border-border bg-muted/30 p-3">
@@ -202,7 +206,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           </p>
 
           <div className="grid grid-cols-7 gap-1 mb-1">
-            {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day) => (
+            {dayNames.map((day) => (
               <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1">
                 {day}
               </div>
@@ -235,18 +239,17 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
         </div>
       </div>
 
-      {/* Time slots */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Clock size="16" variant="Bulk" color="currentColor" className="text-primary" />
           </div>
-          <h3 className="text-sm font-semibold text-foreground">Choisissez une heure</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t('scheduleCall.chooseTime')}</h3>
         </div>
 
         <div className="space-y-3">
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Matin</p>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('scheduleCall.morning')}</p>
             <div className="grid grid-cols-3 gap-2">
               {morningSlots.map((time) => (
                 <button
@@ -267,7 +270,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           </div>
 
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Apres-midi</p>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">{t('scheduleCall.afternoon')}</p>
             <div className="grid grid-cols-3 gap-2">
               {afternoonSlots.map((time) => (
                 <button
@@ -294,7 +297,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
         className="w-full rounded-xl h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
         disabled={!selectedDate || !selectedTime}
       >
-        Continuer
+        {t('scheduleCall.continue')}
         <ArrowRight2 size="16" color="currentColor" className="ml-2" />
       </Button>
     </div>
@@ -302,7 +305,6 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
 
   const renderStep2 = () => (
     <div className="flex flex-col space-y-5">
-      {/* Recap */}
       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
           <Calendar size="18" variant="Bulk" color="currentColor" className="text-primary" />
@@ -315,9 +317,8 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
         </div>
       </div>
 
-      {/* Call type selection */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3">Comment souhaitez-vous etre contacte ?</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-3">{t('scheduleCall.howContact')}</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
@@ -337,7 +338,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
               <Calendar size="20" variant="Bulk" color="currentColor" />
             </div>
             <p className="text-sm font-semibold text-foreground">Google Calendar</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Ajoutez l&apos;evenement a votre agenda</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('scheduleCall.calendarDesc')}</p>
             {callType === 'calendar' && (
               <div className="absolute top-3 right-3">
                 <TickCircle size="18" variant="Bold" color="currentColor" className="text-primary" />
@@ -362,7 +363,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
               <Whatsapp size="20" variant="Bulk" color="currentColor" />
             </div>
             <p className="text-sm font-semibold text-foreground">WhatsApp</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Planifiez via WhatsApp directement</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('scheduleCall.whatsappDesc')}</p>
             {callType === 'whatsapp' && (
               <div className="absolute top-3 right-3">
                 <TickCircle size="18" variant="Bold" color="currentColor" className="text-primary" />
@@ -379,14 +380,14 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           className="flex-1 rounded-xl h-11 font-semibold border-border hover:border-primary/40"
         >
           <ArrowLeft2 size="16" color="currentColor" className="mr-2" />
-          Retour
+          {t('scheduleCall.back')}
         </Button>
         <Button
           onClick={handleContinue}
           className="flex-1 rounded-xl h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
           disabled={!callType}
         >
-          Continuer
+          {t('scheduleCall.continue')}
           <ArrowRight2 size="16" color="currentColor" className="ml-2" />
         </Button>
       </div>
@@ -410,7 +411,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
         transition={{ delay: 0.2 }}
         className="text-xl font-bold text-foreground mb-2"
       >
-        Appel planifie !
+        {t('scheduleCall.scheduled')}
       </motion.h2>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -418,7 +419,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
         transition={{ delay: 0.3 }}
         className="text-sm text-muted-foreground mb-6 max-w-xs"
       >
-        Votre appel {callType === 'calendar' ? 'Google Calendar' : 'WhatsApp'} a ete planifie avec succes.
+        {t('scheduleCall.scheduledDesc', { type: callType === 'calendar' ? 'Google Calendar' : 'WhatsApp' })}
       </motion.p>
 
       <motion.div
@@ -454,7 +455,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           className="flex-1 rounded-xl h-11 font-semibold border-border hover:border-primary/40"
         >
           <ArrowLeft2 size="16" color="currentColor" className="mr-2" />
-          Retour
+          {t('scheduleCall.back')}
         </Button>
         <Button
           onClick={handleConfirm}
@@ -463,12 +464,12 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
           {callType === 'calendar' ? (
             <>
               <Calendar size="16" variant="Bulk" color="currentColor" className="mr-2" />
-              Ouvrir l&apos;agenda
+              {t('scheduleCall.openCalendar')}
             </>
           ) : (
             <>
               <Whatsapp size="16" variant="Bulk" color="currentColor" className="mr-2" />
-              Ouvrir WhatsApp
+              {t('scheduleCall.openWhatsapp')}
             </>
           )}
         </Button>
@@ -495,29 +496,26 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Top gradient bar */}
             <div className="h-1 bg-linear-to-r from-primary via-purple-500 to-fuchsia-500 rounded-t-2xl sm:rounded-t-2xl" />
 
-            {/* Mobile drag indicator */}
             <div className="sm:hidden flex justify-center pt-2">
               <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
             </div>
 
             <div className="p-5 sm:p-6">
-              {/* Header */}
               <div className="flex justify-between items-start mb-5">
                 <div>
-                  <h1 className="text-lg font-bold text-foreground">Planifier un appel</h1>
+                  <h1 className="text-lg font-bold text-foreground">{t('scheduleCall.title')}</h1>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {step === 1 && 'Choisissez une date et une heure'}
-                    {step === 2 && 'Selectionnez le type d\'appel'}
-                    {step === 3 && 'Confirmation de votre rendez-vous'}
+                    {step === 1 && t('scheduleCall.step1Subtitle')}
+                    {step === 2 && t('scheduleCall.step2Subtitle')}
+                    {step === 3 && t('scheduleCall.step3Subtitle')}
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
                   className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-                  aria-label="Fermer"
+                  aria-label={t('common.close')}
                 >
                   <CloseCircle size="20" variant="Bulk" color="currentColor" className="text-muted-foreground hover:text-foreground transition-colors" />
                 </button>

@@ -309,38 +309,22 @@ const Header = () => {
                 </DropdownMenu>
               </motion.div>
             ) : (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="hidden md:block"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="hidden md:block"
+              >
+                <button
+                  onClick={handleLoginClick}
+                  className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                 >
-                  <Link
-                    href="/auth/register"
-                    className="relative bg-primary text-white px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-                  >
-                    {t('auth.register')}
+                  <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
+                    {t('auth.login')}
                     <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
-                  </Link>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="hidden md:block"
-                >
-                  <button
-                    onClick={handleLoginClick}
-                    className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
-                  >
-                    <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
-                      {t('auth.login')}
-                      <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
-                    </span>
-                  </button>
-                </motion.div>
-              </>
+                  </span>
+                </button>
+              </motion.div>
             )}
             <LanguageSwitcher variant="dropdown" className="hidden md:block" />
             <ThemeToggle />
@@ -539,39 +523,22 @@ const Header = () => {
                       </motion.div>
                     </>
                   ) : (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.4 }}
-                        className="w-full"
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.4 }}
+                      className="w-full"
+                    >
+                      <button
+                        onClick={handleLoginClick}
+                        className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                       >
-                        <Link
-                          href="/compte"
-                          className="bg-primary text-white px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full shadow-md shadow-primary/25 active:scale-[0.98] transition-all duration-200"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {t('auth.register')}
+                        <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
+                          {t('auth.login')}
                           <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
-                        </Link>
-                      </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.5 }}
-                        className="w-full"
-                      >
-                        <button
-                          onClick={handleLoginClick}
-                          className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
-                        >
-                          <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
-                            {t('auth.login')}
-                            <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
-                          </span>
-                        </button>
-                      </motion.div>
-                    </>
+                        </span>
+                      </button>
+                    </motion.div>
                   )}
                 </div>
               </div>
