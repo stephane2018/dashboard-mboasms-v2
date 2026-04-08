@@ -12,6 +12,8 @@ import { MobileAppSection } from "@/shared/landing_components/components/section
 import { PricingSection } from "@/shared/landing_components/components/sections/PricingSection";
 import { CtaSection } from "@/shared/landing_components/components/sections/CtaSection";
 import { ContactSection } from "@/shared/landing_components/components/sections/ContactSection";
+import { WelcomeModal } from "@/shared/common/welcome-modal";
+import { CookieConsent } from "@/shared/common/cookie-consent";
 
 const ServicePresentation = lazy(() => import("@/shared/landing_components/components/sections/ServicePresentation"));
 const Testimonials = lazy(() => import("@/shared/landing_components/components/sections/Testimonials"));
@@ -59,6 +61,9 @@ export default function Home() {
       <ContactSection t={t} onScheduleCall={() => setScheduleCallOpen(true)} />
 
       <Footer />
+
+      <WelcomeModal />
+      <CookieConsent />
 
       {scheduleCallOpen && (
         <Suspense fallback={null}>

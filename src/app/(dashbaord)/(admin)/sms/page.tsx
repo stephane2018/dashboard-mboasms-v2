@@ -24,6 +24,7 @@ import {
     RechargeSection,
 } from "@/modules/sms"
 import { useSendMessage } from "@/core/hooks/useSendMessage"
+import { SmsGuideModal } from "@/modules/sms/components/sms-guide-modal"
 import { UseGetConnectedCompagnieData, useMainStatistics } from "@/core/hooks"
 
 const DEFAULT_TEMP_SENDER_ID = "infos"
@@ -423,6 +424,8 @@ export default function SMSPage() {
                     />
                 </div>
             </div>
+
+            <SmsGuideModal />
 
             <SMSConfirmationModal
                 isOpen={isConfirmationModalOpen}
