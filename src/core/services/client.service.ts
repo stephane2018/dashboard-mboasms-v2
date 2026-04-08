@@ -1,5 +1,6 @@
 import { httpClient } from '@/core/lib/http-client';
 import { refractHttpError } from '@/core/utils/http-error';
+import { extractContent } from '@/core/utils/extract-content';
 import {
     ClientResponseType,
     CreateClientRequestType,
@@ -9,7 +10,7 @@ import {
 
 export const createClient = async (data: CreateClientRequestType): Promise<ClientResponseType> => {
     try {
-        const response = await httpClient.post<ClientResponseType>('/api/v1/auth/register', data as unknown as Record<string, unknown>);
+        const response = await httpClient.post<ClientResponseType>('/api/v1/auth/register', data);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -20,7 +21,7 @@ export const createClientUser = async (enterpriseId: string, data: CreateClientU
     try {
         const response = await httpClient.post<ClientResponseType>(
             `/api/v1/enterprise/adduser-enterprise/${enterpriseId}`,
-            data as unknown as Record<string, unknown>
+            data
         );
         return response;
     } catch (error) {
@@ -30,7 +31,7 @@ export const createClientUser = async (enterpriseId: string, data: CreateClientU
 
 export const updateClient = async (id: string, data: UpdateClientRequestType): Promise<ClientResponseType> => {
     try {
-        const response = await httpClient.put<ClientResponseType>(`/api/v1/auth/update-user/${id}`, data as unknown as Record<string, unknown>);
+        const response = await httpClient.put<ClientResponseType>(`/api/v1/auth/update-user/${id}`, data);
         return response;
     } catch (error) {
         return Promise.reject(refractHttpError(error));
@@ -39,8 +40,8 @@ export const updateClient = async (id: string, data: UpdateClientRequestType): P
 
 export const getClientsEnterprise = async (enterpriseId: string): Promise<ClientResponseType[]> => {
     try {
-        const response = await httpClient.get<ClientResponseType[]>(`/api/v1/auth/all/${enterpriseId}`);
-        return response;
+        const response = await httpClient.get(`/api/v1/auth/all/${enterpriseId}`);
+        return extractContent<ClientResponseType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
@@ -48,8 +49,8 @@ export const getClientsEnterprise = async (enterpriseId: string): Promise<Client
 
 export const getClients = async (): Promise<ClientResponseType[]> => {
     try {
-        const response = await httpClient.get<ClientResponseType[]>(`/api/v1/auth/all/`);
-        return response;
+        const response = await httpClient.get(`/api/v1/auth/all/`);
+        return extractContent<ClientResponseType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
@@ -68,10 +69,10 @@ export const getClientsByEnterprisePaginated = async (
     enterpriseId: string, page = 0, size = 10
 ): Promise<ClientResponseType[]> => {
     try {
-        const response = await httpClient.get<ClientResponseType[]>(
+        const response = await httpClient.get(
             `/api/v1/auth/all/paginate/${enterpriseId}`, { params: { page, size } }
         );
-        return response;
+        return extractContent<ClientResponseType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }

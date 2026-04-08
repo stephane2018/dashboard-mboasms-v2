@@ -5,7 +5,7 @@ import type { PaginatedResponse } from '@/core/models/common';
 
 interface CountryResponse {
   data?: Country[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 async function getCountries(page: number = 0, size: number = 1000): Promise<Country[]> {

@@ -16,7 +16,7 @@ export const sendMessage = async (data: SendMessageRequestType): Promise<SendMes
     try {
         const response = await httpClient.post<SendMessageResponseType>(
             '/api/v1/message/sendMessage',
-            data as Record<string, any>
+            data
         );
         return response;
     } catch (error) {
@@ -28,7 +28,7 @@ export const sendMessageToContact = async (contactId: string, data: SendMessageR
     try {
         const response = await httpClient.post<SendMessageResponseType>(
             `/api/v1/message/${contactId}/sendMessageToContact`,
-            data as Record<string, any>
+            data
         );
         return response;
     } catch (error) {
@@ -40,7 +40,7 @@ export const sendMessageToGroup = async (payload: SendMessageToGroupPayload): Pr
     try {
         const response = await httpClient.post<SendMessageResponseType>(
             '/api/v1/message/sendMessageToGroup',
-            payload as Record<string, any>
+            payload
         );
         return response;
     } catch (error) {

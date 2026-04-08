@@ -1,7 +1,8 @@
 import axios, { type AxiosInstance, type AxiosInterceptorManager, type InternalAxiosRequestConfig, type AxiosResponse, type AxiosRequestConfig, type AxiosError } from "axios";
 import type { RequestBody } from "./api-type";
-import { tokenManager } from "./token-manager./token-manager";
-import { API_URL, REQUEST_HEADER_AUTH_KEY, TOKEN_TYPE, UNAUTHORIZED_STATUS_NUMBERS } from "../config/constante";
+import { tokenManager } from "./token-manager/token-manager";
+import { connectionChecker } from "./connection-checker";
+import { API_URL, REQUEST_HEADER_AUTH_KEY, TOKEN_TYPE } from "../config/constante";
 import { toast } from "sonner";
 
 interface LoginResponse {
@@ -13,10 +14,13 @@ export interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   useToken?: boolean;
 }
 
+const MAX_REFRESH_RETRIES = 3;
+
 export class HttpClient {
   private static instance: HttpClient;
   private client: AxiosInstance;
   private isRefreshing = false;
+  private refreshRetryCount = 0;
   private refreshSubscribers: Array<(token: string) => void> = [];
 
   public interceptors: {
@@ -56,13 +60,13 @@ export class HttpClient {
     return response.data;
   }
 
-  public async post<T>(url: string, data?: RequestBody, config?: CustomAxiosRequestConfig): Promise<T> {
-    const response = await this.client.post<T>(url, data as Record<string, any>, config);
+  public async post<T, D = RequestBody>(url: string, data?: D, config?: CustomAxiosRequestConfig): Promise<T> {
+    const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
 
-  public async put<T>(url: string, data?: RequestBody, config?: CustomAxiosRequestConfig): Promise<T> {
-    const response = await this.client.put<T>(url, data as Record<string, any>, config);
+  public async put<T, D = RequestBody>(url: string, data?: D, config?: CustomAxiosRequestConfig): Promise<T> {
+    const response = await this.client.put<T>(url, data, config);
     return response.data;
   }
 
@@ -78,18 +82,34 @@ export class HttpClient {
       throw new Error("No refresh token available");
     }
 
-    try {
-      const response = await this.client.post<LoginResponse>('/api/v1/auth/refresh', {
-        refreshToken
-      });
+    // Retry refresh up to MAX_REFRESH_RETRIES times
+    let lastError: unknown;
+    for (let attempt = 0; attempt < MAX_REFRESH_RETRIES; attempt++) {
+      try {
+        const response = await this.client.post<LoginResponse>('/api/v1/auth/refresh', {
+          refreshToken
+        });
 
-      tokenManager.setTokens(response.data.token, response.data.refreshToken);
-
-      return response.data.token;
-    } catch (error) {
-      if (!silent) this.handleUnauthorized();
-      throw error;
+        tokenManager.setTokens(response.data.token, response.data.refreshToken);
+        this.refreshRetryCount = 0;
+        return response.data.token;
+      } catch (error) {
+        lastError = error;
+        const axiosErr = error as AxiosError;
+        // If refresh itself returns 401/403, token is definitely invalid — stop retrying
+        if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
+          break;
+        }
+        // Wait briefly before retrying (network issues)
+        if (attempt < MAX_REFRESH_RETRIES - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        }
+      }
     }
+
+    // All retries exhausted — logout
+    if (!silent) this.handleUnauthorized();
+    throw lastError;
   }
 
   private handleUnauthorized(): void {
@@ -120,12 +140,13 @@ export class HttpClient {
           return Promise.reject(error);
         }
 
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
         const { response } = error;
 
-        // Only treat 401 as session expired (not 403 which is permission denied)
-        if (response && response.status === 401) {
+        // Only trigger logout if the request already went through token refresh and still failed
+        // This prevents racing with the withTokenRefresh interceptor
+        if (response && (response.status === 401 || response.status === 403) && originalRequest?._retry) {
           callback();
-          this.handleUnauthorized();
         }
 
         return Promise.reject(error);
@@ -142,9 +163,48 @@ export class HttpClient {
   }
 
   private setupInterceptors() {
+    this.withConnectionCheck();
     this.withAuthorization();
     this.withMultipartFormData();
     this.withTokenRefresh();
+    this.withConnectionRecovery();
+  }
+
+  private withConnectionCheck() {
+    this.interceptors.request.use((config) => {
+      // Skip connection check for health endpoint (used by the checker itself)
+      if (config.url?.includes("/api/health")) return config;
+
+      // Synchronous check — never blocks/delays the request
+      const status = connectionChecker.checkSync();
+
+      if (status.quality === "offline") {
+        throw new axios.AxiosError(
+          "Connexion indisponible. Vérifiez votre connexion internet.",
+          "ERR_NETWORK"
+        );
+      }
+
+      // Slow connection: let request through (checker already notified the popup)
+      return config;
+    });
+  }
+
+  private withConnectionRecovery() {
+    this.interceptors.response.use(
+      (response) => {
+        // Successful response = connection is good
+        connectionChecker.notifyGood();
+        return response;
+      },
+      (error) => {
+        // Network error (no response) — trigger async ping to confirm status
+        if (!error.response && error.code !== "ERR_CANCELED") {
+          connectionChecker.pingCheck();
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   private withAuthorization() {
@@ -156,18 +216,15 @@ export class HttpClient {
         return requestConfig;
       }
 
-      // Check if token should be refreshed proactively before making the request
-      // Use silent mode so a failed proactive refresh doesn't redirect to login
-      if (tokenManager.shouldRefreshToken() && !this.isRefreshing) {
-        try {
-          await this.handleTokenRefresh(true);
-        } catch {
-          // If proactive refresh fails, continue with current token
-          // The response interceptor will handle 401/403 errors
-        }
+      let token = tokenManager.getToken();
+
+      // If token is null in memory, try re-hydrating once from cookies (handles page refresh)
+      if (!token) {
+        await tokenManager.hydrateFromServer(true);
+        token = tokenManager.getToken();
       }
 
-      const token = tokenManager.getToken();
+      // Still no token after hydration — skip silently, withTokenRefresh will handle 401 if needed
 
       if (token) {
         requestConfig.headers[REQUEST_HEADER_AUTH_KEY] = `${TOKEN_TYPE} ${token}`;
@@ -198,9 +255,12 @@ export class HttpClient {
       (response: AxiosResponse) => response,
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+        const status = error.response?.status;
 
-        // Only attempt token refresh on 401 (unauthorized), not on 403 (forbidden/permission denied)
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Treat both 401 (unauthorized) and 403 (forbidden) as potential token expiration
+        const isTokenExpired = (status === 401 || status === 403) && !originalRequest._retry;
+
+        if (isTokenExpired) {
           if (this.isRefreshing) {
             // Queue the request if refresh is in progress
             return new Promise(resolve => {

@@ -106,6 +106,11 @@ export function advancedSearch<T extends Record<string, any>>(
     const [, fieldName, searchValue] = fieldMatch
     const field = fieldName as keyof T
 
+    // Only allow searching in explicitly declared searchable fields
+    if (!searchableFields.includes(field)) {
+      return filterBySearch(items, query, searchableFields)
+    }
+
     return items.filter((item) => {
       const value = item[field]
       if (value === null || value === undefined) return false
@@ -132,7 +137,9 @@ export function advancedSearch<T extends Record<string, any>>(
 export function highlightSearchTerm(text: string, searchTerm: string): string {
   if (!searchTerm.trim()) return text
 
-  const regex = new RegExp(`(${searchTerm})`, "gi")
+  // Escape regex special characters to prevent ReDoS
+  const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escaped})`, "gi")
   return text.replace(regex, "<mark>$1</mark>")
 }
 

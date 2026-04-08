@@ -353,7 +353,7 @@ export default function UsersListPage() {
               className="h-9 w-[200px] pl-9 sm:w-[300px]"
             />
           </div>
-          <Button className="flex text-white items-center gap-2 cursor-pointer">
+          <div className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 cursor-pointer">
             <Switch
               checked={showInternationalOnly}
               onCheckedChange={setShowInternationalOnly}
@@ -362,7 +362,7 @@ export default function UsersListPage() {
               <Global size={14} color="currentColor" variant="Bulk" />
               International
             </span>
-          </Button>
+          </div>
           {(searchTerm || showInternationalOnly) && (
             <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
               {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
@@ -427,7 +427,7 @@ export default function UsersListPage() {
         onAction={confirmDelete}
         messages={{
           title: "Delete Contact",
-          description: `Are you sure you want to delete <strong>${contactToDelete?.firstname} ${contactToDelete?.lastname}</strong>? This action cannot be undone.`,
+          description: <>Are you sure you want to delete <strong>{contactToDelete?.firstname} {contactToDelete?.lastname}</strong>? This action cannot be undone.</>,
           buttons: {
             cancel: "Cancel",
             action: "Delete",
@@ -446,7 +446,7 @@ export default function UsersListPage() {
         onAction={confirmBulkDelete}
         messages={{
           title: "Supprimer les contacts",
-          description: `Êtes-vous sûr de vouloir supprimer <strong>${contactsToDelete.length}</strong> contact(s) ? Cette action ne peut pas être annulée.`,
+          description: <>Êtes-vous sûr de vouloir supprimer <strong>{contactsToDelete.length}</strong> contact(s) ? Cette action ne peut pas être annulée.</>,
           buttons: {
             cancel: "Annuler",
             action: "Supprimer",

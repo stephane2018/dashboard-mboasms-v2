@@ -93,7 +93,7 @@ export const senderIdService = {
 
   async createSenderId(input: CreateSenderIdInput): Promise<SenderId> {
     try {
-      return await httpClient.post<SenderId>("/api/v1/sender-ids", input as any)
+      return await httpClient.post<SenderId>("/api/v1/sender-ids", input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }
@@ -101,7 +101,7 @@ export const senderIdService = {
 
   async updateSenderId(id: string, input: UpdateSenderIdInput): Promise<SenderId> {
     try {
-      return await httpClient.put<SenderId>(`/api/v1/sender-ids/${id}`, input as any)
+      return await httpClient.put<SenderId>(`/api/v1/sender-ids/${id}`, input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }
@@ -109,7 +109,7 @@ export const senderIdService = {
 
   async updateSenderIdStatus(id: string, input: UpdateSenderIdStatusInput): Promise<SenderId> {
     try {
-      return await httpClient.put<SenderId>(`/api/v1/sender-ids/${id}/status`, input as any)
+      return await httpClient.put<SenderId>(`/api/v1/sender-ids/${id}/status`, input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }

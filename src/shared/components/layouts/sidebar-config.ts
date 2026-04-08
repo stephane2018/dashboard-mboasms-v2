@@ -62,13 +62,13 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Users List',
+                title: 'Mes contacts',
                 url: '/users',
                 icon: People,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Contacts',
+                title: 'Contacts Globale ',
                 url: '/contacts-management',
                 icon: People,
                 roles: [Role.SUPER_ADMIN],
@@ -209,12 +209,20 @@ export const secondaryNavConfig: RoleBasedNavItem[] = [
 
 // Utility functions
 export const getUserRole = (): UserRole => {
-    // Get role from localStorage - fallback to ADMIN for development
-    const storedRole = localStorage.getItem('caisse-post-role')
-    if (storedRole && Object.values(Role).includes(storedRole as Role)) {
-        return storedRole as Role
+    // Read from sessionStorage (user-storage key used by Zustand)
+    try {
+        const stored = sessionStorage.getItem('user-storage')
+        if (stored) {
+            const parsed = JSON.parse(stored)
+            const role = parsed?.state?.user?.role
+            if (role && Object.values(Role).includes(role as Role)) {
+                return role as Role
+            }
+        }
+    } catch {
+        // Ignore parse errors
     }
-    return Role.ADMIN
+    return Role.USER
 }
 
 export const getDashboardConfig = (userRole: UserRole) => {

@@ -46,7 +46,6 @@ export default function RechargePage() {
   })
 
   const allRecharges = rechargesQuery.data || []
-  console.log(allRecharges);
   
   const isLoadingRecharges = rechargesQuery.isLoading
   const totalElements = allRecharges.length

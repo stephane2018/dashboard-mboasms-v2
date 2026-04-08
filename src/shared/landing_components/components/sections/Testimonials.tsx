@@ -6,12 +6,9 @@ import { QuoteUp, ArrowLeft2, ArrowRight2, Star1, Global } from 'iconsax-react';
 
 type Testimonial = {
   id: number;
-  name: string;
   role: string;
   company: string;
   initials: string;
-  country: string;
-  flag: string;
   quote: string;
   rating: number;
   color: string;
@@ -20,60 +17,45 @@ type Testimonial = {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: 'Jean-Pierre Mbarga',
     role: 'Directeur Marketing',
-    company: 'TechCorp Cameroun',
-    initials: 'JM',
-    country: 'Cameroun',
-    flag: '🇨🇲',
+    company: 'TechCorp',
+    initials: 'DM',
     quote: 'MboaSMS a transforme notre communication client. Nos campagnes SMS atteignent un taux d\'ouverture de 98% et nos ventes ont augmente de 35% depuis qu\'on utilise leur plateforme.',
     rating: 5,
     color: 'from-purple-500 to-violet-600',
   },
   {
     id: 2,
-    name: 'Aminata Diallo',
     role: 'CEO',
-    company: 'DigiPay Senegal',
-    initials: 'AD',
-    country: 'Senegal',
-    flag: '🇸🇳',
+    company: 'DigiPay',
+    initials: 'CE',
     quote: 'L\'API est remarquablement bien documentee. Notre equipe technique a integre l\'envoi de SMS transactionnels en moins de 2 heures. La fiabilite est au rendez-vous, meme en periode de forte charge.',
     rating: 5,
     color: 'from-emerald-500 to-teal-600',
   },
   {
     id: 3,
-    name: 'Kwame Asante',
     role: 'Head of Growth',
-    company: 'FinTech Hub Accra',
-    initials: 'KA',
-    country: 'Ghana',
-    flag: '🇬🇭',
+    company: 'FinTech Hub',
+    initials: 'HG',
     quote: 'We switched from a US-based provider to MboaSMS and our delivery rates in West Africa went from 85% to 99%. The pricing is unbeatable for the African market.',
     rating: 5,
     color: 'from-amber-500 to-orange-600',
   },
   {
     id: 4,
-    name: 'Sophie Laurent',
     role: 'Responsable CRM',
-    company: 'E-Commerce Paris',
-    initials: 'SL',
-    country: 'France',
-    flag: '🇫🇷',
+    company: 'E-Commerce Pro',
+    initials: 'RC',
     quote: 'Nous gerons nos campagnes SMS pour la France et l\'Afrique depuis un seul dashboard. La possibilite d\'avoir des tarifs par pays et un reporting unifie est un vrai gain de temps.',
     rating: 4,
     color: 'from-sky-500 to-blue-600',
   },
   {
     id: 5,
-    name: 'Chidi Okonkwo',
     role: 'Product Manager',
-    company: 'LogiTrack Nigeria',
-    initials: 'CO',
-    country: 'Nigeria',
-    flag: '🇳🇬',
+    company: 'LogiTrack',
+    initials: 'PM',
     quote: 'Our delivery notifications reach customers in under 3 seconds. MboaSMS handles over 50,000 SMS daily for us without a single hiccup. Their support team is also incredibly responsive.',
     rating: 5,
     color: 'from-rose-500 to-pink-600',
@@ -183,13 +165,8 @@ export default function Testimonials() {
                       </div>
 
                       <div>
-                        <h4 className="font-bold text-foreground">{current.name}</h4>
-                        <p className="text-sm text-muted-foreground">{current.role}</p>
+                        <p className="text-sm font-medium text-foreground">{current.role}</p>
                         <p className="text-sm text-primary font-medium">{current.company}</p>
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <span className="text-sm">{current.flag}</span>
-                          <span className="text-xs text-muted-foreground">{current.country}</span>
-                        </div>
                       </div>
                     </div>
 

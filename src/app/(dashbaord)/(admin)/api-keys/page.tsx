@@ -63,7 +63,6 @@ export default function ApiKeysPage() {
 
   const columns = createColumns({ onDelete: handleDelete })
   const apiKeys = data || []
-  console.log("apiKeys", apiKeys)
 
   return (
     <div className="container mx-auto py-6 space-y-6">

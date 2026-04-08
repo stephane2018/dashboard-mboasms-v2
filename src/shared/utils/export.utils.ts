@@ -113,11 +113,17 @@ export const exportToExcel = async (options: ExcelExportOptions): Promise<void> 
       }
     })
 
-    // Add data rows
+    // Add data rows (with CSV injection protection)
     exportData.forEach((row, rowIndex) => {
       const dataRow = worksheet.getRow(startRow + 1 + rowIndex)
       headers.forEach((header, colIndex) => {
-        dataRow.getCell(colIndex + 1).value = row[header] as ExcelJS.CellValue
+        const rawValue = row[header]
+        // Neutralize CSV/Excel formula injection
+        if (typeof rawValue === 'string' && /^[=+\-@\t\r]/.test(rawValue)) {
+          dataRow.getCell(colIndex + 1).value = `'${rawValue}` as ExcelJS.CellValue
+        } else {
+          dataRow.getCell(colIndex + 1).value = rawValue as ExcelJS.CellValue
+        }
       })
     })
 
@@ -225,7 +231,10 @@ export const exportToPDF = (options: PDFExportOptions): void => {
         // Formater les valeurs si nécessaire
         if (value === null || value === undefined) return '-'
         if (typeof value === 'number') return value.toLocaleString('fr-FR')
-        return String(value)
+        const strValue = String(value)
+        // Neutralize formula injection in PDF export
+        if (/^[=+\-@\t\r]/.test(strValue)) return `'${strValue}`
+        return strValue
       })
     )
 

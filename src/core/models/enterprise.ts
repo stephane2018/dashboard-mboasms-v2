@@ -3,8 +3,8 @@ import { CountryType } from './country';
 import { RechargeType } from './recharge';
 
 // Forward declarations to avoid circular dependencies
-export type EnterpriseContactType = any; // Will be defined in contact.ts
-export type GroupType = any; // Will be defined in groups.ts
+export type EnterpriseContactType = Record<string, unknown>;
+export type GroupType = Record<string, unknown>;
 
 // Enterprise interface
 export interface EnterpriseType extends BaseEntity {
