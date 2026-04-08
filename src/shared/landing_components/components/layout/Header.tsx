@@ -340,7 +340,7 @@ const Header = () => {
                 </motion.div>
               </>
             )}
-            <LanguageSwitcher variant="pill" />
+            <LanguageSwitcher variant="dropdown" className="hidden md:block" />
             <ThemeToggle />
             <button
               className="md:hidden text-foreground p-1 rounded-full hover:bg-primary/10 transition-colors"
