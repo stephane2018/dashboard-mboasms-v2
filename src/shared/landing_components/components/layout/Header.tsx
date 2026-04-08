@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight2, CloseCircle, User, Logout, Profile, Sms, Global, CloseSquare } from 'iconsax-react';
 import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
+import { LanguageSwitcher } from '@/shared/common/language-switcher';
 import { useUserStore } from '@/core/stores/userStore';
 import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
@@ -36,12 +37,18 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(true);
+  const [bannerReady, setBannerReady] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const dismissed = localStorage.getItem('mboasms_v2_banner_dismissed');
     if (!dismissed) {
-      setBannerDismissed(false);
+      // Show banner a few seconds after page load (after welcome modal)
+      const timer = setTimeout(() => {
+        setBannerDismissed(false);
+        setBannerReady(true);
+      }, 4000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -333,6 +340,7 @@ const Header = () => {
                 </motion.div>
               </>
             )}
+            <LanguageSwitcher variant="dropdown" className="hidden md:block" />
             <ThemeToggle />
             <button
               className="md:hidden text-foreground p-1 rounded-full hover:bg-primary/10 transition-colors"

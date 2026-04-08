@@ -55,19 +55,23 @@ export default function UsersListPage() {
   const [showInternationalOnly, setShowInternationalOnly] = useState(false)
 
   // Fetch contacts with pagination
-  const { getContacts, isLoading } = useContactsByEnterprise()
+  const { getContacts, isLoading: isHookLoading } = useContactsByEnterprise()
   const [data, setData] = useState<EnterpriseContactResponseType[]>([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(true)
 
   // Function to refresh contacts list
   const refreshContacts = () => {
+    setIsLoadingContacts(true)
     if (_isSuperAdmin) {
       contactService.getAllContactsSuperAdmin().then((result) => {
         setData(Array.isArray(result) ? result : [])
-      }).catch(() => setData([]))
+      }).catch(() => setData([])).finally(() => setIsLoadingContacts(false))
     } else if (user?.companyId) {
       getContacts(user.companyId).then((result) => {
         setData(Array.isArray(result) ? result : [])
-      }).catch(() => setData([]))
+      }).catch(() => setData([])).finally(() => setIsLoadingContacts(false))
+    } else {
+      setIsLoadingContacts(false)
     }
   }
 
@@ -75,6 +79,8 @@ export default function UsersListPage() {
   useEffect(() => {
     refreshContacts()
   }, [user?.companyId, getContacts])
+
+  const isLoading = isLoadingContacts || isHookLoading
   const { deleteContact, isLoading: isDeleting } = useDeleteContact()
 
   const allContacts = Array.isArray(data) ? data : []
