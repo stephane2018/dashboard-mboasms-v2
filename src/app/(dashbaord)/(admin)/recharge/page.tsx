@@ -18,6 +18,7 @@ import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/crea
 import { ValidateRechargeModal, RefuseRechargeModal, CreditAccountModal } from "./_components/recharge-action-modals"
 import { useRecharge } from "@/core/hooks/useRecharge"
 import { useActivePlans } from "@/core/hooks"
+import { RechargeGuideModal, RechargeSupportBanner } from "./_components/recharge-guide-modal"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
@@ -262,6 +263,9 @@ export default function RechargePage() {
         </div>
       </div>
 
+      {/* Support contacts */}
+      <RechargeSupportBanner />
+
       {/* Statistics */}
       {isLoading ? (
         <StatisticsSkeleton />
@@ -349,6 +353,9 @@ export default function RechargePage() {
         recharge={selectedRecharge}
         isLoading={refuseRechargeMutation.isPending}
       />
+
+      {/* Recharge Guide Modal */}
+      <RechargeGuideModal />
 
       {/* Credit Account Modal */}
       <CreditAccountModal

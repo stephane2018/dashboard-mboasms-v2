@@ -1,12 +1,160 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
-import { UserTag, TickCircle, InfoCircle, Warning2, Edit, CloseCircle } from "iconsax-react"
-import { Loader2 } from "lucide-react"
+import { UserTag, TickCircle, InfoCircle, Warning2, Edit, CloseCircle, Information, MessageText } from "iconsax-react"
+import { Loader2, CheckCircle2, HelpCircle, X } from "lucide-react"
 import type { SenderIdSectionProps } from "./types"
+
+const HELP_STORAGE_KEY = "mboasms_senderid_help_dismissed"
+
+function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [dontShowAgain, setDontShowAgain] = useState(false)
+
+  const handleClose = () => {
+    if (dontShowAgain) {
+      localStorage.setItem(HELP_STORAGE_KEY, "true")
+    }
+    onClose()
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleClose}
+          />
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.92, opacity: 0, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative z-10 w-full max-w-md bg-card rounded-2xl shadow-2xl border border-border/50 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 pb-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Information size={18} variant="Bulk" color="currentColor" className="text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Qu&apos;est-ce qu&apos;un Sender ID ?</h3>
+                  <p className="text-[10px] text-muted-foreground">Tout comprendre en 2 minutes</p>
+                </div>
+              </div>
+              <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Le <strong className="text-foreground">Sender ID</strong> est le nom qui apparait comme expediteur
+                lorsque votre destinataire recoit votre SMS.
+              </p>
+
+              {/* infos card */}
+              <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/15 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-600">
+                    ID
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400">&quot;infos&quot;</p>
+                    <p className="text-[10px] text-muted-foreground">Sender ID par defaut</p>
+                  </div>
+                  <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-semibold">
+                    ACTIF
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Par defaut, tous les SMS sont envoyes avec le Sender ID <strong className="text-foreground">&quot;infos&quot;</strong>.
+                  Vos destinataires verront &quot;infos&quot; comme nom d&apos;expediteur.
+                </p>
+              </div>
+
+              {/* Custom sender ID */}
+              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/15 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <MessageText size={14} variant="Bulk" color="currentColor" className="text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-primary">Sender ID personnalise</p>
+                    <p className="text-[10px] text-muted-foreground">Ex: MONENTREPRISE</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Vous pouvez demander un Sender ID a votre nom d&apos;entreprise. La validation prend
+                  generalement <strong className="text-foreground">24 a 48h</strong>.
+                </p>
+              </div>
+
+              {/* Rules */}
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Regles</p>
+                {[
+                  "Maximum 11 caracteres alphanumeriques",
+                  "Pas d'espaces ni de caracteres speciaux",
+                  "La validation est effectuee par l'operateur",
+                ].map((rule) => (
+                  <div key={rule} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                    <span className="text-xs text-muted-foreground">{rule}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Contact */}
+              <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
+                <p className="text-xs text-muted-foreground">
+                  Une question ? Contactez-nous a{" "}
+                  <a href="mailto:contact@mboasms.com" className="text-primary font-medium hover:underline">
+                    contact@mboasms.com
+                  </a>
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-5 pb-5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-border accent-primary"
+                />
+                <span className="text-[11px] text-muted-foreground">Ne plus afficher</span>
+              </label>
+              <button
+                onClick={handleClose}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              >
+                J&apos;ai compris
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 export function SenderIdSection({
     activeSenderId,
@@ -28,6 +176,13 @@ export function SenderIdSection({
     onNewSenderIdInputChange,
     onShowSenderIdInputChange,
 }: SenderIdSectionProps) {
+    const [helpOpen, setHelpOpen] = useState(false)
+    const [helpHidden, setHelpHidden] = useState(true)
+
+    useEffect(() => {
+        setHelpHidden(!!localStorage.getItem(HELP_STORAGE_KEY))
+    }, [])
+
     return (
         <div className={`rounded-2xl border bg-card ${!activeSenderId ? "border-amber-300 dark:border-amber-700" : "border-border/50"}`}>
             <div className="flex items-center justify-between p-4 pb-3">
@@ -39,6 +194,13 @@ export function SenderIdSection({
                             — {activeSenderId}
                         </span>
                     )}
+                    <button
+                        onClick={() => setHelpOpen(true)}
+                        className="p-1 rounded-md hover:bg-muted transition-colors"
+                        title="Qu'est-ce qu'un Sender ID ?"
+                    >
+                        <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
                 </div>
                 {/* Toggle principal/temporaire */}
                 {hasPrimarySenderId && (
@@ -212,6 +374,28 @@ export function SenderIdSection({
                     </>
                 )}
             </div>
+
+            {/* Auto-show help banner for first-time users */}
+            {!helpHidden && (
+                <div className="mx-4 mb-4 flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setHelpOpen(true)}>
+                    <HelpCircle className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <p className="text-xs text-primary flex-1">
+                        <strong>Nouveau ?</strong> Decouvrez comment fonctionne le Sender ID cliquez sur ici pour plus de details 
+                    </p>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            setHelpHidden(true)
+                            localStorage.setItem(HELP_STORAGE_KEY, "true")
+                        }}
+                        className="p-0.5 rounded hover:bg-primary/10 transition-colors"
+                    >
+                        <X className="w-3 h-3 text-primary" />
+                    </button>
+                </div>
+            )}
+
+            <SenderIdHelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
         </div>
     )
 }

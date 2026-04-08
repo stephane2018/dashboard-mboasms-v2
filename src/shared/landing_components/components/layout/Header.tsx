@@ -36,12 +36,18 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(true);
+  const [bannerReady, setBannerReady] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const dismissed = localStorage.getItem('mboasms_v2_banner_dismissed');
     if (!dismissed) {
-      setBannerDismissed(false);
+      // Show banner a few seconds after page load (after welcome modal)
+      const timer = setTimeout(() => {
+        setBannerDismissed(false);
+        setBannerReady(true);
+      }, 4000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
