@@ -47,6 +47,7 @@ import {
   Moon,
 } from "iconsax-react"
 import { useTheme } from "next-themes"
+import { LanguageSwitcher } from "@/shared/common/language-switcher"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -154,6 +155,8 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                 <span className="sr-only">Aller à l&apos;accueil</span>
               </Link>
             </Button>
+
+            <LanguageSwitcher variant="icon" />
 
             <Button
               variant="outline"
