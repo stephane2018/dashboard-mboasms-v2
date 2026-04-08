@@ -399,8 +399,8 @@ export default function ConditionsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider m-0 mb-1">Email</p>
-                      <a href="mailto:contact@mboasms.com" className="text-sm font-semibold text-primary hover:underline no-underline">
-                        contact@mboasms.com
+                      <a href="mailto:support@mboasms.com" className="text-sm font-semibold text-primary hover:underline no-underline">
+                        support@mboasms.com
                       </a>
                     </div>
                     <div className="rounded-lg border border-border/60 bg-muted/20 p-4">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useT } from "@/core/hooks"
 import { motion, AnimatePresence } from "framer-motion"
 import { Shield } from "lucide-react"
 import Link from "next/link"
@@ -8,6 +9,7 @@ import Link from "next/link"
 const STORAGE_KEY = "mboasms_cookies_accepted"
 
 export function CookieConsent() {
+  const { t } = useT()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -41,20 +43,19 @@ export function CookieConsent() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-foreground mb-1">
-                  Cookies & confidentialite
+                  {t('cookies.title')}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                  Nous utilisons des cookies pour ameliorer votre experience.
-                  En continuant, vous acceptez notre{" "}
+                  {t('cookies.description')}{" "}
                   <Link href="/conditions" className="text-primary hover:underline font-medium">
-                    politique de confidentialite
+                    {t('cookies.privacyPolicy')}
                   </Link>
-                  . Pour toute question :{" "}
+                  . {t('cookies.question')}{" "}
                   <a
-                    href="mailto:contact@mboasms.com"
+                    href="mailto:support@mboasms.com"
                     className="text-primary hover:underline font-medium"
                   >
-                    contact@mboasms.com
+                    support@mboasms.com
                   </a>
                 </p>
                 <div className="flex items-center gap-2">
@@ -62,13 +63,13 @@ export function CookieConsent() {
                     onClick={accept}
                     className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                   >
-                    Accepter
+                    {t('cookies.accept')}
                   </button>
                   <button
                     onClick={accept}
                     className="px-4 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all duration-200"
                   >
-                    Refuser
+                    {t('cookies.refuse')}
                   </button>
                 </div>
               </div>

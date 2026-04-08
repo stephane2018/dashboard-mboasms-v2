@@ -15,6 +15,7 @@ import { Label } from "@/shared/ui/label"
 import { Textarea } from "@/shared/ui/textarea"
 import { DatePicker } from "@/shared/ui/date-picker"
 import type { CreateCouponInput } from "../types"
+import { useT } from "@/core/hooks"
 
 interface CreateCouponDialogProps {
   open: boolean
@@ -31,6 +32,7 @@ export function CreateCouponDialog({
   isLoading = false,
   userId,
 }: CreateCouponDialogProps) {
+  const { t } = useT()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [code, setCode] = useState("")
@@ -42,15 +44,15 @@ export function CreateCouponDialog({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = "Le nom est requis"
-    if (!code.trim()) newErrors.code = "Le code est requis"
+    if (!name.trim()) newErrors.name = t('couponForm.nameRequired')
+    if (!code.trim()) newErrors.code = t('couponForm.codeRequired')
     if (!percentage || Number(percentage) < 0 || Number(percentage) > 100) {
-      newErrors.percentage = "Le pourcentage doit être entre 0 et 100"
+      newErrors.percentage = t('couponForm.percentageInvalid')
     }
-    if (!validFrom) newErrors.validFrom = "La date de début est requise"
-    if (!validTo) newErrors.validTo = "La date de fin est requise"
+    if (!validFrom) newErrors.validFrom = t('couponForm.validFromRequired')
+    if (!validTo) newErrors.validTo = t('couponForm.validToRequired')
     if (validFrom && validTo && validTo <= validFrom) {
-      newErrors.validTo = "La date de fin doit être après la date de début"
+      newErrors.validTo = t('couponForm.validToAfterFrom')
     }
 
     setErrors(newErrors)
@@ -91,32 +93,32 @@ export function CreateCouponDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Créer un nouveau coupon</DialogTitle>
+          <DialogTitle>{t('couponForm.createTitle')}</DialogTitle>
           <DialogDescription>
-            Créez un code promo avec un pourcentage de réduction.
+            {t('couponForm.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="coupon-name">Nom *</Label>
+            <Label htmlFor="coupon-name">{t('couponForm.nameLabel')}</Label>
             <Input
               id="coupon-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Promo Noël"
+              placeholder={t('couponForm.namePlaceholder')}
               disabled={isLoading}
             />
             {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="coupon-description">Description</Label>
+            <Label htmlFor="coupon-description">{t('common.description')}</Label>
             <Textarea
               id="coupon-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description du coupon"
+              placeholder={t('couponForm.descriptionPlaceholder')}
               disabled={isLoading}
               rows={3}
             />
@@ -124,7 +126,7 @@ export function CreateCouponDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="coupon-code">Code *</Label>
+              <Label htmlFor="coupon-code">{t('couponForm.codeLabel')}</Label>
               <Input
                 id="coupon-code"
                 value={code}
@@ -136,7 +138,7 @@ export function CreateCouponDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="coupon-percentage">Pourcentage (%) *</Label>
+              <Label htmlFor="coupon-percentage">{t('couponForm.percentageLabel')}</Label>
               <Input
                 id="coupon-percentage"
                 type="number"
@@ -153,22 +155,22 @@ export function CreateCouponDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Valide du *</Label>
+              <Label>{t('couponForm.validFromLabel')}</Label>
               <DatePicker
                 value={validFrom}
                 onChange={setValidFrom}
-                placeholder="Date de début"
+                placeholder={t('couponForm.startDatePlaceholder')}
                 disabled={isLoading}
               />
               {errors.validFrom && <p className="text-xs text-red-500">{errors.validFrom}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label>Valide au *</Label>
+              <Label>{t('couponForm.validToLabel')}</Label>
               <DatePicker
                 value={validTo}
                 onChange={setValidTo}
-                placeholder="Date de fin"
+                placeholder={t('couponForm.endDatePlaceholder')}
                 disabled={isLoading}
               />
               {errors.validTo && <p className="text-xs text-red-500">{errors.validTo}</p>}
@@ -178,10 +180,10 @@ export function CreateCouponDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={isLoading || !name.trim() || !code.trim()}>
-            {isLoading ? "Création..." : "Créer"}
+            {isLoading ? t('couponForm.creating') : t('couponForm.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

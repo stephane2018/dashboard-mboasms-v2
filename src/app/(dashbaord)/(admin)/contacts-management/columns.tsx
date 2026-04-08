@@ -5,19 +5,20 @@ import { Badge } from "@/shared/ui/badge"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
 import { Sms, Call, Building, Location } from 'iconsax-react'
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import { i18next } from "@/core/lib/i18n"
 
 export const columns: ColumnDef<EnterpriseContactResponseType>[] = [
   {
     accessorKey: "firstname",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="First Name" label="First Name" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t("contactColumns.firstName")} label={i18next.t("contactColumns.firstName")} />,
   },
   {
     accessorKey: "lastname",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Last Name" label="Last Name" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t("contactColumns.lastName")} label={i18next.t("contactColumns.lastName")} />,
   },
   {
     accessorKey: "email",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Email" label="Email" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t("common.email")} label={i18next.t("common.email")} />,
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Sms size="16" />
@@ -27,7 +28,7 @@ export const columns: ColumnDef<EnterpriseContactResponseType>[] = [
   },
   {
     accessorKey: "phoneNumber",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Phone Number" label="Phone Number" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={i18next.t("contactColumns.phoneNumber")} label={i18next.t("contactColumns.phoneNumber")} />,
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Call size="16" />
@@ -37,7 +38,7 @@ export const columns: ColumnDef<EnterpriseContactResponseType>[] = [
   },
   {
     accessorKey: "enterprise",
-    header: "Enterprise",
+    header: i18next.t("contactColumns.enterprise"),
     cell: ({ row }) => {
       const enterprise = row.original.enterprise
       return (
@@ -50,7 +51,7 @@ export const columns: ColumnDef<EnterpriseContactResponseType>[] = [
   },
   {
     accessorKey: "country",
-    header: "Country",
+    header: i18next.t("common.country"),
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Location size="16" />
@@ -60,10 +61,10 @@ export const columns: ColumnDef<EnterpriseContactResponseType>[] = [
   },
   {
     accessorKey: "archived",
-    header: "Archived",
+    header: i18next.t("contactColumns.archived"),
     cell: ({ row }) => {
       const archived = row.getValue("archived") as boolean
-      return <Badge variant={archived ? "secondary" : "outline"}>{archived ? "Yes" : "No"}</Badge>
+      return <Badge variant={archived ? "secondary" : "outline"}>{archived ? i18next.t("common.yes") : i18next.t("common.no")}</Badge>
     },
   },
 ]

@@ -19,6 +19,7 @@ import { ExportModal } from "./_components/export-modal"
 import { SMSModal } from "./_components/sms-modal"
 import { ImportModal } from "./_components/import-modal"
 import { useAuthContext } from "@/core/providers"
+import { useT } from "@/core/hooks"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
@@ -36,6 +37,7 @@ export default function UsersListPage() {
     pageSize: 10,
   })
   const { user } = useAuthContext()
+  const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const { setPrefilledContacts } = useSMSStore()
 
@@ -160,8 +162,8 @@ export default function UsersListPage() {
     )
     
     if (validContacts.length === 0) {
-      toast.error("Aucun contact valide", {
-        description: "Les contacts sélectionnés n'ont pas de numéro de téléphone valide",
+      toast.error(t('contacts.noValidContacts'), {
+        description: t('contacts.noValidContactsDesc'),
       })
       return
     }
@@ -184,8 +186,8 @@ export default function UsersListPage() {
   }
 
   const handleSMSSend = (message: string, password: string) => {
-    toast.success("SMS envoyé", {
-      description: `Message envoyé à ${selectedContacts.length} contact(s)`,
+    toast.success(t('sms.sentSuccess'), {
+      description: `${selectedContacts.length} contact(s)`,
     })
     setIsSMSModalOpen(false)
     // TODO: Implement actual SMS sending
@@ -219,16 +221,14 @@ export default function UsersListPage() {
 
       await Promise.all(deletePromises)
 
-      toast.success("Contacts supprimés", {
-        description: `${contactsToDelete.length} contact(s) supprimé(s) avec succès`,
-      })
+      toast.success(t('contacts.contactsDeleted', { count: contactsToDelete.length }))
       setSelectedContacts([]) // Clear selection after successful deletion
       setIsBulkDeleteDialogOpen(false)
       setContactsToDelete([])
       refreshContacts()
     } catch (error) {
-      toast.error("Erreur lors de la suppression", {
-        description: "Une erreur est survenue lors de la suppression des contacts",
+      toast.error(t('contacts.deleteError'), {
+        description: t('contacts.deleteErrorDesc'),
       })
     }
   }
@@ -264,12 +264,12 @@ export default function UsersListPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {_isSuperAdmin ? "Contacts (Plateforme)" : "Mes contacts"}
+            {_isSuperAdmin ? t('contacts.titlePlatform') : t('contacts.title')}
           </h1>
           <p className="text-muted-foreground">
             {_isSuperAdmin
-              ? "Gérez tous les contacts de la plateforme"
-              : "Gérez et organisez vos contacts"}
+              ? t('contacts.subtitlePlatform')
+              : t('contacts.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ export default function UsersListPage() {
               color="currentColor"
               className="mr-2"
             />
-            Ajouter
+            {t('common.add')}
           </Button>
 
           {/* Export Button */}
@@ -297,15 +297,15 @@ export default function UsersListPage() {
               color="currentColor"
               className="mr-2"
             />
-            Exporter
+            {t('common.export')}
           </Button>
 
           {/* Send SMS Button */}
           <Button
             onClick={() => {
               if (selectedContacts.length === 0) {
-                toast.warning("Sélectionnez au moins un contact", {
-                  description: "Veuillez sélectionner des contacts pour envoyer un SMS",
+                toast.warning(t('contacts.selectAtLeastOne'), {
+                  description: t('contacts.selectAtLeastOneDesc'),
                 })
                 return
               }
@@ -353,7 +353,7 @@ export default function UsersListPage() {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Rechercher par nom, téléphone, email, ville..."
+              placeholder={t('contacts.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 w-[200px] pl-9 sm:w-[300px]"
@@ -366,12 +366,12 @@ export default function UsersListPage() {
             />
             <span className="flex items-center gap-1.5 text-xs text-white whitespace-nowrap">
               <Global size={14} color="currentColor" variant="Bulk" />
-              International
+              {t('layout.international')}
             </span>
           </div>
           {(searchTerm || showInternationalOnly) && (
             <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
-              {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
+              {displayedElements} {t('common.results')}
             </span>
           )}
         </div>
@@ -388,7 +388,7 @@ export default function UsersListPage() {
             color="currentColor"
             className="mr-2"
           />
-          Exporter Excel
+          {t('contacts.exportExcel')}
         </Button>
       </div>
       {/* Bulk Actions Toolbar */}
@@ -432,11 +432,11 @@ export default function UsersListPage() {
         onDismiss={() => setIsDeleteDialogOpen(false)}
         onAction={confirmDelete}
         messages={{
-          title: "Delete Contact",
-          description: <>Are you sure you want to delete <strong>{contactToDelete?.firstname} {contactToDelete?.lastname}</strong>? This action cannot be undone.</>,
+          title: t('contacts.deleteContact'),
+          description: <>{t('contacts.deleteConfirm')}</>,
           buttons: {
-            cancel: "Cancel",
-            action: "Delete",
+            cancel: t('common.cancel'),
+            action: t('common.delete'),
           },
         }}
       />
@@ -451,11 +451,11 @@ export default function UsersListPage() {
         }}
         onAction={confirmBulkDelete}
         messages={{
-          title: "Supprimer les contacts",
-          description: <>Êtes-vous sûr de vouloir supprimer <strong>{contactsToDelete.length}</strong> contact(s) ? Cette action ne peut pas être annulée.</>,
+          title: t('contacts.deleteContact'),
+          description: <>{t('contacts.deleteBulkConfirm', { count: contactsToDelete.length })}</>,
           buttons: {
-            cancel: "Annuler",
-            action: "Supprimer",
+            cancel: t('common.cancel'),
+            action: t('common.delete'),
           },
         }}
       />

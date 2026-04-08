@@ -9,9 +9,10 @@ import { CreateApiKeyDialog, ApiKeyCreatedDialog } from "@/modules/api-key/compo
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
-import { useApiKeys, useCreateApiKey, useDeleteApiKey } from "@/core/hooks"
+import { useApiKeys, useCreateApiKey, useDeleteApiKey, useT } from "@/core/hooks"
 
 export default function ApiKeysPage() {
+  const { t } = useT()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isCreatedDialogOpen, setIsCreatedDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -27,7 +28,7 @@ export default function ApiKeysPage() {
       const errorMessage =
         (error as any)?.response?.data?.message ||
         (error as any)?.message ||
-        "Erreur lors du chargement des API Keys"
+        t('apiKeys.loadError')
       toast.error(errorMessage)
     }
   }, [error])
@@ -42,8 +43,8 @@ export default function ApiKeysPage() {
       setIsCreateDialogOpen(false)
       setCreatedApiKey(result)
       setIsCreatedDialogOpen(true)
-      toast.success("API Key créée", {
-        description: `La clé "${input.name}" a été générée avec succès`,
+      toast.success(t('apiKeys.createdSuccess'), {
+        description: t('apiKeys.createdSuccessDesc', { name: input.name }),
       })
     },
     [createApiKeyMutation]
@@ -61,7 +62,7 @@ export default function ApiKeysPage() {
     setSelectedApiKey(null)
   }, [selectedApiKey, deleteApiKeyMutation])
 
-  const columns = createColumns({ onDelete: handleDelete })
+  const columns = createColumns({ onDelete: handleDelete, t })
   const apiKeys = data || []
 
   return (
@@ -70,15 +71,15 @@ export default function ApiKeysPage() {
         <div>
           <div className="flex items-center gap-2">
             <Key size="32" variant="Bulk" color="currentColor" className="text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('apiKeys.title')}</h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Gérez vos clés API pour l&apos;envoi de SMS via l&apos;API Developer.
+            {t('apiKeys.subtitleDeveloper')}
           </p>
         </div>
         <Button className="gap-2" onClick={handleCreate}>
           <Add size="20" variant="Bulk" color="currentColor" />
-          Nouvelle API Key
+          {t('apiKeys.newApiKey')}
         </Button>
       </div>
 
@@ -87,7 +88,7 @@ export default function ApiKeysPage() {
         data={apiKeys}
         rowCount={apiKeys.length}
         isLoading={isLoading}
-        emptyMessage="Aucune API Key trouvée."
+        emptyMessage={t('apiKeys.noResults')}
       />
 
       <CreateApiKeyDialog
@@ -108,8 +109,8 @@ export default function ApiKeysPage() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
           onConfirm={handleConfirmDelete}
-          title="Supprimer l'API Key"
-          description={`Êtes-vous sûr de vouloir supprimer la clé "${selectedApiKey.name}" ? Cette action est irréversible et les appels utilisant cette clé ne fonctionneront plus.`}
+          title={t('apiKeys.deleteTitle')}
+          description={t('apiKeys.deleteDescription', { name: selectedApiKey.name })}
           itemName={selectedApiKey.name}
           isDeleting={deleteApiKeyMutation.isPending}
         />

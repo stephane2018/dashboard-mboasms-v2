@@ -11,6 +11,7 @@ import { SearchNormal1, Add } from "iconsax-react"
 import { getColumns } from "./_components/country-price-columns"
 import { CreateCountryPriceModal } from "./_components/create-country-price-modal"
 import { EditCountryPriceModal } from "./_components/edit-country-price-modal"
+import { useT } from "@/core/hooks"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import {
 const PAGE_SIZE = 10
 
 export default function CountryPricesPage() {
+  const { t } = useT()
   const { isSuperAdmin } = useUserStore()
 
   const [page, setPage] = useState(0)
@@ -90,6 +92,7 @@ export default function CountryPricesPage() {
         onEdit: handleEditPrice,
         onDelete: handleDeletePrice,
         isSuperAdmin: isSuperAdmin(),
+        t,
       }),
     [isSuperAdmin]
   )
@@ -97,8 +100,8 @@ export default function CountryPricesPage() {
   if (!isSuperAdmin()) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
-        <h1 className="text-2xl font-bold text-muted-foreground">Accès refusé</h1>
-        <p className="text-muted-foreground">Cette page est réservée aux super administrateurs.</p>
+        <h1 className="text-2xl font-bold text-muted-foreground">{t('countryPrices.accessDenied')}</h1>
+        <p className="text-muted-foreground">{t('countryPrices.accessDeniedDesc')}</p>
       </div>
     )
   }
@@ -108,15 +111,15 @@ export default function CountryPricesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Prix SMS internationaux</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('countryPrices.title')}</h1>
           <p className="text-muted-foreground">
-            Gérer les tarifs SMS par pays ({totalElements} pays)
+            {t('countryPrices.subtitleWithCount', { count: totalElements })}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => setIsCreateModalOpen(true)} size="sm" className="h-9">
             <Add size={16} variant="Bulk" color="currentColor" className="mr-2" />
-            Ajouter un pays
+            {t('countryPrices.addCountry')}
           </Button>
         </div>
       </div>
@@ -132,7 +135,7 @@ export default function CountryPricesPage() {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Rechercher par nom ou code pays..."
+              placeholder={t('countryPrices.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 w-[200px] pl-9 sm:w-[350px]"
@@ -140,7 +143,7 @@ export default function CountryPricesPage() {
           </div>
           {searchTerm && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {filteredPrices.length} résultat{filteredPrices.length !== 1 ? "s" : ""}
+              {filteredPrices.length} {t('common.results')}
             </span>
           )}
         </div>
@@ -188,20 +191,18 @@ export default function CountryPricesPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t('countryPrices.confirmDeletion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer le tarif pour &quot;
-              {priceToDelete?.countryName}&quot; ({priceToDelete?.countryCode}) ?
-              Cette action est irréversible.
+              {t('countryPrices.deleteConfirm', { name: priceToDelete?.countryName, code: priceToDelete?.countryCode })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

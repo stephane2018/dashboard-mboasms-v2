@@ -130,7 +130,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
       text: eventData.title,
       details: eventData.description,
       dates: `${formatForCalendar(eventDate)}/${formatForCalendar(endDate)}`,
-      add: "contact@mboasms.com",
+      add: "support@mboasms.com",
     });
 
     return `https://calendar.google.com/calendar/render?${params.toString()}`;

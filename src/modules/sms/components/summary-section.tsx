@@ -2,6 +2,7 @@
 
 import { ProfileTick, CloseCircle, MessageNotif, Wallet, Warning2 } from "iconsax-react"
 import type { SummarySectionProps } from "./types"
+import { useT } from "@/core/hooks"
 
 export function SummarySection({
     phoneEntries,
@@ -13,20 +14,21 @@ export function SummarySection({
     remainingBalance,
     hasInsufficientBalance,
 }: SummarySectionProps) {
+    const { t } = useT()
     return (
         <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
             {/* Balance header */}
             <div className={`p-4 ${hasInsufficientBalance ? 'bg-red-50 dark:bg-red-500/5' : 'bg-primary/5'}`}>
                 <div className="flex items-center gap-2 mb-2">
                     <Wallet size={16} color="currentColor" variant="Bulk" className={hasInsufficientBalance ? 'text-red-500' : 'text-primary'} />
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Solde SMS</span>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('layout.smsBalance')}</span>
                 </div>
                 <p className={`text-3xl font-bold tabular-nums ${hasInsufficientBalance ? 'text-red-500' : 'text-foreground'}`}>
                     {userBalance.toLocaleString()}
                 </p>
                 {totalSmsToSend > 0 && (
                     <div className="mt-2 flex items-center gap-2 text-xs">
-                        <span className="text-muted-foreground">Après envoi :</span>
+                        <span className="text-muted-foreground">{t('sms.afterSending')} :</span>
                         <span className={`font-semibold tabular-nums ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                             {remainingBalance.toLocaleString()}
                         </span>
@@ -35,7 +37,7 @@ export function SummarySection({
                 {hasInsufficientBalance && (
                     <div className="flex items-center gap-1.5 mt-2 text-xs text-red-500 font-medium">
                         <Warning2 size={12} color="currentColor" variant="Bulk" />
-                        Solde insuffisant
+                        {t('sms.insufficientBalance')}
                     </div>
                 )}
             </div>
@@ -45,7 +47,7 @@ export function SummarySection({
                 <div className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-2 text-muted-foreground">
                         <ProfileTick size={14} color="currentColor" variant="Bulk" className="text-emerald-500" />
-                        Valides
+                        {t('sms.valid')}
                     </span>
                     <span className="font-semibold text-emerald-600 tabular-nums">{validRecipientsCount}</span>
                 </div>
@@ -54,7 +56,7 @@ export function SummarySection({
                     <div className="flex items-center justify-between text-sm">
                         <span className="flex items-center gap-2 text-muted-foreground">
                             <CloseCircle size={14} color="currentColor" variant="Bulk" className="text-red-400" />
-                            Invalides
+                            {t('sms.invalid')}
                         </span>
                         <span className="font-semibold text-red-500 tabular-nums">{invalidRecipientsCount}</span>
                     </div>
@@ -63,7 +65,7 @@ export function SummarySection({
                 <div className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-2 text-muted-foreground">
                         <MessageNotif size={14} color="currentColor" variant="Bulk" className="text-primary" />
-                        SMS / dest.
+                        {t('sms.smsPerRecipient')}
                     </span>
                     <span className="font-semibold tabular-nums">{smsCount}</span>
                 </div>
@@ -72,7 +74,7 @@ export function SummarySection({
                     <>
                         <div className="border-t border-border/50 my-1" />
                         <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-foreground">Total SMS</span>
+                            <span className="font-medium text-foreground">{t('sms.totalSmsLabel')}</span>
                             <span className="font-bold text-primary text-lg tabular-nums">{totalSmsToSend}</span>
                         </div>
                     </>

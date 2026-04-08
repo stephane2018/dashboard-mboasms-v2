@@ -25,7 +25,7 @@ import {
 } from "@/modules/sms"
 import { useSendMessage } from "@/core/hooks/useSendMessage"
 import { SmsGuideModal } from "@/modules/sms/components/sms-guide-modal"
-import { UseGetConnectedCompagnieData, useMainStatistics } from "@/core/hooks"
+import { UseGetConnectedCompagnieData, useMainStatistics, useT } from "@/core/hooks"
 
 const DEFAULT_TEMP_SENDER_ID = "infos"
 
@@ -47,6 +47,7 @@ function separatePhoneNumbersByOperator(phoneEntries: PhoneEntry[]) {
 }
 
 export default function SMSPage() {
+    const { t } = useT()
     const searchParams = useSearchParams()
     const [message, setMessage] = useState("")
     const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
@@ -212,7 +213,7 @@ export default function SMSPage() {
         )
         if (uniqueNewEntries.length > 0) {
             setPhoneEntries([...phoneEntries, ...uniqueNewEntries])
-            toast.success(`${uniqueNewEntries.length} contact(s) ajouté(s)`)
+            toast.success(t('sms.contactsAdded', { count: uniqueNewEntries.length }))
         }
     }
 
@@ -225,20 +226,20 @@ export default function SMSPage() {
         )
         if (uniqueNewEntries.length > 0) {
             setPhoneEntries([...phoneEntries, ...uniqueNewEntries])
-            toast.success(`${uniqueNewEntries.length} contact(s) ajouté(s)`)
+            toast.success(t('sms.contactsAdded', { count: uniqueNewEntries.length }))
         }
     }
 
     const handleSend = () => {
         if (!message.trim()) {
-            toast.error("Veuillez entrer un message")
+            toast.error(t('sms.enterMessage'))
             return
         }
         const validPhoneNumbers = phoneEntries
             .filter(e => e.isValid)
             .map(e => e.phoneNumber)
         if (validPhoneNumbers.length === 0) {
-            toast.error("Veuillez ajouter au moins un destinataire valide")
+            toast.error(t('sms.addValidRecipient'))
             return
         }
         setIsConfirmationModalOpen(true)
@@ -249,7 +250,7 @@ export default function SMSPage() {
             const { mtnNumbers, otherNumbers } = separatePhoneNumbersByOperator(phoneEntries)
             const totalRecipients = mtnNumbers.length + otherNumbers.length
             if (totalRecipients === 0) {
-                toast.error("Aucun destinataire valide trouvé")
+                toast.error(t('sms.noValidRecipient'))
                 return
             }
 
@@ -288,7 +289,7 @@ export default function SMSPage() {
             setPhoneEntries([])
             setIsConfirmationModalOpen(false)
         } catch (error) {
-            toast.error("Erreur lors de l'envoi du SMS")
+            toast.error(t('sms.sentError'))
         }
     }
 
@@ -300,20 +301,20 @@ export default function SMSPage() {
     const handleToggleTempSenderId = () => {
         setUseTemporarySenderId(!useTemporarySenderId)
         if (!useTemporarySenderId) {
-            toast.info("Mode Sender ID temporaire activé")
+            toast.info(t('sms.tempSenderIdActivated'))
         } else {
-            toast.info(`Sender ID principal réactivé: ${userSenderId}`)
+            toast.info(t('sms.primarySenderIdReactivated', { name: userSenderId }))
         }
     }
 
     const handleActivateTempSenderId = () => {
         setTemporarySenderId(DEFAULT_TEMP_SENDER_ID)
-        toast.success(`Sender ID temporaire "${DEFAULT_TEMP_SENDER_ID}" activé`)
+        toast.success(t('sms.tempSenderIdActivatedSuccess', { name: DEFAULT_TEMP_SENDER_ID }))
     }
 
     const handleSaveSenderId = async () => {
         if (!newSenderIdInput.trim() || !user?.id) {
-            toast.error("Veuillez entrer un Sender ID valide")
+            toast.error(t('sms.enterValidSenderId'))
             return
         }
         setIsSavingSenderId(true)
@@ -322,9 +323,9 @@ export default function SMSPage() {
             updateUser({ smsSenderId: newSenderIdInput, isSenderIdVerified: false })
             setShowSenderIdInput(false)
             setNewSenderIdInput("")
-            toast.success("Sender ID enregistré. En attente de validation.")
+            toast.success(t('sms.senderIdSaved'))
         } catch (error) {
-            toast.error("Erreur lors de l'enregistrement du Sender ID")
+            toast.error(t('sms.senderIdSaveError'))
         } finally {
             setIsSavingSenderId(false)
         }
@@ -338,9 +339,9 @@ export default function SMSPage() {
                     <Send2 size={22} variant="Bulk" color="currentColor" className="text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-xl font-bold text-foreground">Envoyer un SMS</h1>
+                    <h1 className="text-xl font-bold text-foreground">{t('sms.title')}</h1>
                     <p className="text-xs text-muted-foreground">
-                        Composez et envoyez des SMS à vos contacts
+                        {t('sms.subtitle')}
                     </p>
                 </div>
             </div>

@@ -17,6 +17,7 @@ import { BalanceRechargeChart } from "./components/balance-recharge-chart";
 import { Skeleton } from "@/shared/ui/skeleton";
 import type { MainStatistics } from "@/modules/statistics/types";
 import { useMainStatistics } from "@/core/hooks";
+import { useT } from "@/core/hooks";
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('fr-FR').format(num);
@@ -25,72 +26,6 @@ const formatNumber = (num: number) => {
 const formatCurrency = (num: number) => {
   return new Intl.NumberFormat('fr-FR').format(num) + ' FCFA';
 };
-
-const getKpiCards = (statistics: MainStatistics | null) => [
-  {
-    label: "Groupes",
-    value: statistics ? formatNumber(statistics.groupCount) : "0",
-    trend: "Total des groupes",
-    icon: MessageText1,
-    color: "text-violet-600 dark:text-violet-400",
-    bg: "bg-violet-50 dark:bg-violet-500/10",
-    border: "border-l-violet-500",
-  },
-  {
-    label: "Recharges",
-    value: statistics ? formatNumber(statistics.rechargeCount) : "0",
-    trend: "Nombre de recharges",
-    icon: Chart,
-    color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
-    border: "border-l-emerald-500",
-  },
-  {
-    label: "Crédit disponible",
-    value: statistics ? formatCurrency(statistics.smsCredit) : "0 FCFA",
-    trend: "Recharge recommandée",
-    icon: WalletMoney,
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-500/10",
-    border: "border-l-amber-500",
-  },
-  {
-    label: "Contacts",
-    value: statistics ? formatNumber(statistics.contactCount) : "0",
-    trend: "Total des contacts",
-    icon: People,
-    color: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-50 dark:bg-sky-500/10",
-    border: "border-l-sky-500",
-  },
-];
-
-const quickActions = [
-  {
-    title: "Envoyer une campagne",
-    description: "Planifiez vos messages ciblés en quelques clics.",
-    href: "/sms",
-    icon: Send2,
-    color: "text-primary",
-    bg: "bg-primary/5 hover:bg-primary/10",
-  },
-  {
-    title: "Recharger le solde",
-    description: "Évitez toute interruption de vos campagnes.",
-    href: "/recharge",
-    icon: WalletAdd,
-    color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10",
-  },
-  {
-    title: "Gérer les contacts",
-    description: "Importez et segmentez vos listes.",
-    href: "/contacts",
-    icon: Profile2User,
-    color: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/5 dark:hover:bg-sky-500/10",
-  },
-];
 
 function SkeletonCard() {
   return (
@@ -120,7 +55,73 @@ function GlobalSkeletonCard() {
 
 export default function DashboardHome() {
   const { statistics, isLoading } = useMainStatistics();
-  const kpiCards = getKpiCards(statistics);
+  const { t } = useT();
+
+  const kpiCards = [
+    {
+      label: t('dashboard.groups'),
+      value: statistics ? formatNumber(statistics.groupCount) : "0",
+      trend: t('dashboard.totalGroups'),
+      icon: MessageText1,
+      color: "text-violet-600 dark:text-violet-400",
+      bg: "bg-violet-50 dark:bg-violet-500/10",
+      border: "border-l-violet-500",
+    },
+    {
+      label: t('dashboard.recharges'),
+      value: statistics ? formatNumber(statistics.rechargeCount) : "0",
+      trend: t('dashboard.rechargeCount'),
+      icon: Chart,
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50 dark:bg-emerald-500/10",
+      border: "border-l-emerald-500",
+    },
+    {
+      label: t('dashboard.availableCredit'),
+      value: statistics ? formatCurrency(statistics.smsCredit) : "0 FCFA",
+      trend: t('dashboard.rechargeRecommended'),
+      icon: WalletMoney,
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-50 dark:bg-amber-500/10",
+      border: "border-l-amber-500",
+    },
+    {
+      label: t('common.phone') === 'Phone' ? 'Contacts' : 'Contacts',
+      value: statistics ? formatNumber(statistics.contactCount) : "0",
+      trend: t('dashboard.totalContacts'),
+      icon: People,
+      color: "text-sky-600 dark:text-sky-400",
+      bg: "bg-sky-50 dark:bg-sky-500/10",
+      border: "border-l-sky-500",
+    },
+  ];
+
+  const quickActions = [
+    {
+      title: t('dashboard.sendCampaign'),
+      description: t('dashboard.sendCampaignDesc'),
+      href: "/sms",
+      icon: Send2,
+      color: "text-primary",
+      bg: "bg-primary/5 hover:bg-primary/10",
+    },
+    {
+      title: t('dashboard.rechargeBalance'),
+      description: t('dashboard.rechargeBalanceDesc'),
+      href: "/recharge",
+      icon: WalletAdd,
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10",
+    },
+    {
+      title: t('dashboard.manageContacts'),
+      description: t('dashboard.manageContactsDesc'),
+      href: "/contacts",
+      icon: Profile2User,
+      color: "text-sky-600 dark:text-sky-400",
+      bg: "bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/5 dark:hover:bg-sky-500/10",
+    },
+  ];
 
   return (
     <div className="space-y-6 p-4 md:p-6 max-w-[1400px] mx-auto">
@@ -128,15 +129,15 @@ export default function DashboardHome() {
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Tableau de bord
+            {t('dashboard.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Suivez vos campagnes, recharges et contacts en temps réel.
+            {t('dashboard.subtitle')}
           </p>
         </div>
         <Button asChild size="sm" className="rounded-xl px-5 gap-2 shadow-sm">
           <a href="/sms">
-            Nouvelle campagne
+            {t('dashboard.newCampaign')}
             <ArrowRight2 size="16" variant="Bulk" color="currentColor" />
           </a>
         </Button>
@@ -172,9 +173,9 @@ export default function DashboardHome() {
               </div>
             ))}
             <GlobalSmsCard
-              label="SMS envoyés (global)"
+              label={t('dashboard.smsSentGlobal')}
               value={statistics ? formatNumber(statistics.smsSentCount) : "0"}
-              trend="Total des SMS envoyés"
+              trend={t('dashboard.totalSmsSent')}
             />
           </>
         )}
@@ -182,12 +183,11 @@ export default function DashboardHome() {
 
       {/* Charts + Quick Actions */}
       <section className="grid gap-4 lg:grid-cols-3">
-        {/* SMS Transaction Chart */}
         <div className="lg:col-span-2 rounded-2xl border border-border/50 bg-card">
           <div className="p-5 pb-0">
-            <h2 className="text-base font-semibold text-foreground">Performance SMS</h2>
+            <h2 className="text-base font-semibold text-foreground">{t('dashboard.smsPerformance')}</h2>
             <p className="text-xs text-muted-foreground">
-              Volume de SMS envoyés par période
+              {t('dashboard.smsVolumeByPeriod')}
             </p>
           </div>
           <div className="p-5 pt-3">
@@ -195,11 +195,10 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="rounded-2xl border border-border/50 bg-card p-5">
-          <h2 className="text-base font-semibold text-foreground mb-1">Actions rapides</h2>
+          <h2 className="text-base font-semibold text-foreground mb-1">{t('dashboard.quickActions')}</h2>
           <p className="text-xs text-muted-foreground mb-4">
-            Accédez directement aux modules clés.
+            {t('dashboard.quickActionsDesc')}
           </p>
           <div className="space-y-2.5">
             {quickActions.map((action) => (
@@ -226,9 +225,9 @@ export default function DashboardHome() {
       <section>
         <div className="rounded-2xl border border-border/50 bg-card">
           <div className="p-5 pb-0">
-            <h2 className="text-base font-semibold text-foreground">Balance des recharges</h2>
+            <h2 className="text-base font-semibold text-foreground">{t('dashboard.balanceRecharges')}</h2>
             <p className="text-xs text-muted-foreground">
-              Montant rechargé par période sur l&apos;année en cours.
+              {t('dashboard.balanceRechargesDesc')}
             </p>
           </div>
           <div className="p-5 pt-3">

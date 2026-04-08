@@ -29,10 +29,12 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { GroupTableView } from "./group-table-view"
 import { useGroups } from "@/core/hooks/useGroups"
+import { useT } from "@/core/hooks"
 import type { GroupWithEnterprise } from "@/core/hooks/useGroups"
 import { ChevronLeft, ChevronRight, LayoutGrid, List, RefreshCw } from "lucide-react"
 import { People, Building, AddSquare, Trash, Add, SearchNormal1, FolderOpen, Refresh2 } from "iconsax-react"
 import { cn } from "@/lib/utils"
+import { i18next } from "@/core/lib/i18n"
 
 const GROUP_CARD_PLACEHOLDER_COUNT = 6
 
@@ -65,6 +67,7 @@ function GroupCardsSkeleton() {
 
 export default function AdminGroupesPage() {
   const router = useRouter()
+  const { t } = useT()
 
   const {
     groups,
@@ -163,7 +166,7 @@ export default function AdminGroupesPage() {
 
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) {
-      toast.error("Le nom est requis")
+      toast.error(i18next.t("adminGroups.nameRequired"))
       return
     }
 
@@ -175,13 +178,13 @@ export default function AdminGroupesPage() {
         code: (newGroupCode || newGroupName).toLowerCase().replace(/\s+/g, "_"),
         enterpriseId,
       })
-      toast.success("Groupe créé")
+      toast.success(i18next.t("groups.created"))
       setIsCreateOpen(false)
       setNewGroupName("")
       setNewGroupCode("")
       setNewGroupEnterpriseId("")
     } catch {
-      toast.error("Erreur lors de la création du groupe")
+      toast.error(i18next.t("adminGroups.createError"))
     }
   }
 
@@ -190,32 +193,32 @@ export default function AdminGroupesPage() {
 
     try {
       await deleteGroup(groupToDelete.id)
-      toast.success("Groupe supprimé")
+      toast.success(i18next.t("groups.deleted"))
       setIsDeleteOpen(false)
       setGroupToDelete(null)
     } catch {
-      toast.error("Erreur lors de la suppression du groupe")
+      toast.error(i18next.t("adminGroups.deleteError"))
     }
   }
 
   const handleAddContactsToGroup = async (selected: EnterpriseContactResponseType[]) => {
     if (!selectedGroupForContacts?.id) return
     if (selected.length === 0) {
-      toast.info("Sélectionnez des contacts à ajouter")
+      toast.info(i18next.t("adminGroups.selectContactsToAdd"))
       return
     }
 
     const ids = selected.map((c) => c.id)
     const groupId = selectedGroupForContacts.id
-    const toastId = toast.loading("Mise à jour du groupe…")
+    const toastId = toast.loading(i18next.t("adminGroups.updatingGroup"))
 
     try {
       await addContactsToGroup(groupId, ids, selected)
-      toast.success(`${ids.length} contact(s) ajouté(s)`, { id: toastId })
+      toast.success(i18next.t("adminGroups.contactsAdded", { count: ids.length }), { id: toastId })
       setIsContactModalOpen(false)
       setSelectedGroupForContacts(null)
     } catch {
-      toast.error("Erreur lors de l'ajout des contacts", { id: toastId })
+      toast.error(i18next.t("adminGroups.addContactsError"), { id: toastId })
     }
   }
 
@@ -224,18 +227,18 @@ export default function AdminGroupesPage() {
 
     try {
       await removeContactFromGroup(contactToRemove.groupId, contactToRemove.contact.id)
-      toast.success("Contact supprimé du groupe")
+      toast.success(i18next.t("adminGroups.contactRemovedFromGroup"))
       setIsRemoveContactOpen(false)
       setContactToRemove(null)
     } catch {
-      toast.error("Erreur lors de la suppression du contact")
+      toast.error(i18next.t("adminGroups.removeContactError"))
     }
   }
 
   const handleContactUpdated = async () => {
     try {
       await loadGroups()
-      toast.success("Contact mis à jour")
+      toast.success(i18next.t("groupContacts.contactUpdated"))
     } catch {
     }
   }
@@ -258,7 +261,7 @@ export default function AdminGroupesPage() {
       .filter(Boolean)
 
     if (phones.length === 0) {
-      toast.error("Sélectionnez des contacts avec un numéro valide")
+      toast.error(i18next.t("adminGroups.selectContactsWithValidNumber"))
       return
     }
 
@@ -293,12 +296,12 @@ export default function AdminGroupesPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                {_isSuperAdmin ? "Groupes (Plateforme)" : "Mes groupes"}
+                {_isSuperAdmin ? t("adminGroups.titlePlatform") : t("adminGroups.titleMy")}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {_isSuperAdmin
-                  ? "Gérez les groupes de contacts de toutes les entreprises"
-                  : "Gérez vos groupes de contacts"}
+                  ? t("adminGroups.subtitlePlatform")
+                  : t("adminGroups.subtitleMy")}
               </p>
             </div>
           </div>
@@ -306,11 +309,11 @@ export default function AdminGroupesPage() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={loadGroups} disabled={isLoading} className="h-9">
             <Refresh2 size={16} variant="Bulk" color="currentColor" className="mr-2" />
-            Actualiser
+            {t('adminGroups.refresh')}
           </Button>
           <Button size="sm" onClick={() => setIsCreateOpen(true)} className="h-9 shadow-sm">
             <Add size={16} variant="Bulk" color="currentColor" className="mr-2" />
-            Nouveau groupe
+            {t('adminGroups.newGroup')}
           </Button>
         </div>
       </div>
@@ -324,7 +327,7 @@ export default function AdminGroupesPage() {
                 <FolderOpen size={20} variant="Bulk" color="currentColor" className="text-blue-600 dark:text-blue-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total groupes</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{t('adminGroups.totalGroups')}</p>
                 <p className="text-lg font-bold tracking-tight">{totalGroups}</p>
               </div>
             </div>
@@ -337,7 +340,7 @@ export default function AdminGroupesPage() {
                 <People size={20} variant="Bulk" color="currentColor" className="text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total contacts</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{t('adminGroups.totalContacts')}</p>
                 <p className="text-lg font-bold tracking-tight">{totalContacts}</p>
               </div>
             </div>
@@ -350,7 +353,7 @@ export default function AdminGroupesPage() {
                 <FolderOpen size={20} variant="Bulk" color="currentColor" className="text-amber-600 dark:text-amber-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Groupes vides</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{t('adminGroups.emptyGroups')}</p>
                 <p className="text-lg font-bold tracking-tight">{emptyGroups}</p>
               </div>
             </div>
@@ -362,20 +365,20 @@ export default function AdminGroupesPage() {
       <div className="rounded-xl border bg-card/50 backdrop-blur-sm">
         <div className="flex items-center px-4 py-2.5 border-b bg-muted/30">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Filtres
+            {t('adminGroups.filters')}
           </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 p-4">
           <div className="space-y-1.5">
             <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Entreprise
+              {t('adminGroups.enterprise')}
             </Label>
             <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId} disabled={!_isSuperAdmin}>
               <SelectTrigger className="h-9 bg-background/60">
-                <SelectValue placeholder="Toutes les entreprises" />
+                <SelectValue placeholder={t('adminGroups.allEnterprises')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les entreprises</SelectItem>
+                <SelectItem value="all">{t('adminGroups.allEnterprises')}</SelectItem>
                 {enterprises.map((e) => (
                   <SelectItem key={e.id} value={e.id}>
                     {e.socialRaison}
@@ -386,11 +389,11 @@ export default function AdminGroupesPage() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Contacts minimum
+              {t('adminGroups.minContacts')}
             </Label>
             <Input
               type="number"
-              placeholder="Ex: 10"
+              placeholder={t('adminGroups.minContactsPlaceholder')}
               value={contactCountFilter}
               onChange={(e) => setContactCountFilter(e.target.value)}
               className="h-9 bg-background/60"
@@ -404,9 +407,9 @@ export default function AdminGroupesPage() {
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/20">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold">Liste des groupes</span>
+            <span className="text-sm font-semibold">{t('adminGroups.groupList')}</span>
             <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-              {filteredGroups.length} groupe{filteredGroups.length !== 1 ? "s" : ""}
+              {filteredGroups.length} {t('adminGroups.groupCount', { count: filteredGroups.length })}
             </span>
           </div>
           <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-0.5">
@@ -439,8 +442,8 @@ export default function AdminGroupesPage() {
                 <FolderOpen size={36} variant="Bulk" className="text-muted-foreground/40" />
               </div>
               <div className="text-center space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Aucun groupe</p>
-                <p className="text-xs text-muted-foreground/70">Créez un nouveau groupe pour commencer</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('adminGroups.noGroup')}</p>
+                <p className="text-xs text-muted-foreground/70">{t('adminGroups.createGroupToStart')}</p>
               </div>
             </div>
           ) : viewMode === 'grid' ? (
@@ -470,7 +473,7 @@ export default function AdminGroupesPage() {
                               {g.name}
                             </h3>
                             <p className="text-[11px] text-muted-foreground truncate">
-                              {g.code || "—"} · {g.enterpriseFull?.socialRaison}
+                              {g.code || "\u2014"} · {g.enterpriseFull?.socialRaison}
                             </p>
                           </div>
                         </div>
@@ -510,7 +513,7 @@ export default function AdminGroupesPage() {
                           className="flex-1 h-8 text-xs rounded-xl gap-1.5"
                         >
                           <AddSquare size={14} color="currentColor" variant="Bulk" />
-                          Ajouter
+                          {t('common.add')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -535,8 +538,8 @@ export default function AdminGroupesPage() {
               <div className="mt-4 flex items-center justify-between rounded-lg border bg-muted/20 px-4 py-2.5 text-sm text-muted-foreground">
                 <span className="text-xs tabular-nums">
                   {totalGroups === 0
-                    ? "0 groupes"
-                    : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)} sur ${totalGroups}`}
+                    ? t('adminGroups.zeroGroups')
+                    : `${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalGroups)} ${t('adminGroups.of')} ${totalGroups}`}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handlePrevPage} disabled={page === 0}>
@@ -575,19 +578,19 @@ export default function AdminGroupesPage() {
       <AlertDialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Nouveau groupe</AlertDialogTitle>
+            <AlertDialogTitle>{t('adminGroups.newGroup')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Créez un groupe pour organiser les contacts d'une entreprise.
+              {t('adminGroups.createGroupDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="space-y-3">
             {_isSuperAdmin && (
               <div className="space-y-2">
-                <div className="text-sm font-medium">Entreprise *</div>
+                <div className="text-sm font-medium">{t('adminGroups.enterprise')} *</div>
                 <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une entreprise" />
+                    <SelectValue placeholder={t('adminGroups.selectEnterprise')} />
                   </SelectTrigger>
                   <SelectContent>
                     {enterprises.map((e) => (
@@ -600,27 +603,27 @@ export default function AdminGroupesPage() {
               </div>
             )}
             <div className="space-y-2">
-              <div className="text-sm font-medium">Nom *</div>
+              <div className="text-sm font-medium">{t('adminGroups.nameLabel')} *</div>
               <Input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="Ex: Clients VIP"
+                placeholder={t('adminGroups.namePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium">Code (optionnel)</div>
+              <div className="text-sm font-medium">{t('adminGroups.codeLabel')}</div>
               <Input
                 value={newGroupCode}
                 onChange={(e) => setNewGroupCode(e.target.value)}
-                placeholder="Ex: clients_vip"
+                placeholder={t('adminGroups.codePlaceholder')}
               />
             </div>
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleCreateGroup} disabled={isMutating}>
-              Créer
+              {t('adminGroups.create')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -630,15 +633,15 @@ export default function AdminGroupesPage() {
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer ce groupe ?</AlertDialogTitle>
+            <AlertDialogTitle>{t('adminGroups.deleteGroupConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le groupe sera supprimé.
+              {t('adminGroups.deleteGroupConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteGroup} disabled={isMutating}>
-              Supprimer
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -660,15 +663,15 @@ export default function AdminGroupesPage() {
       <AlertDialog open={isRemoveContactOpen} onOpenChange={setIsRemoveContactOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Retirer le contact du groupe ?</AlertDialogTitle>
+            <AlertDialogTitle>{t('adminGroups.removeContactTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Le contact sera retiré du groupe.
+              {t('adminGroups.removeContactDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveContact} disabled={isMutating}>
-              Retirer
+              {t('groupContacts.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

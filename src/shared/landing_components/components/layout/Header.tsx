@@ -10,6 +10,7 @@ import { ArrowRight2, CloseCircle, User, Logout, Profile, Sms, Global, CloseSqua
 import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { LanguageSwitcher } from '@/shared/common/language-switcher';
+import { useT } from '@/core/hooks';
 import { useUserStore } from '@/core/stores/userStore';
 import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
@@ -37,6 +38,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(true);
+  const { t } = useT();
   const [bannerReady, setBannerReady] = useState(false);
 
   useEffect(() => {
@@ -155,9 +157,9 @@ const Header = () => {
             <div className="bg-linear-to-r from-primary via-fuchsia-500 to-violet-600 text-white px-4 py-2 shadow-lg shadow-primary/20">
               <div className="container mx-auto flex items-center justify-center gap-2 text-center relative">
                 <p className="text-xs md:text-sm font-medium">
-                  Bienvenue sur la nouvelle version de MboaSMS !
-                  <span className="hidden sm:inline"> Pour revenir à l&apos;ancienne version,</span>
-                  <span className="sm:hidden"> Ancienne version ?</span>
+                  {t('nav.welcomeBanner')}
+                  <span className="hidden sm:inline"> {t('nav.oldVersionDesktop')}</span>
+                  <span className="sm:hidden"> {t('nav.oldVersionMobile')}</span>
                   {' '}
                   <a
                     href="https://old.mboasms.com"
@@ -165,7 +167,7 @@ const Header = () => {
                     rel="noopener noreferrer"
                     className="underline font-bold hover:text-white/80 transition-colors"
                   >
-                    cliquez ici
+                    {t('nav.clickHere')}
                   </a>
                 </p>
                 <button
@@ -207,15 +209,15 @@ const Header = () => {
             className="hidden md:flex space-x-8"
           >
             <Link href="/" className={`${pathname === '/' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
-              Home
+              {t('nav.home')}
               <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <Link href="/conditions" className={`${pathname === '/conditions' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
-              Conditions d&apos;utilisation
+              {t('nav.termsConditions')}
               <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/conditions' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <Link href="/api-docs" className={`${pathname === '/api-docs' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
-              Documentation
+              {t('nav.documentation')}
               <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/api-docs' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
             <a
@@ -223,7 +225,7 @@ const Header = () => {
               onClick={handleContactClick}
               className="text-foreground hover:text-primary transition-colors relative group cursor-pointer"
             >
-              Contactez-nous
+              {t('nav.contactUs')}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
             </a>
 
@@ -249,7 +251,7 @@ const Header = () => {
                       <div className="text-left">
                         <p className="text-sm font-semibold leading-tight">{userDisplayName}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
-                          Mon compte
+                          {t('nav.myAccount')}
                           {userSmsBalance !== null && (
                             <span className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 text-primary px-2 py-0.5 text-[10px] font-semibold shadow-sm border border-primary/10">
                               {userSmsBalance.toLocaleString()} SMS
@@ -269,7 +271,7 @@ const Header = () => {
                           <div className="flex items-center gap-1.5">
                             <Sms size="14" variant="Bulk" color="currentColor" className="text-primary shrink-0" />
                             <div className="flex flex-col">
-                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">National</span>
+                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">{t('layout.national')}</span>
                               <span className="text-xs font-bold text-foreground tabular-nums leading-tight">
                                 {(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS
                               </span>
@@ -279,7 +281,7 @@ const Header = () => {
                           <div className="flex items-center gap-1.5">
                             <Global size="14" variant="Bulk" color="currentColor" className="text-purple-500 shrink-0" />
                             <div className="flex flex-col">
-                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">International</span>
+                              <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider leading-none">{t('layout.international')}</span>
                               <span className="text-xs font-bold text-foreground tabular-nums leading-tight">
                                 {(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS
                               </span>
@@ -289,11 +291,11 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleProfile} className="flex items-center gap-2">
                       <Profile size="16" variant="Bulk" color="currentColor" className="text-primary" />
-                      Voir mon profil
+                      {t('layout.viewProfile')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleGoToAdmin} className="flex items-center gap-2">
                       <ArrowRight2 size="16" variant="Bulk" color="currentColor" className="text-primary" />
-                      Aller à la partie admin
+                      {t('layout.goToAdmin')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -301,7 +303,7 @@ const Header = () => {
                       className="flex items-center gap-2 text-red-500 focus:text-red-500 focus:bg-red-50"
                     >
                       <Logout size="16" variant="Bulk" color="currentColor" />
-                      Déconnexion
+                      {t('layout.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -318,7 +320,7 @@ const Header = () => {
                     href="/auth/register"
                     className="relative bg-primary text-white px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
                   >
-                    Créer un compte
+                    {t('auth.register')}
                     <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                   </Link>
                 </motion.div>
@@ -333,7 +335,7 @@ const Header = () => {
                     className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                   >
                     <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
-                      Se connecter
+                      {t('auth.login')}
                       <ArrowRight2 size="16" variant="Bold" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                     </span>
                   </button>
@@ -408,7 +410,7 @@ const Header = () => {
                       transition={{ duration: 0.3, delay: 0.1 }}
                       className="flex items-center"
                     >
-                      Home
+                      {t('nav.home')}
                       {pathname === '/' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                     </motion.div>
                   </Link>
@@ -423,7 +425,7 @@ const Header = () => {
                       transition={{ duration: 0.3, delay: 0.2 }}
                       className="flex items-center"
                     >
-                      Conditions d&apos;utilisation
+                      {t('nav.termsConditions')}
                       {pathname === '/conditions' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                     </motion.div>
                   </Link>
@@ -438,7 +440,7 @@ const Header = () => {
                       transition={{ duration: 0.3, delay: 0.25 }}
                       className="flex items-center"
                     >
-                      Documentation
+                      {t('nav.documentation')}
                       {pathname === '/api-docs' && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                     </motion.div>
                   </Link>
@@ -453,7 +455,7 @@ const Header = () => {
                       transition={{ duration: 0.3, delay: 0.3 }}
                       className="flex items-center"
                     >
-                      Contactez-nous
+                      {t('nav.contactUs')}
                     </motion.div>
                   </a>
                   <a
@@ -469,7 +471,7 @@ const Header = () => {
                       transition={{ duration: 0.3, delay: 0.35 }}
                       className="flex items-center gap-2"
                     >
-                      <span>Espace admin</span>
+                      <span>{t('nav.adminPanel')}</span>
                       <ArrowRight2 size="18" variant="Bulk" color="currentColor" className="text-primary" />
                     </motion.div>
                   </a>
@@ -490,7 +492,7 @@ const Header = () => {
                             <div className="flex items-center gap-2">
                               <Sms size="18" variant="Bulk" color="currentColor" className="text-primary" />
                               <div>
-                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">National</p>
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t('layout.national')}</p>
                                 <p className="text-sm font-bold tabular-nums">{(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS</p>
                               </div>
                             </div>
@@ -498,7 +500,7 @@ const Header = () => {
                             <div className="flex items-center gap-2">
                               <Global size="18" variant="Bulk" color="currentColor" className="text-purple-500" />
                               <div>
-                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">International</p>
+                                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t('layout.international')}</p>
                                 <p className="text-sm font-bold tabular-nums">{(enterpriseSmsCredit ?? userSmsBalance ?? 0).toLocaleString()} SMS</p>
                               </div>
                             </div>
@@ -531,7 +533,7 @@ const Header = () => {
                           <span className="absolute inset-0 border border-red-500 rounded-full group-hover:border-transparent group-hover:bg-red-500/10 transition-all duration-300"></span>
                           <span className="relative text-red-500 flex items-center justify-center">
                             <Logout size="16" variant="Bulk" color="currentColor" className="mr-2" />
-                            Déconnexion
+                            {t('layout.logout')}
                           </span>
                         </button>
                       </motion.div>
@@ -549,7 +551,7 @@ const Header = () => {
                           className="bg-primary text-white px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full shadow-md shadow-primary/25 active:scale-[0.98] transition-all duration-200"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Créer un compte
+                          {t('auth.register')}
                           <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                         </Link>
                       </motion.div>
@@ -564,7 +566,7 @@ const Header = () => {
                           className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                         >
                           <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
-                            Se connecter
+                            {t('auth.login')}
                             <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
                           </span>
                         </button>

@@ -27,12 +27,13 @@ import {
 import { CaretSortIcon } from "@radix-ui/react-icons"
 import { useLogout } from "@/core/hooks/useLogout"
 import { useAuthContext } from "@/core/providers/auth-provider"
-import { UseGetConnectedCompagnieData } from "@/core/hooks"
+import { UseGetConnectedCompagnieData, useT } from "@/core/hooks"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { mutate: handleLogout, isPending } = useLogout()
   const { user } = useAuthContext()
+  const { t } = useT()
   const { data: enterprise } = UseGetConnectedCompagnieData(user?.id || "")
 
   if (!user) {
@@ -94,7 +95,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Bell />
-              Notifications
+              {t('layout.notifications')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -103,7 +104,7 @@ export function NavUser() {
               className="text-red-600 focus:text-red-600 focus:bg-red-50"
             >
               <LogOut />
-              {isPending ? "Déconnexion..." : "Déconnexion"}
+              {isPending ? t('layout.loggingOut') : t('layout.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

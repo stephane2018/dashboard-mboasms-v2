@@ -10,16 +10,17 @@ import { AddSquare, Trash } from "iconsax-react"
 
 export const getColumns = (
   onAddContacts: (group: Group) => void,
-  onDelete: (group: Group) => void
+  onDelete: (group: Group) => void,
+  t: (key: string) => string
 ): ColumnDef<Group & { enterpriseFull?: EnterpriseType }>[] => [
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nom du groupe" label="Nom du groupe" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('groupsColumns.groupName')} label={t('groupsColumns.groupName')} />,
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "enterpriseFull",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Entreprise" label="Entreprise" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('groupsColumns.enterprise')} label={t('groupsColumns.enterprise')} />,
     cell: ({ row }) => {
       const enterprise = row.getValue("enterpriseFull") as EnterpriseType | undefined
       if (!enterprise) return <Badge variant="outline">N/A</Badge>
@@ -39,7 +40,7 @@ export const getColumns = (
   },
   {
     accessorKey: "enterpriseContacts",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Contacts" label="Contacts" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('groupsColumns.contacts')} label={t('groupsColumns.contacts')} />,
     cell: ({ row }) => {
       const contacts = row.getValue("enterpriseContacts") as any[]
       return <span>{contacts?.length || 0}</span>
@@ -58,7 +59,7 @@ export const getColumns = (
             className="h-8"
           >
             <AddSquare size="16" variant="Bulk" color="currentColor" />
-            Ajouter des contacts
+            {t('groups.addContacts')}
           </Button>
           <Button
             variant="default"
@@ -67,7 +68,7 @@ export const getColumns = (
             className="h-8 text-white bg-red-500 hover:bg-red-500"
           >
             <Trash size="16" variant="Bulk" color="currentColor" className="mr-2" />
-            Supprimer
+            {t('common.delete')}
           </Button>
         </div>
       )

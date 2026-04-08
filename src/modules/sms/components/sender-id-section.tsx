@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useT } from "@/core/hooks"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -13,6 +14,7 @@ import type { SenderIdSectionProps } from "./types"
 const HELP_STORAGE_KEY = "mboasms_senderid_help_dismissed"
 
 function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useT()
   const [dontShowAgain, setDontShowAgain] = useState(false)
 
   const handleClose = () => {
@@ -52,8 +54,8 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
                   <Information size={18} variant="Bulk" color="currentColor" className="text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Qu&apos;est-ce qu&apos;un Sender ID ?</h3>
-                  <p className="text-[10px] text-muted-foreground">Tout comprendre en 2 minutes</p>
+                  <h3 className="text-sm font-bold text-foreground">{t('sms.senderIdWhatIsTitle')}</h3>
+                  <p className="text-[10px] text-muted-foreground">{t('sms.senderIdWhatIsSubtitle')}</p>
                 </div>
               </div>
               <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
@@ -64,8 +66,7 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
             {/* Content */}
             <div className="p-5 space-y-4">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Le <strong className="text-foreground">Sender ID</strong> est le nom qui apparait comme expediteur
-                lorsque votre destinataire recoit votre SMS.
+                {t('sms.senderIdExplanation')}
               </p>
 
               {/* infos card */}
@@ -76,15 +77,14 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
                   </div>
                   <div>
                     <p className="text-xs font-bold text-amber-600 dark:text-amber-400">&quot;infos&quot;</p>
-                    <p className="text-[10px] text-muted-foreground">Sender ID par defaut</p>
+                    <p className="text-[10px] text-muted-foreground">{t('sms.senderIdDefaultLabel')}</p>
                   </div>
                   <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-semibold">
                     ACTIF
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Par defaut, tous les SMS sont envoyes avec le Sender ID <strong className="text-foreground">&quot;infos&quot;</strong>.
-                  Vos destinataires verront &quot;infos&quot; comme nom d&apos;expediteur.
+                  {t('sms.senderIdDefaultExplanation')}
                 </p>
               </div>
 
@@ -95,23 +95,22 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
                     <MessageText size={14} variant="Bulk" color="currentColor" className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-primary">Sender ID personnalise</p>
-                    <p className="text-[10px] text-muted-foreground">Ex: MONENTREPRISE</p>
+                    <p className="text-xs font-bold text-primary">{t('sms.senderIdCustomLabel')}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('sms.senderIdCustomExample')}</p>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Vous pouvez demander un Sender ID a votre nom d&apos;entreprise. La validation prend
-                  generalement <strong className="text-foreground">24 a 48h</strong>.
+                  {t('sms.senderIdCustomExplanation')}
                 </p>
               </div>
 
               {/* Rules */}
               <div className="space-y-1.5">
-                <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Regles</p>
+                <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">{t('sms.senderIdRulesTitle')}</p>
                 {[
-                  "Maximum 11 caracteres alphanumeriques",
-                  "Pas d'espaces ni de caracteres speciaux",
-                  "La validation est effectuee par l'operateur",
+                  t('sms.senderIdRule1'),
+                  t('sms.senderIdRule2'),
+                  t('sms.senderIdRule3'),
                 ].map((rule) => (
                   <div key={rule} className="flex items-start gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
@@ -123,9 +122,9 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
               {/* Contact */}
               <div className="p-3 rounded-xl bg-muted/50 border border-border/50">
                 <p className="text-xs text-muted-foreground">
-                  Une question ? Contactez-nous a{" "}
-                  <a href="mailto:contact@mboasms.com" className="text-primary font-medium hover:underline">
-                    contact@mboasms.com
+                  {t('sms.senderIdContactUsText')}{" "}
+                  <a href="mailto:support@mboasms.com" className="text-primary font-medium hover:underline">
+                    support@mboasms.com
                   </a>
                 </p>
               </div>
@@ -140,13 +139,13 @@ function SenderIdHelpModal({ open, onClose }: { open: boolean; onClose: () => vo
                   onChange={(e) => setDontShowAgain(e.target.checked)}
                   className="w-3.5 h-3.5 rounded border-border accent-primary"
                 />
-                <span className="text-[11px] text-muted-foreground">Ne plus afficher</span>
+                <span className="text-[11px] text-muted-foreground">{t('sms.senderIdDontShowAgain')}</span>
               </label>
               <button
                 onClick={handleClose}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                J&apos;ai compris
+                {t('sms.senderIdUnderstood')}
               </button>
             </div>
           </motion.div>
@@ -176,6 +175,7 @@ export function SenderIdSection({
     onNewSenderIdInputChange,
     onShowSenderIdInputChange,
 }: SenderIdSectionProps) {
+    const { t } = useT()
     const [helpOpen, setHelpOpen] = useState(false)
     const [helpHidden, setHelpHidden] = useState(true)
 
@@ -188,7 +188,7 @@ export function SenderIdSection({
             <div className="flex items-center justify-between p-4 pb-3">
                 <div className="flex items-center gap-2">
                     <UserTag size={18} color="currentColor" variant="Bulk" className="text-primary" />
-                    <h2 className="text-sm font-semibold text-foreground">Sender ID</h2>
+                    <h2 className="text-sm font-semibold text-foreground">{t('sms.senderIdSectionTitle')}</h2>
                     {activeSenderId && (
                         <span className="text-xs text-muted-foreground ml-1">
                             — {activeSenderId}
@@ -197,7 +197,7 @@ export function SenderIdSection({
                     <button
                         onClick={() => setHelpOpen(true)}
                         className="p-1 rounded-md hover:bg-muted transition-colors"
-                        title="Qu'est-ce qu'un Sender ID ?"
+                        title={t('sms.senderIdWhatIs')}
                     >
                         <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
@@ -206,7 +206,7 @@ export function SenderIdSection({
                 {hasPrimarySenderId && (
                     <div className="flex items-center gap-2">
                         <span className="text-[11px] text-muted-foreground">
-                            {useTemporarySenderId ? "Temporaire" : "Principal"}
+                            {useTemporarySenderId ? t('sms.senderIdTemporary') : t('sms.senderIdPrimary')}
                         </span>
                         <Switch
                             checked={!useTemporarySenderId}
@@ -217,7 +217,7 @@ export function SenderIdSection({
                 {!hasPrimarySenderId && (
                     <div className="flex items-center gap-2">
                         <span className="text-[11px] text-muted-foreground">
-                            {temporarySenderId ? "Temporaire actif" : "Inactif"}
+                            {temporarySenderId ? t('sms.senderIdTempActive') : t('sms.senderIdInactive')}
                         </span>
                         <Switch
                             checked={!!temporarySenderId}
@@ -234,10 +234,10 @@ export function SenderIdSection({
                 {/* Enterprise Sender IDs dropdown */}
                 {senderIds.length > 0 && (
                     <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-muted-foreground">Sender ID entreprise</label>
+                        <label className="text-xs font-medium text-muted-foreground">{t('sms.senderIdEnterprise')}</label>
                         <Select value={activeSenderId || undefined} onValueChange={onSetTemporarySenderId}>
                             <SelectTrigger className="h-9 rounded-lg text-sm">
-                                <SelectValue placeholder="Sélectionner un Sender ID" />
+                                <SelectValue placeholder={t('sms.senderIdSelectPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {senderIds.map((senderId) => (
@@ -250,7 +250,7 @@ export function SenderIdSection({
                         {isLoadingSenderIds && (
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Loader2 className="h-3 w-3 animate-spin" />
-                                Chargement...
+                                {t('common.loading')}
                             </div>
                         )}
                     </div>
@@ -265,7 +265,7 @@ export function SenderIdSection({
                                 {userSenderId}
                             </p>
                             <p className="text-[11px] text-emerald-600 dark:text-emerald-500">
-                                {isSenderIdVerified ? "Sender ID vérifié et actif" : "En attente de validation"}
+                                {isSenderIdVerified ? t('sms.senderIdVerified') : t('sms.senderIdPending')}
                             </p>
                         </div>
                     </div>
@@ -275,7 +275,7 @@ export function SenderIdSection({
                         {hasPrimarySenderId && (
                             <div className="flex items-center gap-2 p-2.5 bg-blue-50 dark:bg-blue-500/5 rounded-lg text-xs text-blue-700 dark:text-blue-400">
                                 <InfoCircle size={14} color="currentColor" variant="Bulk" className="shrink-0" />
-                                Mode temporaire. Principal ({userSenderId}) désactivé.
+                                {t('sms.senderIdTempMode', { name: userSenderId })}
                             </div>
                         )}
 
@@ -284,10 +284,10 @@ export function SenderIdSection({
                                 <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-500/5 rounded-lg">
                                     <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
                                     <p className="text-xs text-amber-700 dark:text-amber-400">
-                                        Aucun Sender ID permanent.{" "}
+                                        {t('sms.senderIdNoActive')}{" "}
                                         {temporarySenderId
-                                            ? `Utilisation de "${temporarySenderId}".`
-                                            : "Configurez-en un ou activez le temporaire."}
+                                            ? t('sms.senderIdNoPermanentUsing', { name: temporarySenderId })
+                                            : t('sms.senderIdNoPermanentConfigure')}
                                     </p>
                                 </div>
 
@@ -299,7 +299,7 @@ export function SenderIdSection({
                                         onClick={onActivateTempSenderId}
                                     >
                                         <TickCircle size={14} color="currentColor" variant="Bulk" />
-                                        Activer "infos" (temporaire)
+                                        {t('sms.senderIdActivateTemp')}
                                     </Button>
                                 )}
 
@@ -311,7 +311,7 @@ export function SenderIdSection({
                                         onClick={() => onShowSenderIdInputChange(true)}
                                     >
                                         <Edit size={14} color="currentColor" variant="Bulk" />
-                                        Définir un Sender ID permanent
+                                        {t('sms.senderIdPermanent')}
                                     </Button>
                                 ) : (
                                     <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
@@ -324,7 +324,7 @@ export function SenderIdSection({
                                             className="h-9 rounded-lg text-sm"
                                         />
                                         <p className="text-[11px] text-muted-foreground">
-                                            Max 11 caractères alphanumériques
+                                            {t('sms.senderIdMaxChars')}
                                         </p>
                                         <div className="flex gap-2">
                                             <Button
@@ -336,7 +336,7 @@ export function SenderIdSection({
                                                 {isSavingSenderId ? (
                                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                 ) : (
-                                                    "Enregistrer"
+                                                    t('sms.senderIdSave')
                                                 )}
                                             </Button>
                                             <Button
@@ -348,7 +348,7 @@ export function SenderIdSection({
                                                     onNewSenderIdInputChange("")
                                                 }}
                                             >
-                                                Annuler
+                                                {t('common.cancel')}
                                             </Button>
                                         </div>
                                     </div>
@@ -361,7 +361,7 @@ export function SenderIdSection({
                             <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-500/5 rounded-lg border border-emerald-200/60 dark:border-emerald-500/15">
                                 <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400">
                                     <TickCircle size={14} color="currentColor" variant="Bulk" />
-                                    Envoi avec : <strong>{temporarySenderId}</strong>
+                                    {t('sms.senderIdSendWith')} <strong>{temporarySenderId}</strong>
                                 </div>
                                 <button
                                     onClick={() => onSetTemporarySenderId("")}
@@ -380,7 +380,7 @@ export function SenderIdSection({
                 <div className="mx-4 mb-4 flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setHelpOpen(true)}>
                     <HelpCircle className="w-3.5 h-3.5 text-primary shrink-0" />
                     <p className="text-xs text-primary flex-1">
-                        <strong>Nouveau ?</strong> Decouvrez comment fonctionne le Sender ID cliquez sur ici pour plus de details 
+                        {t('sms.senderIdNewDiscover')}
                     </p>
                     <button
                         onClick={(e) => {

@@ -14,6 +14,7 @@ import type { EnterpriseType } from "@/core/models/company"
 import { useRouter } from "next/navigation"
 import { useUserStore } from "@/core/stores/userStore"
 import { useLoginAs } from "@/core/hooks/useLogin"
+import { useT } from "@/core/hooks"
 
 // Component for actions cell to use hooks
 function ActionsCell({ company, onAddUser, onCredit, onDelete }: { 
@@ -23,6 +24,7 @@ function ActionsCell({ company, onAddUser, onCredit, onDelete }: {
   onDelete: (company: EnterpriseType) => void
 }) {
   const router = useRouter()
+  const { t } = useT()
   const setActingCompany = useUserStore((s) => s.setActingCompany)
   const { user } = useUserStore()
   const loginAsMutation = useLoginAs()
@@ -40,15 +42,15 @@ function ActionsCell({ company, onAddUser, onCredit, onDelete }: {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Ouvrir le menu</span>
+          <span className="sr-only">{t('companies.openMenu')}</span>
           <More className="h-4 w-4 " variant="Bulk" color="currentColor" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => router.push(`/compagnie/${company.id}`)}>
           <Eye className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-          Voir détails
+          {t('companies.viewDetail')}
         </DropdownMenuItem>
         {!isSameUser && company.emailEnterprise && (
           <DropdownMenuItem 
@@ -56,22 +58,22 @@ function ActionsCell({ company, onAddUser, onCredit, onDelete }: {
             disabled={loginAsMutation.isPending}
           >
             <Login className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-            Se connecter en tant que
+            {t('companies.loginAs')}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onAddUser(company)}>
           <UserAdd className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-          Ajouter un utilisateur
+          {t('companies.addUser')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onCredit(company)}>
           <Wallet className="mr-2 h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-          Ajouter du crédit
+          {t('companies.addCredit')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onDelete(company)} className="text-red-600">
           <Trash className="mr-2 h-4 w-4 text-red-600" variant="Bulk" color="currentColor" />
-          Supprimer
+          {t('common.delete')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -86,40 +88,41 @@ interface CompaniesTableColumnsProps {
 
 export function getColumnsWithRouter(
   { onAddUser, onCredit, onDelete }: CompaniesTableColumnsProps,
-  router: ReturnType<typeof useRouter>
+  router: ReturnType<typeof useRouter>,
+  t: (key: string) => string
 ): ColumnDef<EnterpriseType>[] {
   return [
     {
       accessorKey: "socialRaison",
-      header: "Raison sociale",
+      header: t('companies.socialReason'),
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("socialRaison") || "—"}</div>
       ),
     },
     {
       accessorKey: "emailEnterprise",
-      header: "Email",
+      header: t('companies.email'),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">{row.getValue("emailEnterprise") || "—"}</div>
       ),
     },
     {
       accessorKey: "telephoneEnterprise",
-      header: "Téléphone",
+      header: t('companies.phone'),
       cell: ({ row }) => (
         <div className="text-sm">{row.getValue("telephoneEnterprise") || "—"}</div>
       ),
     },
     {
       accessorKey: "villeEnterprise",
-      header: "Ville",
+      header: t('companies.city'),
       cell: ({ row }) => (
         <div className="text-sm">{row.getValue("villeEnterprise") || "—"}</div>
       ),
     },
     {
       accessorKey: "smsCredit",
-      header: "Crédit SMS",
+      header: t('companies.smsCredit'),
       cell: ({ row }) => {
         const credit = row.getValue("smsCredit") as number
         if (credit > 0) {
@@ -134,14 +137,14 @@ export function getColumnsWithRouter(
     },
     {
       accessorKey: "user",
-      header: "Utilisateurs",
+      header: t('companies.users'),
       cell: ({ row }) => {
         const users = row.getValue("user") as string[] | undefined
         return <div className="text-sm">{users?.length ?? 0}</div>
       },
     },
     {
-      header: "Actions",
+      header: t('common.actions'),
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
@@ -161,5 +164,6 @@ export function getColumnsWithRouter(
 
 export function getColumns(props: CompaniesTableColumnsProps): ColumnDef<EnterpriseType>[] {
   const router = useRouter()
-  return getColumnsWithRouter(props, router)
+  const { t } = useT()
+  return getColumnsWithRouter(props, router, t)
 }

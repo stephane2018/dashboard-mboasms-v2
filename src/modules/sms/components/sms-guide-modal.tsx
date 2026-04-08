@@ -1,122 +1,121 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight2, ArrowLeft2, Sms, MessageText, UserTick, Information } from "iconsax-react"
 import { CheckCircle2 } from "lucide-react"
+import { useT } from "@/core/hooks"
 
 const STORAGE_KEY = "mboasms_sms_guide_dismissed"
 
-const steps = [
-  {
-    title: "Envoyer un SMS",
-    description:
-      "Ajoutez vos destinataires en saisissant les numeros manuellement, en important un fichier Excel/CSV, ou en selectionnant des contacts existants depuis vos groupes.",
-    tips: [
-      "Formats acceptes : +237xxxxxxxxx ou 6xxxxxxxx",
-      "Importez en masse via fichier Excel ou CSV",
-      "Selectionnez directement depuis vos contacts",
-    ],
-    icon: Sms,
-    iconBg: "bg-primary/10",
-    iconColor: "text-primary",
-    visual: (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <UserTick size={16} variant="Bulk" color="currentColor" className="text-primary" />
-          </div>
-          <div className="flex-1">
-            <div className="h-2 w-24 rounded bg-primary/20" />
-            <div className="h-1.5 w-16 rounded bg-muted mt-1.5" />
-          </div>
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-        </div>
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/50">
-          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-            <UserTick size={16} variant="Bulk" color="currentColor" className="text-muted-foreground" />
-          </div>
-          <div className="flex-1">
-            <div className="h-2 w-20 rounded bg-muted" />
-            <div className="h-1.5 w-14 rounded bg-muted/60 mt-1.5" />
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Redigez votre message",
-    description:
-      "Composez votre message SMS. Chaque SMS peut contenir jusqu'a 160 caracteres. Au-dela, le message sera decoupe en plusieurs SMS qui seront factures separement.",
-    tips: [
-      "160 caracteres = 1 SMS",
-      "Les caracteres speciaux reduisent la limite a 70",
-      "Le compteur en bas indique le nombre de SMS",
-    ],
-    icon: MessageText,
-    iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-500",
-    visual: (
-      <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-        <div className="space-y-2">
-          <div className="h-2 w-full rounded bg-emerald-500/15" />
-          <div className="h-2 w-3/4 rounded bg-emerald-500/15" />
-          <div className="h-2 w-1/2 rounded bg-emerald-500/10" />
-        </div>
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-emerald-500/10">
-          <span className="text-[10px] text-emerald-600 font-mono">45 / 160</span>
-          <span className="text-[10px] text-emerald-600 font-medium">1 SMS</span>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: 'Le Sender ID "infos"',
-    description:
-      'Par defaut, vos SMS sont envoyes avec le Sender ID "infos". C\'est le nom qui apparait comme expediteur sur le telephone du destinataire. Vous pouvez demander un Sender ID personnalise (ex: votre nom d\'entreprise).',
-    tips: [
-      '"infos" est le Sender ID par defaut pour tous',
-      "Demandez un Sender ID personnalise dans les parametres",
-      "La validation prend generalement 24-48h",
-    ],
-    icon: Information,
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-500",
-    visual: (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-600">
-            ID
-          </div>
-          <div className="flex-1">
-            <div className="text-xs font-semibold text-amber-600">infos</div>
-            <div className="text-[10px] text-muted-foreground">Sender ID par defaut</div>
-          </div>
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-semibold">
-            ACTIF
-          </span>
-        </div>
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 opacity-60">
-          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-            ID
-          </div>
-          <div className="flex-1">
-            <div className="text-xs font-medium text-muted-foreground">MonEntreprise</div>
-            <div className="text-[10px] text-muted-foreground">En attente de validation</div>
-          </div>
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-            EN ATTENTE
-          </span>
-        </div>
-      </div>
-    ),
-  },
-]
-
 export function SmsGuideModal() {
+  const { t } = useT()
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
+
+  const steps = useMemo(() => [
+    {
+      title: t('smsGuide.step1Title'),
+      description: t('smsGuide.step1Description'),
+      tips: [
+        t('smsGuide.step1Tip1'),
+        t('smsGuide.step1Tip2'),
+        t('smsGuide.step1Tip3'),
+      ],
+      icon: Sms,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+      visual: (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <UserTick size={16} variant="Bulk" color="currentColor" className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="h-2 w-24 rounded bg-primary/20" />
+              <div className="h-1.5 w-16 rounded bg-muted mt-1.5" />
+            </div>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border/50">
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+              <UserTick size={16} variant="Bulk" color="currentColor" className="text-muted-foreground" />
+            </div>
+            <div className="flex-1">
+              <div className="h-2 w-20 rounded bg-muted" />
+              <div className="h-1.5 w-14 rounded bg-muted/60 mt-1.5" />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: t('smsGuide.step2Title'),
+      description: t('smsGuide.step2Description'),
+      tips: [
+        t('smsGuide.step2Tip1'),
+        t('smsGuide.step2Tip2'),
+        t('smsGuide.step2Tip3'),
+      ],
+      icon: MessageText,
+      iconBg: "bg-emerald-500/10",
+      iconColor: "text-emerald-500",
+      visual: (
+        <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+          <div className="space-y-2">
+            <div className="h-2 w-full rounded bg-emerald-500/15" />
+            <div className="h-2 w-3/4 rounded bg-emerald-500/15" />
+            <div className="h-2 w-1/2 rounded bg-emerald-500/10" />
+          </div>
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-emerald-500/10">
+            <span className="text-[10px] text-emerald-600 font-mono">45 / 160</span>
+            <span className="text-[10px] text-emerald-600 font-medium">1 SMS</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: t('smsGuide.step3Title'),
+      description: t('smsGuide.step3Description'),
+      tips: [
+        t('smsGuide.step3Tip1'),
+        t('smsGuide.step3Tip2'),
+        t('smsGuide.step3Tip3'),
+      ],
+      icon: Information,
+      iconBg: "bg-amber-500/10",
+      iconColor: "text-amber-500",
+      visual: (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-600">
+              ID
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-semibold text-amber-600">infos</div>
+              <div className="text-[10px] text-muted-foreground">{t('smsGuide.defaultSenderId')}</div>
+            </div>
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-semibold">
+              {t('smsGuide.active')}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 opacity-60">
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+              ID
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-medium text-muted-foreground">{t('smsGuide.myCompany')}</div>
+              <div className="text-[10px] text-muted-foreground">{t('smsGuide.pendingValidation')}</div>
+            </div>
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              {t('smsGuide.pending')}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+  ], [t])
 
   useEffect(() => {
     const dismissed = localStorage.getItem(STORAGE_KEY)
@@ -138,7 +137,7 @@ export function SmsGuideModal() {
     } else {
       dismiss()
     }
-  }, [currentStep, dismiss])
+  }, [currentStep, dismiss, steps.length])
 
   const prev = useCallback(() => {
     if (currentStep > 0) {
@@ -187,14 +186,14 @@ export function SmsGuideModal() {
                   <Sms size={14} variant="Bulk" color="currentColor" className="text-primary" />
                 </div>
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Guide SMS
+                  {t('smsGuide.title')}
                 </span>
               </div>
               <button
                 onClick={dismiss}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                Passer
+                {t('welcome.skip')}
               </button>
             </div>
 
@@ -274,7 +273,7 @@ export function SmsGuideModal() {
                   onClick={next}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
-                  {isLast ? "J'ai compris" : "Suivant"}
+                  {isLast ? t('welcome.understood') : t('common.next')}
                   {!isLast && <ArrowRight2 size={14} color="currentColor" />}
                 </button>
               </div>

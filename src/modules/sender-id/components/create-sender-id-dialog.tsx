@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/core/hooks"
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ export function CreateSenderIdDialog({
   isLoading = false,
   enterpriseId,
 }: CreateSenderIdDialogProps) {
+  const { t } = useT()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
 
@@ -57,10 +59,10 @@ export function CreateSenderIdDialog({
             <div className="rounded-lg bg-primary/10 p-1.5">
               <UserTag size={16} color="currentColor" variant="Bulk" className="text-primary" />
             </div>
-            Nouveau Sender ID
+            {t('senderIds.newTitle')}
           </DialogTitle>
           <p className="text-xs text-muted-foreground mt-1">
-            Créez un identifiant d&apos;expéditeur pour votre entreprise
+            {t('senderIds.createSubtitle')}
           </p>
         </DialogHeader>
 
@@ -68,7 +70,7 @@ export function CreateSenderIdDialog({
           {/* Name field */}
           <div className="space-y-1.5">
             <label htmlFor="sender-name" className="text-xs font-medium text-foreground">
-              Nom du Sender ID
+              {t('senderIds.senderIdName')}
             </label>
             <div className="relative">
               <Input
@@ -87,20 +89,20 @@ export function CreateSenderIdDialog({
               </span>
             </div>
             {name && !isAlphanumeric && (
-              <p className="text-[11px] text-red-500">Seuls les caractères alphanumériques sont autorisés</p>
+              <p className="text-[11px] text-red-500">{t('senderIds.alphanumericOnly')}</p>
             )}
           </div>
 
           {/* Description field */}
           <div className="space-y-1.5">
             <label htmlFor="sender-desc" className="text-xs font-medium text-foreground">
-              Description <span className="text-muted-foreground font-normal">(optionnel)</span>
+              {t('senderIds.descriptionOptional')}
             </label>
             <Textarea
               id="sender-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Usage prévu, département..."
+              placeholder={t('senderIds.usagePlaceholder')}
               disabled={isLoading}
               rows={3}
               className="rounded-xl resize-none text-sm"
@@ -111,7 +113,7 @@ export function CreateSenderIdDialog({
           <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/40 border border-border/50">
             <InfoCircle size={14} color="currentColor" variant="Bulk" className="text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Le Sender ID sera soumis pour validation. Une fois approuvé, il apparaîtra comme nom d&apos;expéditeur dans les SMS.
+              {t('senderIds.infoNote')}
             </p>
           </div>
 
@@ -123,7 +125,7 @@ export function CreateSenderIdDialog({
               disabled={isLoading}
               className="flex-1 rounded-xl"
             >
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSave}
@@ -133,10 +135,10 @@ export function CreateSenderIdDialog({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Création...
+                  {t('senderIds.creating')}
                 </>
               ) : (
-                "Créer le Sender ID"
+                t('senderIds.createSenderId')
               )}
             </Button>
           </div>

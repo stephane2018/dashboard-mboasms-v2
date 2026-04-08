@@ -17,11 +17,12 @@ import { RechargeFilters, type RechargeFilters as RechargeFiltersType } from "./
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
 import { ValidateRechargeModal, RefuseRechargeModal, CreditAccountModal } from "./_components/recharge-action-modals"
 import { useRecharge } from "@/core/hooks/useRecharge"
-import { useActivePlans } from "@/core/hooks"
+import { useActivePlans, useT } from "@/core/hooks"
 import { RechargeGuideModal, RechargeSupportBanner } from "./_components/recharge-guide-modal"
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useUserStore()
+  const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const _isAdminUser = user?.role === "ADMIN_USER"
   const _isAdmin = _isSuperAdmin || _isAdminUser
@@ -133,8 +134,8 @@ export default function RechargePage() {
   // Handlers
   const handleCreateRecharge = async (data: RechargeFormData) => {
     if (!user?.companyId) {
-      toast.error("Erreur", {
-        description: "Impossible de créer la recharge. ID entreprise manquant.",
+      toast.error(t('common.error'), {
+        description: t('recharge.rechargeError'),
       })
       return
     }
@@ -227,8 +228,8 @@ export default function RechargePage() {
   if (!_isSuperAdmin && user?.role !== "ADMIN_USER") {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
-        <h1 className="text-2xl font-bold text-muted-foreground">Accès refusé</h1>
-        <p className="text-muted-foreground">Cette page est réservée aux administrateurs.</p>
+        <h1 className="text-2xl font-bold text-muted-foreground">{t('common.error')}</h1>
+        <p className="text-muted-foreground">{t('common.error')}</p>
       </div>
     )
   }
@@ -241,12 +242,12 @@ export default function RechargePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {_isAdmin ? "Gestion des recharges" : "Mes recharges"}
+            {_isAdmin ? t('recharge.title') : t('recharge.titleUser')}
           </h1>
           <p className="text-muted-foreground">
             {_isAdmin
-              ? "Gérer les demandes de recharge et créditer les comptes"
-              : "Suivez vos demandes de recharge"}
+              ? t('recharge.subtitle')
+              : t('recharge.subtitleUser')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -258,7 +259,7 @@ export default function RechargePage() {
               color="currentColor"
               className="mr-2"
             />
-            Faire une recharge
+            {t('recharge.createRecharge')}
           </Button>
         </div>
       </div>
@@ -297,7 +298,7 @@ export default function RechargePage() {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Rechercher par entreprise, téléphone, méthode..."
+              placeholder={t('recharge.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 w-[200px] pl-9 sm:w-[350px]"
@@ -305,7 +306,7 @@ export default function RechargePage() {
           </div>
           {searchTerm && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
+              {displayedElements} {t('common.results')}
             </span>
           )}
         </div>

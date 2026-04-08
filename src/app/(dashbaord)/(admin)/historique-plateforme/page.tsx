@@ -8,10 +8,11 @@ import { useUserStore } from "@/core/stores/userStore"
 import { Input } from "@/shared/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { DateRangePicker, type DateRange } from "@/shared/common/date-range-picker"
-import { columns } from "./columns"
+import { createColumns } from "./columns"
 import { toast } from "sonner"
 import type { PaginationState } from "@tanstack/react-table"
 import { SearchNormal1, Building, MessageText1, CloseCircle, Calendar, ReceiptSearch } from "iconsax-react"
+import { useT } from "@/core/hooks"
 
 function getDefaultRange(): DateRange {
   const end = new Date()
@@ -28,6 +29,7 @@ function toISO(date: Date | undefined, end?: boolean): string {
 
 export default function HistoriquePage() {
   const { user } = useUserStore()
+  const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const enterpriseId = user?.companyId || ""
   const [selectedEnterpriseId, setSelectedEnterpriseId] = useState<string>("all")
@@ -98,7 +100,7 @@ export default function HistoriquePage() {
 
   useEffect(() => {
     if (isError) {
-      toast.error("Erreur lors du chargement de l'historique des messages.")
+      toast.error(t('toasts.loadingError'))
     }
   }, [isError])
 
@@ -114,19 +116,19 @@ export default function HistoriquePage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {_isSuperAdmin ? "Historique des messages" : "Mon historique"}
+            {_isSuperAdmin ? t('history.titlePlatform') : t('history.title')}
           </h1>
           <p className="text-muted-foreground mt-1">
             {_isSuperAdmin
-              ? "Consultez l'historique de tous les messages envoyés depuis la plateforme."
-              : "Consultez l'historique des messages envoyés par votre entreprise."}
+              ? t('history.subtitlePlatform')
+              : t('history.subtitle')}
           </p>
         </div>
         {/* Stats pill */}
         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
           <MessageText1 size={18} color="currentColor" variant="Bulk" className="text-primary" />
           <span className="text-sm font-semibold text-primary">{rowCount.toLocaleString()}</span>
-          <span className="text-xs text-primary/70">message{rowCount !== 1 ? "s" : ""}</span>
+          <span className="text-xs text-primary/70">{t('history.message')}{rowCount !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
@@ -136,7 +138,7 @@ export default function HistoriquePage() {
         <div className="relative">
           <SearchNormal1 size={18} color="currentColor" className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Rechercher par numéro de téléphone..."
+            placeholder={t('history.searchPlaceholder')}
             value={searchPhoneNumber}
             onChange={(e) => setSearchPhoneNumber(e.target.value)}
             className="h-11 pl-11 pr-10 text-sm rounded-xl bg-card border-border"
@@ -164,7 +166,7 @@ export default function HistoriquePage() {
             className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl text-sm font-medium text-destructive bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 cursor-pointer transition-all duration-200"
           >
             <CloseCircle size={16} color="currentColor" variant="Bulk" />
-            Réinitialiser
+            {t('common.reset')}
           </div>
         )}
       </div>
@@ -191,10 +193,10 @@ export default function HistoriquePage() {
             </div>
             <Select value={selectedEnterpriseId} onValueChange={setSelectedEnterpriseId}>
               <SelectTrigger className="h-8 w-[200px] text-sm border-0 bg-transparent shadow-none focus:ring-0 px-1">
-                <SelectValue placeholder="Toutes les entreprises" />
+                <SelectValue placeholder={t('common.all')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les entreprises</SelectItem>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
                 {enterprises?.map((enterprise) => (
                   <SelectItem key={enterprise.id} value={enterprise.id}>
                     {enterprise.socialRaison}
@@ -210,7 +212,7 @@ export default function HistoriquePage() {
           <div className="flex items-center gap-2 px-3 py-1 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20">
             <ReceiptSearch size={16} color="currentColor" variant="Bulk" className="text-amber-600 dark:text-amber-400" />
             <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-              Recherche : &quot;{searchPhoneNumber}&quot;
+              {t('common.search')} : &quot;{searchPhoneNumber}&quot;
             </span>
             <div
               role="button"
@@ -227,7 +229,7 @@ export default function HistoriquePage() {
 
       {/* Table */}
       <DataTable
-        columns={columns}
+        columns={createColumns({ t })}
         data={data}
         rowCount={rowCount}
         isLoading={isLoading}

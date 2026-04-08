@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { i18next } from "@/core/lib/i18n";
 import { getPaginatedAllContacts, getAllContacts, importContacts } from "@/core/services/contact.service";
 import { contactService } from "@/core/services/contact.service";
 import type { PaginatedEnterpriseContactsResponseType, EnterpriseContactResponseType } from "@/core/models/contact-new";
@@ -39,11 +40,11 @@ export function useImportContacts() {
     mutationFn: (file: File) => importContacts(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: contactKeys.all });
-      toast.success("Contacts importés avec succès.");
+      toast.success(i18next.t('contacts.importSuccess'));
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de l'importation des contacts.", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('contacts.importError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       });
     },
   });

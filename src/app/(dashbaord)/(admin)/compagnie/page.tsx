@@ -16,6 +16,7 @@ import {
   useDeleteUserFromEnterprise,
   useCreditEnterprise,
 } from "@/core/hooks/useCompany"
+import { useT } from "@/core/hooks"
 import type { EnterpriseType } from "@/core/models/company"
 
 import { getColumns } from "./_components/companies-table-columns"
@@ -24,6 +25,7 @@ import { AddUserModal } from "./_components/add-user-modal"
 import { CreditModal } from "./_components/credit-modal"
 
 export default function CompagniePage() {
+  const { t } = useT()
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -148,12 +150,12 @@ export default function CompagniePage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Entreprises</h1>
-          <p className="text-muted-foreground">Gérez les entreprises et leurs crédits SMS</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('companies.title')}</h1>
+          <p className="text-muted-foreground">{t('companies.subtitle')}</p>
         </div>
         <Button onClick={handleCreateCompany} size="sm" className="h-9">
           <Building size={16} variant="Bulk" color="currentColor" className="mr-2" />
-          Nouvelle entreprise
+          {t('companies.newCompany')}
         </Button>
       </div>
 
@@ -167,7 +169,7 @@ export default function CompagniePage() {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            placeholder="Rechercher par raison sociale, email, téléphone..."
+            placeholder={t('companies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -175,7 +177,7 @@ export default function CompagniePage() {
         </div>
         {searchTerm && (
           <span className="text-xs text-muted-foreground">
-            {filteredCompanies.length} résultat{filteredCompanies.length !== 1 ? "s" : ""}
+            {filteredCompanies.length} {t('common.results')}
           </span>
         )}
       </div>
@@ -227,11 +229,11 @@ export default function CompagniePage() {
         onDismiss={() => setIsDeleteDialogOpen(false)}
         onAction={confirmDelete}
         messages={{
-          title: "Supprimer l'entreprise",
-          description: <>Êtes-vous sûr de vouloir supprimer <strong>{companyToDelete?.socialRaison}</strong> ? Cette action est irréversible.</>,
+          title: t('companies.deleteCompany'),
+          description: <>{t('companies.deleteConfirm', { name: companyToDelete?.socialRaison })}</>,
           buttons: {
-            cancel: "Annuler",
-            action: "Supprimer",
+            cancel: t('common.cancel'),
+            action: t('common.delete'),
           },
         }}
       />

@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { i18next } from "@/core/lib/i18n"
 import { useAuthContext } from "@/core/providers"
 import { groupsService } from "@/core/services/groups.service"
 import type { Group } from "@/modules/groups/types"
@@ -23,7 +24,7 @@ export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean }
       const data = await groupsService.getGroupsByEnterprise(enterpriseId)
       setGroups(Array.isArray(data) ? data : [])
     } catch (err) {
-      setError("Erreur lors du chargement des groupes")
+      setError(i18next.t('groups.loadError'))
       setGroups([])
     } finally {
       setIsLoading(false)
@@ -57,7 +58,7 @@ export function useDeleteContactFromGroup() {
       await groupsService.deleteContactFromGroup(groupId, contactId)
       return true
     } catch (err: any) {
-      const errorMessage = err?.message || "Erreur lors de la suppression du contact du groupe"
+      const errorMessage = err?.message || i18next.t('groups.deleteContactError')
       setError(errorMessage)
       throw err
     } finally {

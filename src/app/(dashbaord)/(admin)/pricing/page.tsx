@@ -23,8 +23,10 @@ import {
 } from "@/shared/ui/alert-dialog"
 import { CreatePricingModal } from "./_components/create-pricing-modal"
 import { EditPricingModal } from "./_components/edit-pricing-modal"
+import { useT } from "@/core/hooks"
 
 export default function PricingPage() {
+  const { t } = useT()
   const { user, isSuperAdmin } = useUserStore()
   const {
     plansQuery,
@@ -113,6 +115,7 @@ export default function PricingPage() {
         onDelete: handleDeletePlan,
         onToggleStatus: handleTogglePlanStatus,
         isSuperAdmin: isSuperAdmin(),
+        t,
       }),
     [isSuperAdmin]
   )
@@ -121,8 +124,8 @@ export default function PricingPage() {
   if (!isSuperAdmin()) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
-        <h1 className="text-2xl font-bold text-muted-foreground">Accès refusé</h1>
-        <p className="text-muted-foreground">Cette page est réservée aux super administrateurs.</p>
+        <h1 className="text-2xl font-bold text-muted-foreground">{t('pricing.accessDenied')}</h1>
+        <p className="text-muted-foreground">{t('pricing.accessDeniedDesc')}</p>
       </div>
     )
   }
@@ -132,9 +135,9 @@ export default function PricingPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestion des plans tarifaires</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('pricing.titleManagement')}</h1>
           <p className="text-muted-foreground">
-            Gérer les plans tarifaires et leurs configurations
+            {t('pricing.subtitleManagement')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -146,7 +149,7 @@ export default function PricingPage() {
               color="currentColor"
               className="mr-2"
             />
-            Créer un plan
+            {t('pricing.createPlan')}
           </Button>
         </div>
       </div>
@@ -162,7 +165,7 @@ export default function PricingPage() {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Rechercher par nom, description, code..."
+              placeholder={t('pricing.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="h-9 w-[200px] pl-9 sm:w-[350px]"
@@ -170,7 +173,7 @@ export default function PricingPage() {
           </div>
           {searchTerm && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {displayedElements} résultat{displayedElements !== 1 ? "s" : ""}
+              {displayedElements} {t('common.results')}
             </span>
           )}
         </div>
@@ -213,19 +216,18 @@ export default function PricingPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t('pricing.confirmDeletion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer le plan tarifaire "
-              {planToDelete?.planNameFr}" ? Cette action est irréversible.
+              {t('pricing.deleteConfirm', { name: planToDelete?.planNameFr })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

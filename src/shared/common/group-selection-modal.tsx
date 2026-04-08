@@ -21,6 +21,7 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { useGroups } from "@/core/hooks/useGroups"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/core/hooks/useMediaQuery"
+import { useT } from "@/core/hooks"
 
 interface GroupSelectionModalProps {
     isOpen: boolean
@@ -35,6 +36,7 @@ export function GroupSelectionModal({
     onGroupsSelected,
     enterpriseId,
 }: GroupSelectionModalProps) {
+    const { t } = useT()
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [search, setSearch] = useState("")
@@ -63,7 +65,7 @@ export function GroupSelectionModal({
 
     const handleConfirm = async () => {
         if (selectedGroupIds.length === 0) {
-            toast.error("Veuillez sélectionner au moins un groupe")
+            toast.error(t("groupSelection.selectAtLeastOne"))
             return
         }
 
@@ -83,17 +85,17 @@ export function GroupSelectionModal({
             )
 
             if (uniqueContacts.length === 0) {
-                toast.error("Aucun contact trouvé dans les groupes sélectionnés")
+                toast.error(t("groupSelection.noContactsInGroups"))
                 return
             }
 
             onGroupsSelected(uniqueContacts)
-            toast.success(`${uniqueContacts.length} contact(s) ajouté(s) depuis ${selectedGroupIds.length} groupe(s)`)
+            toast.success(t("groupSelection.contactsAdded", { contacts: uniqueContacts.length, groups: selectedGroupIds.length }))
             onClose()
             setSelectedGroupIds([])
             setSearch("")
         } catch (error) {
-            toast.error("Erreur lors de la récupération des contacts")
+            toast.error(t("groupSelection.fetchError"))
         } finally {
             setIsSubmitting(false)
         }
@@ -114,7 +116,7 @@ export function GroupSelectionModal({
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Rechercher un groupe..."
+                        placeholder={t("groupSelection.searchPlaceholder")}
                         className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-muted/40 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
                     />
                 </div>
@@ -134,13 +136,13 @@ export function GroupSelectionModal({
                     </div>
                     {error ? (
                         <>
-                            <p className="text-sm font-medium text-foreground mb-1">Service indisponible</p>
-                            <p className="text-xs text-muted-foreground">Contactez l&apos;administrateur</p>
+                            <p className="text-sm font-medium text-foreground mb-1">{t("groupSelection.serviceUnavailable")}</p>
+                            <p className="text-xs text-muted-foreground">{t("groupSelection.contactAdmin")}</p>
                         </>
                     ) : search ? (
-                        <p className="text-sm text-muted-foreground">Aucun groupe trouvé pour &quot;{search}&quot;</p>
+                        <p className="text-sm text-muted-foreground">{t("groupSelection.noGroupFoundFor", { search })}</p>
                     ) : (
-                        <p className="text-sm text-muted-foreground">Aucun groupe disponible</p>
+                        <p className="text-sm text-muted-foreground">{t("groupSelection.noGroupAvailable")}</p>
                     )}
                 </div>
             ) : (
@@ -222,7 +224,7 @@ export function GroupSelectionModal({
                         disabled={isSubmitting}
                         className="flex-1 rounded-xl"
                     >
-                        Annuler
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         onClick={handleConfirm}
@@ -232,12 +234,12 @@ export function GroupSelectionModal({
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Ajout...
+                                {t("groupSelection.adding")}
                             </>
                         ) : (
                             <>
                                 <Plus className="h-4 w-4" />
-                                Ajouter ({totalContacts})
+                                {t("common.add")} ({totalContacts})
                             </>
                         )}
                     </Button>
@@ -255,7 +257,7 @@ export function GroupSelectionModal({
                             <div className="rounded-lg bg-primary/10 p-1.5">
                                 <People size={16} color="currentColor" variant="Bulk" className="text-primary" />
                             </div>
-                            Sélectionner des groupes
+                            {t("groupSelection.title")}
                         </DialogTitle>
                         <p className="text-xs text-muted-foreground mt-1">
                             Ajoutez tous les contacts des groupes sélectionnés
@@ -277,7 +279,7 @@ export function GroupSelectionModal({
                         <div className="rounded-lg bg-primary/10 p-1.5">
                             <People size={16} color="currentColor" variant="Bulk" className="text-primary" />
                         </div>
-                        Sélectionner des groupes
+                        {t("groupSelection.title")}
                     </DrawerTitle>
                     <p className="text-xs text-muted-foreground mt-1">
                         Ajoutez tous les contacts des groupes sélectionnés
