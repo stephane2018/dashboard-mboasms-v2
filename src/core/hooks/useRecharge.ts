@@ -85,7 +85,6 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     enabled: !!user && (_isAdmin || !!enterpriseId),
     ...(options.queryOptions ?? {}),
   })
-  console.log(rechargesQuery.data);
 
   const createRechargeMutation = useMutation({
     mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),

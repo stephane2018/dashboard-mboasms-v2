@@ -17,10 +17,6 @@ function CopyKeyCell({ apiKey }: { apiKey: string }) {
   const prefix = apiKey.slice(0, 9) // "mboa_e52b"
   const suffix = apiKey.slice(-4)   // "25e2"
 
-  console.log("apiKey", apiKey)
-  console.log("prefix", prefix)
-  console.log("suffix", suffix)
-
   const handleCopy = async () => {
     await navigator.clipboard.writeText(apiKey)
     setCopied(true)
@@ -57,7 +53,6 @@ export const createColumns = ({ onDelete }: ColumnsProps): ColumnDef<ApiKey>[] =
     accessorKey: "prefix",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Clé" label="Clé" />,
     cell: ({ row }) => {
-      console.log("row.original", row.original)
        return <CopyKeyCell apiKey={row.original.apiKey || ""} />
     },
   },

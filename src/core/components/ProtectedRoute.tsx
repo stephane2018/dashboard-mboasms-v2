@@ -6,7 +6,7 @@ import { type ReactNode } from "react"
 import { useUserStore } from "@/core/stores"
 import { Role } from "@/core/config/enum"
 import { normalizeRole } from "@/core/utils/role.utils"
-import { tokenManager } from "@/core/lib/token-manager./token-manager"
+import { tokenManager } from "@/core/lib/token-manager/token-manager"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -30,11 +30,9 @@ export const ProtectedRoute = ({
       return
     }
 
-    // Give a small delay to ensure the store state is fully synchronized
-    // This prevents race conditions during client-side navigation
-    const hasToken = tokenManager.hasToken() && !tokenManager.isTokenExpired()
+    const hasToken = tokenManager.hasToken()
 
-    // If we have a valid token but user is not yet in store, wait for auth provider to fetch profile
+    // If we have a token but user is not yet in store, wait for auth provider to fetch profile
     if (hasToken && !user) {
       // Don't redirect yet - the auth provider will fetch the profile
       return
@@ -80,7 +78,7 @@ export const ProtectedRoute = ({
   }
 
   // If we have a valid token but user is not yet loaded, show nothing (auth provider will load it)
-  const hasToken = tokenManager.hasToken() && !tokenManager.isTokenExpired()
+  const hasToken = tokenManager.hasToken()
   if (hasToken && !user) {
     return null
   }

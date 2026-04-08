@@ -2,6 +2,7 @@ import { httpClient } from '@/core/lib/http-client';
 import type { EnterpriseContactResponseType, CreateContactRequestType, UpdateContactRequestType } from '@/core/models/contact-new';
 import { groupsService } from '@/core/services/groups.service';
 import { refractHttpError } from '@/core/utils/http-error';
+import { extractContent } from '@/core/utils/extract-content';
 
 export interface ContactFilters {
   contactType?: string;
@@ -33,7 +34,7 @@ export const contactService = {
         : `/api/v1/contact/all/${enterpriseId}`;
 
       const response = await httpClient.get(url);
-      return response as EnterpriseContactResponseType[];
+      return extractContent<EnterpriseContactResponseType>(response);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }
@@ -49,7 +50,7 @@ export const contactService = {
       const group = await groupsService.getGroupById(groupId);
 
       // Get all contacts from the enterprise using the provided enterpriseId
-      const allContacts = await this.getContactsByEnterprise(enterpriseId) as any;
+      const allContacts = await this.getContactsByEnterprise(enterpriseId);
 
       // Extract contact IDs from the group
       const groupContactIds = new Set(
@@ -58,7 +59,7 @@ export const contactService = {
 
       // Filter enterprise contacts to only include those in the group
       const contacts = Array.isArray(allContacts)
-        ? allContacts.filter((contact: any) => groupContactIds.has(contact.id))
+        ? allContacts.filter((contact: { id: string }) => groupContactIds.has(contact.id))
         : [];
       return {
         contacts,
@@ -92,7 +93,7 @@ export const contactService = {
    */
   async createContact(data: CreateContactRequestType) {
     try {
-      return await httpClient.post('/api/v1/contact', data as unknown as Record<string, unknown>);
+      return await httpClient.post('/api/v1/contact', data);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }
@@ -104,7 +105,7 @@ export const contactService = {
    */
   async updateContact(contactId: string, data: Partial<UpdateContactRequestType>) {
     try {
-      return await httpClient.put(`/api/v1/contact/${contactId}?id=${contactId}`, data as unknown as Record<string, unknown>);
+      return await httpClient.put(`/api/v1/contact/${contactId}?id=${contactId}`, data);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }
@@ -164,7 +165,7 @@ export const contactService = {
         : `/api/v1/contact/all`;
 
       const response = await httpClient.get(url);
-      return response as EnterpriseContactResponseType[];
+      return extractContent<EnterpriseContactResponseType>(response);
     } catch (error) {
       return Promise.reject(refractHttpError(error));
     }

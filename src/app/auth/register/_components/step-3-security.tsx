@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
-import { Lock, Eye, EyeSlash, Global, Location, Home2 } from 'iconsax-react';
+import { Lock, Eye, EyeSlash, Location, Home2 } from 'iconsax-react';
+import { CountrySelect } from '@/shared/common/country-select';
 
 export function Step3Security() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
 
   return (
     <div className="space-y-4">
@@ -86,10 +87,13 @@ export function Step3Security() {
               <FormItem>
                 <FormLabel className="text-foreground">Pays</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Global size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Ex: Cameroun" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
-                  </div>
+                  <CountrySelect
+                    value={field.value}
+                    onSelect={(country) => {
+                      field.onChange(country.nom);
+                      setValue('enterpriseCountryId', country.id);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

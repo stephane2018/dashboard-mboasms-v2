@@ -228,7 +228,7 @@ export default function CompagniePage() {
         onAction={confirmDelete}
         messages={{
           title: "Supprimer l'entreprise",
-          description: `Êtes-vous sûr de vouloir supprimer <strong>${companyToDelete?.socialRaison}</strong> ? Cette action est irréversible.`,
+          description: <>Êtes-vous sûr de vouloir supprimer <strong>{companyToDelete?.socialRaison}</strong> ? Cette action est irréversible.</>,
           buttons: {
             cancel: "Annuler",
             action: "Supprimer",

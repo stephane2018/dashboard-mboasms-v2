@@ -21,6 +21,7 @@ import {
     SenderIdSection,
     SummarySection,
     ActionsSection,
+    RechargeSection,
 } from "@/modules/sms"
 import { useSendMessage } from "@/core/hooks/useSendMessage"
 import { UseGetConnectedCompagnieData, useMainStatistics } from "@/core/hooks"
@@ -59,8 +60,6 @@ export default function SMSPage() {
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
         user?.companyId || "");
-    console.log(senderIdsData);
-    console.log(user?.companyId);
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
     const userSenderId = user?.smsSenderId || ""
@@ -404,6 +403,13 @@ export default function SMSPage() {
                         userBalance={userBalance}
                         remainingBalance={remainingBalance}
                         hasInsufficientBalance={hasInsufficientBalance}
+                    />
+
+                    <RechargeSection
+                        hasInsufficientBalance={hasInsufficientBalance}
+                        totalSmsToSend={totalSmsToSend}
+                        userBalance={userBalance}
+                        onRechargeSuccess={refetchEnterprise}
                     />
 
                     <ActionsSection

@@ -8,7 +8,7 @@ import { useUserStore } from "@/core/stores/userStore"
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { getCompagnieConnectedDetails } from "@/core/services/CompanyService"
 import { Role } from "@/core/config/enum"
-import { tokenManager } from "@/core/lib/token-manager./token-manager"
+import { tokenManager } from "@/core/lib/token-manager/token-manager"
 
 // API login response - may have firstName/lastName or nested user object
 interface LoginApiResponse {
@@ -83,7 +83,7 @@ export function useLogin() {
 
   return useMutation<LoginApiResponse, Error, LoginCredentials>({
     mutationFn: (credentials: LoginCredentials) => login(credentials) as Promise<LoginApiResponse>,
-    onSuccess: async (response, variables) => {
+    onSuccess: async (response) => {
       // Map API response to user format
       const mappedUser = mapLoginResponseToUser(response)
 
@@ -101,10 +101,7 @@ export function useLogin() {
         }
       }
 
-      // Sauvegarder l'email du formulaire dans le localStorage
-      if (variables.email) {
-        localStorage.setItem("caisse-post-user-email", variables.email)
-      }
+      // Email storage removed for security (PII leak via localStorage)
 
       toast.success("Connexion réussie", {
         description: "Bienvenue sur MboaSMS",
@@ -114,10 +111,9 @@ export function useLogin() {
       const dashboardUrl = getDefaultDashboardUrl()
       router.replace(dashboardUrl)
     },
-    onError: (error: any) => {
-      const errorMessage = error?.message || "Une erreur est survenue lors de la connexion"
+    onError: (error: Error) => {
       toast.error("Erreur de connexion", {
-        description: errorMessage,
+        description: error.message || "Une erreur est survenue lors de la connexion",
       })
     },
   })
@@ -143,27 +139,15 @@ export function useLoginAs() {
 
   return useMutation<LoginAsResponse, Error, string>({
     mutationFn: (userEmail: string) => loginAsUser(userEmail) as Promise<LoginAsResponse>,
-    onSuccess: async (data, userEmail) => {
+    onSuccess: async (data) => {
       // Ensure current user exists before impersonating
       if (!currentUser) {
         toast.error("Impossible de se connecter en tant qu'utilisateur - utilisateur actuel non trouvé")
         return
       }
 
-      // Store current user info and tokens before switching
-      const currentTokens = {
-        token: tokenManager.getToken(),
-        refreshToken: tokenManager.getRefreshToken()
-      }
-
-      // Store original user with tokens (cast to any to include originalTokens)
-      const originalUserWithTokens = {
-        ...currentUser,
-        originalTokens: currentTokens
-      } as any
-
-      // Set impersonating flag and store original user with tokens
-      setImpersonating(true, originalUserWithTokens)
+      // Store original user data (WITHOUT tokens -- never store admin tokens in client storage)
+      setImpersonating(true, { ...currentUser })
 
       // Set new tokens
       tokenManager.setTokens(data.token, data.refreshToken)
@@ -195,10 +179,9 @@ export function useLoginAs() {
       // Redirect to dashboard
       router.replace('/dashboard')
     },
-    onError: (error: any) => {
-      const errorMessage = error?.message || "Une erreur est survenue lors de la connexion"
+    onError: (error: Error) => {
       toast.error("Erreur de connexion", {
-        description: errorMessage,
+        description: error.message || "Une erreur est survenue lors de la connexion",
       })
     },
   })
@@ -207,7 +190,6 @@ export function useLoginAs() {
 export function useSwitchBack() {
   const router = useRouter()
   const { setUser, setImpersonating, originalUser } = useUserStore()
-  const { setEnterprise } = useEnterpriseStore()
 
   const switchBack = async () => {
     if (!originalUser) {
@@ -216,53 +198,18 @@ export function useSwitchBack() {
     }
 
     try {
-      // Extract original user data without tokens
-      const { originalTokens, ...originalUserData } = originalUser as any
+      // Clear impersonation state -- admin must re-authenticate for security
+      // (admin tokens are never stored in client storage)
+      tokenManager.clearTokens()
+      setUser(originalUser)
+      setImpersonating(false)
 
-      // Restore original tokens if available
-      if (originalTokens?.token && originalTokens?.refreshToken) {
-        tokenManager.setTokens(originalTokens.token, originalTokens.refreshToken)
-        
-        // Restore original user data
-        setUser(originalUserData)
-        setImpersonating(false)
+      toast.success("Fin de l'impersonation", {
+        description: `Veuillez vous reconnecter en tant que ${originalUser.email}`,
+      })
 
-        // Fetch and save enterprise data for original user
-        if (originalUserData.companyId) {
-          try {
-            const enterpriseData = await getCompagnieConnectedDetails(originalUserData.companyId)
-            setEnterprise(enterpriseData)
-          } catch (error) {
-          }
-        }
-
-        toast.success("Retour à la connexion originale", {
-          description: `Reconnecté en tant que ${originalUserData.email}`,
-        })
-
-        // Redirect to dashboard
-        router.replace('/dashboard')
-      } else {
-        // No original tokens available, need to re-authenticate
-        setUser(originalUserData)
-        setImpersonating(false)
-        
-        toast.success("Retour à la connexion originale", {
-          description: `Veuillez vous reconnecter en tant que ${originalUserData.email}`,
-          action: {
-            label: "Se reconnecter",
-            onClick: () => {
-              router.push('/auth/login')
-            }
-          }
-        })
-
-        // Redirect to login page for re-authentication
-        setTimeout(() => {
-          router.push('/auth/login')
-        }, 2000)
-      }
-
+      // Redirect to login for re-authentication
+      router.replace('/auth/login')
     } catch (error) {
       toast.error("Erreur lors du retour à la connexion originale")
     }

@@ -274,6 +274,13 @@ export function PhoneImportModal({
         const file = e.target.files?.[0]
         if (!file) return
 
+        // Limit file size to 5MB
+        const MAX_FILE_SIZE = 5 * 1024 * 1024
+        if (file.size > MAX_FILE_SIZE) {
+            setError("Le fichier ne doit pas dépasser 5 Mo")
+            return
+        }
+
         await handleFileImport(file, selectedType)
     }
 

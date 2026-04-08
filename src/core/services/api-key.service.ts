@@ -21,7 +21,7 @@ export const apiKeyService = {
     try {
       return await httpClient.post<CreateApiKeyResponse>(
         "/api/v1/developer/sms/api-keys",
-        input as any
+        input
       )
     } catch (error) {
       return Promise.reject(refractHttpError(error))

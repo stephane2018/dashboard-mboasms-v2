@@ -20,6 +20,14 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
 
   const handleFile = async (file: File) => {
     setError("")
+
+    // Limit file size to 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      setError("Le fichier ne doit pas dépasser 5 Mo")
+      return
+    }
+
     setSelectedFile(file)
     setIsProcessing(true)
 

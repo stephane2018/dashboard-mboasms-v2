@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
-import { Edit2, TickCircle, CloseCircle } from "iconsax-react"
+import { Edit2, TickCircle, CloseCircle, Call, ProfileTick, ArrowRight2 } from "iconsax-react"
 import { isValidPhoneNumber } from "./utils"
 import type { ContactData } from "./types"
 
@@ -99,8 +99,8 @@ export function ReviewStep({
                   key={index}
                   className={`p-3 rounded-lg border transition-colors ${
                     error
-                      ? "bg-red-50 border-red-200"
-                      : "bg-white border-border hover:bg-muted/50"
+                      ? "bg-red-50 dark:bg-red-500/5 border-red-200 dark:border-red-500/20"
+                      : "bg-card border-border hover:bg-primary/5 hover:border-primary/20"
                   }`}
                 >
                   <div className="space-y-2">
@@ -134,11 +134,14 @@ export function ReviewStep({
                       ) : (
                         <>
                           <div className="flex-1">
-                            <p className="text-sm font-mono font-medium">
-                              {contact.phoneNumber}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <Call size={14} variant="Bulk" color="currentColor" className="text-primary shrink-0" />
+                              <p className="text-sm font-mono font-medium">
+                                {contact.phoneNumber}
+                              </p>
+                            </div>
                             {error && (
-                              <p className="text-xs text-red-600 mt-1">{error}</p>
+                              <p className="text-xs text-red-600 mt-1 ml-6">{error}</p>
                             )}
                           </div>
                           <Button
@@ -149,7 +152,7 @@ export function ReviewStep({
                             }
                             className="px-2"
                           >
-                            <Edit2 size={14} variant="Bulk" />
+                            <Edit2 size={14} variant="Bulk" color="currentColor" />
                           </Button>
                         </>
                       )}
@@ -157,7 +160,8 @@ export function ReviewStep({
 
                     {/* Additional Info */}
                     {!isEditing && (contact.firstname || contact.lastname) && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground ml-6">
+                        <ProfileTick size={12} variant="Bulk" color="currentColor" className="shrink-0" />
                         <span>
                           {contact.firstname} {contact.lastname}
                         </span>
@@ -168,9 +172,9 @@ export function ReviewStep({
                     {!isEditing && (
                       <div className="flex items-center gap-1">
                         {error ? (
-                          <CloseCircle size={14} className="text-red-600" variant="Bulk" />
+                          <CloseCircle size={14} className="text-red-600" variant="Bulk" color="currentColor" />
                         ) : (
-                          <TickCircle size={14} className="text-green-600" variant="Bulk" />
+                          <TickCircle size={14} className="text-green-600" variant="Bulk" color="currentColor"/>
                         )}
                         <span className="text-xs text-muted-foreground">
                           {error ? "Invalide" : "Valide"}
@@ -189,9 +193,10 @@ export function ReviewStep({
       <Button
         onClick={handleReviewComplete}
         disabled={!isValid}
-        className="w-full bg-blue-600 hover:bg-blue-700"
+        className="w-full bg-blue-600 hover:bg-blue-700 gap-2"
       >
         Continuer vers la confirmation
+        <ArrowRight2 size={16} variant="Bulk" color="currentColor" />
       </Button>
     </div>
   )

@@ -55,6 +55,16 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
         </Badge>
       )
     },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    meta: {
+      label: "Statut",
+      variant: "select" as const,
+      options: [
+        { label: "En attente", value: "EN_ATTENTE" },
+        { label: "Validé", value: "VALIDE" },
+        { label: "Rejeté", value: "REJETE" },
+      ],
+    },
   },
   {
     accessorKey: "createdAt",

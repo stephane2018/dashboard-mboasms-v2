@@ -26,6 +26,7 @@ const navSections: { key: string; title: string; icon: React.ElementType; items:
       { title: "Introduction", href: "#introduction", section: "getting-started" },
       { title: "Base URL", href: "#base-url", section: "getting-started" },
       { title: "Authentication", href: "#authentication", section: "getting-started" },
+      { title: "Login", href: "#login", section: "getting-started", method: "POST" },
       { title: "Rate Limiting", href: "#rate-limiting", section: "getting-started" },
     ],
   },

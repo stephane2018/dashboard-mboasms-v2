@@ -54,4 +54,4 @@ export interface ApiError extends Error {
 
 export type RequestParams = Record<string, string | number | boolean | undefined>;
 
-export type RequestBody = Record<string, unknown> | FormData | null;
+export type RequestBody = Record<string, unknown> | FormData | null | object;

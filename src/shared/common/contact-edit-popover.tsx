@@ -97,15 +97,21 @@ export function ContactEditPopover({
 
         setIsUpdating(true)
         const updatedData = {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
+            id: contact.id,
+            createdAt: contact.createdAt,
+            firstname: formData.firstName,
+            lastname: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber,
             country: formData.country,
+            pays: contact.pays || formData.country,
             city: formData.city,
-            gender: formData.gender,
+            villeEntreprise: (contact as any).villeEntreprise || formData.city,
+            smsSenderId: contact.smsSenderId || "",
+            activityDomain: (contact as any).activityDomain || "",
+            user: contact.user,
             enterpriseId,
-            groupId: formData.groupId || undefined,
+            group: formData.groupId || undefined,
         }
 
         updateContact(
@@ -127,8 +133,7 @@ export function ContactEditPopover({
                     setIsOpen(false)
                     setIsUpdating(false)
                 },
-                onError: (error) => {
-                    toast.error("Erreur lors de la mise à jour du contact")
+                onError: () => {
                     setIsUpdating(false)
                 },
             }

@@ -34,15 +34,9 @@ export const normalizeRole = (backendRole: string): UserRole => {
   return roleMap[roleLower] || 'USER'
 }
 
-// Legacy function for backward compatibility
+// Legacy function - returns null (localStorage storage removed for security)
 export const getRoleFromLocalStorage = (): UserRole | null => {
-  try {
-    const role = localStorage.getItem("caisse-post-role")
-    if (!role) return null
-    return normalizeRole(role)
-  } catch (error) {
-    return null
-  }
+  return null
 }
 
 // New function using Zustand store

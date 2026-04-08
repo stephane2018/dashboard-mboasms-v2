@@ -35,7 +35,7 @@ export async function sendSMS(params: SendMessageParams): Promise<SendMessageRes
   try {
     const response = await httpClient.post<SendMessageResponse>(
       '/api/v1/message/sendMessage',
-      params as Record<string, any>
+      params
     )
     return response
   } catch (error) {

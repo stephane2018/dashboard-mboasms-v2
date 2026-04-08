@@ -2,25 +2,27 @@ import * as z from "zod"
 
 // Login validation schema
 export const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().trim().email("Veuillez entrer une adresse e-mail valide").max(254),
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères").max(128),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
 
-// Register validation schema
+// Register validation schema (aligned with modules/auth/validations/auth.validation.ts)
 export const registerSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  firstName: z.string().trim().min(2, "Le prénom doit contenir au moins 2 caractères").max(50),
+  lastName: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(50),
+  email: z.string().trim().email("Veuillez entrer une adresse e-mail valide").max(254),
   password: z.string()
-    .min(6, "Password must be at least 6 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(128)
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
 })
 
@@ -28,7 +30,7 @@ export type RegisterFormData = z.infer<typeof registerSchema>
 
 // Forgot password schema
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().trim().email("Veuillez entrer une adresse e-mail valide").max(254),
 })
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
@@ -36,13 +38,15 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 // Reset password schema
 export const resetPasswordSchema = z.object({
   password: z.string()
-    .min(6, "Password must be at least 6 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(128)
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
 })
 

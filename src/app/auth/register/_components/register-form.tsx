@@ -116,6 +116,19 @@ export function RegisterForm() {
   const prevStep = () => setStep(prev => prev - 1);
 
   const onSubmit = (data: FormData) => {
+    if (data.accountType !== 'business') {
+      data.socialRaison = data.socialRaison?.trim() || 'RAS';
+      data.adresseEnterprise = data.adresseEnterprise?.trim() || 'RAS';
+      data.contribuableNumber = data.contribuableNumber?.trim() || 'RAS';
+      data.emailEnterprise = data.emailEnterprise?.trim() || 'RAS';
+      data.enterpriseCountryId = data.enterpriseCountryId?.trim() || 'RAS';
+      data.numeroCommerce = data.numeroCommerce?.trim() || 'RAS';
+      data.smsESenderId = data.smsESenderId?.trim() || 'RAS';
+      data.telephoneEntreprise = data.telephoneEntreprise?.trim() || 'RAS';
+      data.urlSiteweb = data.urlSiteweb?.trim() || 'RAS';
+      data.villeEntreprise = data.villeEntreprise?.trim() || 'RAS';
+      data.activityDomain = data.activityDomain?.trim() || 'RAS';
+    }
     registerMutation.mutate(data);
   };
 

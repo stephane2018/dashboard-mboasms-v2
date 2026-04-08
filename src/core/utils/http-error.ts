@@ -1,23 +1,31 @@
-export const refractHttpError = (error: any): any => {
-    if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
+import type { AxiosError } from "axios";
+
+export interface HttpError {
+    status?: number;
+    data?: unknown;
+    headers?: Record<string, string>;
+    message: string;
+    request?: unknown;
+}
+
+export const refractHttpError = (error: unknown): HttpError => {
+    const axiosError = error as AxiosError;
+    if (axiosError.response) {
         return {
-            status: error.response.status,
-            data: error.response.data,
-            headers: error.response.headers,
-            message: error.message,
+            status: axiosError.response.status,
+            data: axiosError.response.data,
+            headers: axiosError.response.headers as Record<string, string>,
+            message: axiosError.message,
         };
-    } else if (error.request) {
-        // The request was made but no response was received
+    } else if (axiosError.request) {
         return {
             message: "No response received from server",
-            request: error.request,
+            request: axiosError.request,
         };
     } else {
-        // Something happened in setting up the request that triggered an Error
+        const genericError = error as Error;
         return {
-            message: error.message,
+            message: genericError?.message || "Unknown error",
         };
     }
 };

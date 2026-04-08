@@ -45,7 +45,7 @@ export const getCompagnieConnectedDetails = async (enterpriseId: string): Promis
 
 export const createCompany = async (company: CreateCompanyRequestType): Promise<EnterpriseType> => {
   try {
-    const response = await httpClient.post<EnterpriseType>('/api/v1/enterprise', company as Record<string, any>);
+    const response = await httpClient.post<EnterpriseType>('/api/v1/enterprise', company);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));
@@ -56,7 +56,7 @@ export const addUserToEnterprise = async (enterpriseId: string, user: AddUserToE
   try {
     const response = await httpClient.post<UserType>(
       `/api/v1/enterprise/adduser-enterprise/${enterpriseId}`,
-      user as any
+      user
     );
     return response;
   } catch (error) {
@@ -107,7 +107,7 @@ export const getEnterpriseDetails = async (enterpriseId: string): Promise<Enterp
 
 export const updateCompany = async (id: string, company: CreateCompanyRequestType): Promise<EnterpriseType> => {
   try {
-    const response = await httpClient.put<EnterpriseType>(`/api/v1/enterprise/${id}`, company as Record<string, any>);
+    const response = await httpClient.put<EnterpriseType>(`/api/v1/enterprise/${id}`, company);
     return response;
   } catch (error) {
     return Promise.reject(refractHttpError(error));

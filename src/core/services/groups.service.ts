@@ -63,13 +63,13 @@ export const groupsService = {
 
   async createGroup(input: CreateGroupInput): Promise<Group> {
     try {
-      return await httpClient.post<Group>("/api/v1/group/save", input as any)
+      return await httpClient.post<Group>("/api/v1/group/save", input)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }
   },
 
-  async deleteGroup(groupId: string): Promise<any> {
+  async deleteGroup(groupId: string): Promise<void> {
     try {
       return await httpClient.delete(`/api/v1/group/${groupId}`)
     } catch (error) {
@@ -82,7 +82,7 @@ export const groupsService = {
    * DELETE /api/v1/group/deleteContact/{groupId}
    * Body: { "listContactid": ["contactId"] }
    */
-  async deleteContactFromGroup(groupId: string, contactId: string): Promise<any> {
+  async deleteContactFromGroup(groupId: string, contactId: string): Promise<void> {
     try {
       return await httpClient.delete(`/api/v1/group/deleteContact/${groupId}`, {
         data: {
@@ -104,7 +104,7 @@ export const groupsService = {
     }
   },
 
-  async removeContactFromGroup(groupId: string, contactId: string): Promise<any> {
+  async removeContactFromGroup(groupId: string, contactId: string): Promise<void> {
     try {
       return await httpClient.delete(`/api/v1/group/deleteContact/${groupId}`, {
         params: { contactId },

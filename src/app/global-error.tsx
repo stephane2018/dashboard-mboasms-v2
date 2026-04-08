@@ -1,5 +1,8 @@
 "use client"
 
+// global-error renders OUTSIDE the root layout — no providers, no Tailwind, no context.
+// Must include its own <html>, <head>, and <body> tags with inline styles only.
+
 export default function GlobalError({
   reset,
 }: {
@@ -8,6 +11,11 @@ export default function GlobalError({
 }) {
   return (
     <html lang="fr">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Erreur - MboaSMS</title>
+      </head>
       <body style={{ margin: 0 }}>
         <div
           style={{
@@ -74,8 +82,7 @@ export default function GlobalError({
                 lineHeight: 1.6,
               }}
             >
-              Une erreur inattendue s&apos;est produite. Veuillez réessayer ou
-              retourner à l&apos;accueil.
+              {"Une erreur inattendue s'est produite. Veuillez r\u00e9essayer ou retourner \u00e0 l'accueil."}
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -93,7 +100,7 @@ export default function GlobalError({
                   color: "#fff",
                 }}
               >
-                Réessayer
+                {"R\u00e9essayer"}
               </button>
 
               <a
@@ -114,7 +121,7 @@ export default function GlobalError({
                   boxSizing: "border-box",
                 }}
               >
-                Retour à l&apos;accueil
+                {"Retour \u00e0 l'accueil"}
               </a>
             </div>
           </div>
