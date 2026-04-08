@@ -4,6 +4,7 @@ import { DataTable } from "@/shared/common/data-table"
 import type { Group } from "@/modules/groups/types"
 import type { EnterpriseType } from "@/core/models/enterprise"
 import { getColumns } from "./columns"
+import { useT } from "@/core/hooks"
 
 interface GroupTableViewProps {
   data: (Group & { enterpriseFull?: EnterpriseType })[]
@@ -13,7 +14,8 @@ interface GroupTableViewProps {
 }
 
 export function GroupTableView({ data, isLoading, onAddContacts, onDelete }: GroupTableViewProps) {
-  const columns = getColumns(onAddContacts, onDelete)
+  const { t } = useT()
+  const columns = getColumns(onAddContacts, onDelete, t)
 
   return (
     <DataTable
@@ -28,7 +30,7 @@ export function GroupTableView({ data, isLoading, onAddContacts, onDelete }: Gro
       }}
       autoPagination
       rowSelectable={false}
-      emptyMessage="Aucun groupe trouvé."
+      emptyMessage={t('groups.noGroups')}
     />
   )
 }

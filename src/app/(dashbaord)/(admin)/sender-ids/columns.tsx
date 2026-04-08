@@ -16,28 +16,30 @@ const statusColors: Record<SenderIdStatus, "default" | "secondary" | "destructiv
   REJETE: "destructive",
 }
 
-const statusLabels: Record<SenderIdStatus, string> = {
-  EN_ATTENTE: "En attente",
-  VALIDE: "Validé",
-  REJETE: "Rejeté",
-}
-
 interface ColumnsProps {
   onEdit: (senderId: SenderId) => void
   onDelete: (senderId: SenderId) => void
   onChangeStatus: (senderId: SenderId) => void
   userRole?: Role
+  t: (key: string, options?: Record<string, unknown>) => string
 }
 
-export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: ColumnsProps): ColumnDef<SenderId>[] => [
+export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t }: ColumnsProps): ColumnDef<SenderId>[] => {
+  const statusLabels: Record<SenderIdStatus, string> = {
+    EN_ATTENTE: t('senderIds.statusPending'),
+    VALIDE: t('senderIds.statusValidated'),
+    REJETE: t('senderIds.statusRejected'),
+  }
+
+  return [
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nom" label="Nom" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.name')} label={t('common.name')} />,
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "description",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Description" label="Description" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.description')} label={t('common.description')} />,
     cell: ({ row }) => (
       <div className="max-w-[300px] truncate" title={row.getValue("description")}>
         {row.getValue("description")}
@@ -46,7 +48,7 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
   },
   {
     accessorKey: "status",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Statut" label="Statut" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.status')} label={t('common.status')} />,
     cell: ({ row }) => {
       const status = row.getValue("status") as SenderIdStatus
       return (
@@ -57,18 +59,18 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
     },
     filterFn: (row, id, value) => value.includes(row.getValue(id)),
     meta: {
-      label: "Statut",
+      label: t('common.status'),
       variant: "select" as const,
       options: [
-        { label: "En attente", value: "EN_ATTENTE" },
-        { label: "Validé", value: "VALIDE" },
-        { label: "Rejeté", value: "REJETE" },
+        { label: t('senderIds.statusPending'), value: "EN_ATTENTE" },
+        { label: t('senderIds.statusValidated'), value: "VALIDE" },
+        { label: t('senderIds.statusRejected'), value: "REJETE" },
       ],
     },
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Date de création" label="Date de création" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.createdAt')} label={t('common.createdAt')} />,
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return format(date, "dd MMM yyyy", { locale: fr })
@@ -76,7 +78,7 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
   },
   {
     accessorKey: "rejectionReason",
-    header: "Raison du rejet",
+    header: t('senderIds.rejectionReason'),
     cell: ({ row }) => {
       const reason = row.getValue("rejectionReason") as string | null
       if (!reason) return <span className="text-muted-foreground">-</span>
@@ -89,25 +91,25 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
   },
   {
     id: "actions",
-    header: "Actions",
+    header: t('common.actions'),
     cell: ({ row }) => {
       const senderId = row.original
 
       const actions = [
         {
           icon: Edit2,
-          label: "Modifier",
+          label: t('senderIds.edit'),
           onClick: () => onEdit(senderId),
         },
         // Only SUPER_ADMIN can change status
         ...(userRole === Role.SUPER_ADMIN ? [{
           icon: RefreshCcw,
-          label: "Changer le statut",
+          label: t('senderIds.changeStatus'),
           onClick: () => onChangeStatus(senderId),
         }] : []),
         {
           icon: Trash2,
-          label: "Supprimer",
+          label: t('senderIds.delete'),
           className: "text-destructive",
           onClick: () => onDelete(senderId),
         },
@@ -120,3 +122,4 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole }: Co
     },
   },
 ]
+}

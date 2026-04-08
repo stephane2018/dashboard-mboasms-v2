@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/shared/ui/sidebar"
+import { useT } from "@/core/hooks"
 
 export function NavMain({
   sections,
@@ -26,6 +27,7 @@ export function NavMain({
 }) {
   const pathname = usePathname()
   const { state } = useSidebar()
+  const { t } = useT()
 
   const isItemActive = (itemUrl: string) => {
     if (pathname === itemUrl) return true
@@ -39,7 +41,7 @@ export function NavMain({
         <SidebarGroup key={section.title}>
           {state !== 'collapsed' && (
             <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/60">
-              {section.title}
+              {t(section.title)}
             </SidebarGroupLabel>
           )}
           <SidebarMenu>
@@ -50,14 +52,14 @@ export function NavMain({
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    tooltip={item.title}
+                    tooltip={t(item.title)}
                     size="default"
                     className={`sidebar-item-hover h-9 ${state === 'collapsed' ? 'px-0 justify-center' : 'px-2'}`}
                     isActive={isActive}
                   >
                     <Link href={item.url} className={`flex items-center ${state === 'collapsed' ? 'justify-center' : 'gap-2'}`}>
                       <ItemIcon size={18} variant="Bulk" color="currentcolor" className="text-primary" />
-                      {state !== 'collapsed' && <span className="text-[13px]">{item.title}</span>}
+                      {state !== 'collapsed' && <span className="text-[13px]">{t(item.title)}</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

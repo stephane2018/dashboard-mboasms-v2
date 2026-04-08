@@ -23,33 +23,38 @@ const getStatusClasses = (status: MessageStatus | string) => {
   }
 };
 
-const statusLabels: Record<string, string> = {
-  [MessageStatus.ACCEPTED]: "Accepté",
-  [MessageStatus.SENT]: "Envoyé",
-  [MessageStatus.DELIVERED]: "Livré",
-  [MessageStatus.FAILED]: "Échoué",
-  [MessageStatus.PENDING]: "En attente",
+interface ColumnsProps {
+  t: (key: string, options?: Record<string, unknown>) => string
 }
 
-export const columns: ColumnDef<MessageHistoryType>[] = [
+export const createColumns = ({ t }: ColumnsProps): ColumnDef<MessageHistoryType>[] => {
+  const statusLabels: Record<string, string> = {
+    [MessageStatus.ACCEPTED]: t('history.statusAccepted'),
+    [MessageStatus.SENT]: t('history.statusSent'),
+    [MessageStatus.DELIVERED]: t('history.statusDelivered'),
+    [MessageStatus.FAILED]: t('history.statusFailed'),
+    [MessageStatus.PENDING]: t('history.statusPending'),
+  }
+
+  return [
   {
     accessorKey: "sender",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Expéditeur" label="Expéditeur" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('sms.senderId')} label={t('sms.senderId')} />,
     cell: ({ row }) => <div className="font-medium">{row.getValue("sender")}</div>,
   },
   {
     accessorKey: "msisdn",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Destinataire" label="Destinataire" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('history.recipient')} label={t('history.recipient')} />,
     cell: ({ row }) => <div>{row.getValue("msisdn")}</div>,
   },
   {
     accessorKey: "message",
-    header: "Message",
+    header: t('history.message'),
     cell: ({ row }) => <div className="max-w-xs truncate" title={row.getValue("message")}>{row.getValue("message")}</div>,
   },
   {
     accessorKey: "enterprise",
-    header: "Entreprise",
+    header: t('companies.title'),
     cell: ({ row }) => {
       const enterprise = row.getValue("enterprise") as MessageHistoryType['enterprise']
       return <div>{enterprise?.smsESenderId || "—"}</div>
@@ -57,7 +62,7 @@ export const columns: ColumnDef<MessageHistoryType>[] = [
   },
   {
     accessorKey: "status",
-    header: "Statut",
+    header: t('common.status'),
     cell: ({ row }) => {
       const status = row.getValue("status") as MessageStatus;
       return <div className={getStatusClasses(status)}>{statusLabels[status] || status}</div>;
@@ -70,7 +75,7 @@ export const columns: ColumnDef<MessageHistoryType>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Date" label="Date" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.date')} label={t('common.date')} />,
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as string
       if (!date) return <div>—</div>
@@ -84,3 +89,4 @@ export const columns: ColumnDef<MessageHistoryType>[] = [
     },
   },
 ]
+}

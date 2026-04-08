@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import { apiKeyService } from "@/core/services/api-key.service"
 import type {
   ApiKey,
@@ -31,8 +32,8 @@ export function useCreateApiKey() {
     },
     onError: (error: any) => {
       const errorMessage =
-        error?.data?.message || error?.message || "Erreur lors de la création de l'API Key"
-      toast.error("Erreur", { description: errorMessage })
+        error?.data?.message || error?.message || i18next.t('apiKeys.error')
+      toast.error(i18next.t('common.error'), { description: errorMessage })
     },
   })
 }
@@ -43,15 +44,15 @@ export function useDeleteApiKey() {
   return useMutation({
     mutationFn: (id: string) => apiKeyService.deleteApiKey(id),
     onSuccess: () => {
-      toast.success("API Key supprimée", {
-        description: "La clé API a été supprimée avec succès",
+      toast.success(i18next.t('apiKeys.deleted'), {
+        description: i18next.t('apiKeys.deleted'),
       })
       queryClient.invalidateQueries({ queryKey: apiKeyKeys.all })
     },
     onError: (error: any) => {
       const errorMessage =
-        error?.data?.message || error?.message || "Erreur lors de la suppression de l'API Key"
-      toast.error("Erreur", { description: errorMessage })
+        error?.data?.message || error?.message || i18next.t('apiKeys.error')
+      toast.error(i18next.t('common.error'), { description: errorMessage })
     },
   })
 }

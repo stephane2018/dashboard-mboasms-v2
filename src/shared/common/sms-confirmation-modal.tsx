@@ -1,5 +1,6 @@
 "use client"
 
+import { useT } from "@/core/hooks"
 import {
     Dialog,
     DialogContent,
@@ -60,6 +61,7 @@ export function SMSConfirmationModal({
     mtnCount = 0,
     otherOperatorsCount = 0,
 }: SMSConfirmationModalProps) {
+    const { t } = useT()
     const messagePreview = message.length > 150 ? `${message.slice(0, 150)}...` : message
 
     return (
@@ -70,7 +72,7 @@ export function SMSConfirmationModal({
                         <div className="rounded-lg bg-primary/10 p-1.5">
                             <Send2 size={18} variant="Bulk" color="currentColor" className="text-primary" />
                         </div>
-                        Confirmation d&apos;envoi
+                        {t('sms.sendConfirmation')}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -82,8 +84,8 @@ export function SMSConfirmationModal({
                         <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/15 text-xs">
                             <Warning2 size={14} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
                             <div className="text-amber-700 dark:text-amber-400">
-                                <p className="font-medium">SID &quot;{senderId}&quot; pris en compte.</p>
-                                <p className="mt-0.5 text-amber-600 dark:text-amber-500">Si refusé par MTN, les SMS MTN seront envoyer avec le senderId <b>infos</b>.</p>
+                                <p className="font-medium">{t('sms.sidTakenIntoAccount', { senderId })}</p>
+                                <p className="mt-0.5 text-amber-600 dark:text-amber-500">{t('sms.sidMtnFallback')}</p>
                             </div>
                         </div>
                     )}
@@ -98,7 +100,7 @@ export function SMSConfirmationModal({
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-bold text-primary">{senderId}</span>
                                 <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isSenderIdVerified ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'}`}>
-                                    {isSenderIdVerified ? "Vérifié" : "En attente"}
+                                    {isSenderIdVerified ? t('sms.senderIdVerifiedLabel') : t('sms.senderIdPendingLabel')}
                                 </span>
                             </div>
                         </div>
@@ -112,7 +114,7 @@ export function SMSConfirmationModal({
                                 {messagePreview}
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-1.5">
-                                {message.length} car. &middot; {smsCount} SMS/dest.
+                                {t('sms.charsSmsPerRecipient', { chars: message.length, smsCount })}
                             </p>
                         </div>
                     </div>
@@ -122,21 +124,21 @@ export function SMSConfirmationModal({
                         <div className="rounded-xl bg-muted/30 p-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
                             <ProfileTick size={18} color="currentColor" variant="Bulk" className="text-muted-foreground" />
-                            <p className="text-[11px] text-muted-foreground">Destinataires</p>
+                            <p className="text-[11px] text-muted-foreground">{t('sms.recipientsLabel')}</p>
                           </div>
                             <p className="text-xl font-bold tabular-nums">{validRecipients}</p>
                         </div>
                         <div className="rounded-xl bg-primary/5 p-3 text-center">
                            <div className="flex items-center justify-center gap-1.5">
                             <MessageText1 size={18} color="currentColor" variant="Bulk" className="text-primary" />
-                            <p className="text-[11px] text-muted-foreground">Total SMS</p>
+                            <p className="text-[11px] text-muted-foreground">{t('sms.totalSmsLabel')}</p>
                            </div>
                             <p className="text-xl font-bold text-primary tabular-nums">{totalSmsToSend}</p>
                         </div>
                         <div className={`rounded-xl p-3 text-center ${hasInsufficientBalance ? 'bg-red-50 dark:bg-red-500/5' : 'bg-emerald-50 dark:bg-emerald-500/5'}`}>
                             <div className="flex items-center justify-center gap-1.5">
                                 <Wallet size={16} color="currentColor" variant="Bulk" className={`shrink-0 ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`} />
-                                <p className="text-[11px] text-muted-foreground">Solde après</p>
+                                <p className="text-[11px] text-muted-foreground">{t('sms.balanceAfter')}</p>
                             </div>
                             <p className={`text-xl font-bold tabular-nums ${remainingBalance < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                                 {remainingBalance.toLocaleString()}
@@ -148,7 +150,7 @@ export function SMSConfirmationModal({
                     {invalidRecipients > 0 && (
                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/5 border border-red-200/60 dark:border-red-500/15 text-xs text-red-600 dark:text-red-400">
                             <CloseCircle size={14} color="currentColor" variant="Bulk" className="shrink-0" />
-                            {invalidRecipients} numéro(s) invalide(s) ignoré(s)
+                            {t('sms.invalidRecipientsIgnored', { count: invalidRecipients })}
                         </div>
                     )}
 
@@ -157,7 +159,7 @@ export function SMSConfirmationModal({
                         <div className="rounded-xl bg-muted/30 p-3 space-y-1.5">
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                                 <InfoCircle size={14} color="currentColor" variant="Bulk" />
-                                Répartition opérateurs
+                                {t('sms.operatorBreakdown')}
                             </div>
                             {mtnCount > 0 && (
                                 <div className="flex items-center justify-between text-xs">
@@ -178,7 +180,7 @@ export function SMSConfirmationModal({
                     {hasInsufficientBalance && (
                         <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-500/5 border border-red-300 dark:border-red-500/20 text-xs text-red-600 dark:text-red-400 font-medium">
                             <Warning2 size={14} color="currentColor" variant="Bulk" className="shrink-0" />
-                            Solde insuffisant pour cet envoi
+                            {t('sms.insufficientBalanceWarning')}
                         </div>
                     )}
                 </div>
@@ -191,7 +193,7 @@ export function SMSConfirmationModal({
                         disabled={isLoading}
                         className="flex-1 sm:flex-none rounded-xl"
                     >
-                        Annuler
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         onClick={onConfirm}
@@ -200,12 +202,12 @@ export function SMSConfirmationModal({
                         {isLoading ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin"  color="currentColor" />
-                                Envoi...
+                                {t('sms.sending')}
                             </>
                         ) : (
                             <>
                                 <Send2 size={16} variant="Bulk" color="currentColor"/>
-                                Confirmer l&apos;envoi
+                                {t('sms.confirmSend')}
                             </>
                         )}
                     </Button>

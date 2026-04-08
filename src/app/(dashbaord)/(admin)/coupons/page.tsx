@@ -11,9 +11,10 @@ import { CreateCouponDialog, EditCouponDialog } from "@/modules/coupon/component
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
-import { useActiveCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon } from "@/core/hooks"
+import { useActiveCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon, useT } from "@/core/hooks"
 
 export default function CouponsPage() {
+  const { t } = useT()
   const { user } = useAuthContext()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
@@ -33,7 +34,7 @@ export default function CouponsPage() {
       const errorMessage =
         (error as any)?.response?.data?.message ||
         (error as any)?.message ||
-        "Erreur lors du chargement des coupons"
+        t('coupons.loadError')
       toast.error(errorMessage)
     }
   }, [error])
@@ -78,6 +79,7 @@ export default function CouponsPage() {
   const columns = createColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
+    t,
   })
 
   const coupons = data?.content || []
@@ -90,16 +92,16 @@ export default function CouponsPage() {
           <div className="flex items-center gap-2">
             <TicketDiscount size="32" variant="Bulk" color="currentColor" className="text-primary" />
             <h1 className="text-3xl font-bold tracking-tight">
-              {_isSuperAdmin ? "Codes promo (Plateforme)" : "Codes promo"}
+              {_isSuperAdmin ? t('coupons.titlePlatform') : t('coupons.title')}
             </h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Gérez les codes promo et coupons de réduction.
+            {t('coupons.subtitleManagement')}
           </p>
         </div>
         <Button className="gap-2" onClick={handleCreate}>
           <Add size="20" variant="Bulk" color="currentColor" />
-          Nouveau coupon
+          {t('coupons.newCoupon')}
         </Button>
       </div>
 
@@ -113,7 +115,7 @@ export default function CouponsPage() {
         initialState={{
           pagination,
         }}
-        emptyMessage="Aucun coupon trouvé."
+        emptyMessage={t('coupons.noResults')}
       />
 
       <CreateCouponDialog
@@ -138,8 +140,8 @@ export default function CouponsPage() {
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
             onConfirm={handleConfirmDelete}
-            title="Supprimer le coupon"
-            description={`Êtes-vous sûr de vouloir supprimer le coupon "${selectedCoupon.name}" ? Cette action est irréversible.`}
+            title={t('coupons.deleteTitle')}
+            description={t('coupons.deleteConfirm', { name: selectedCoupon.name })}
             itemName={selectedCoupon.name}
             isDeleting={deleteCouponMutation.isPending}
           />

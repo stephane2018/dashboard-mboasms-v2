@@ -22,6 +22,7 @@ import { useSendToGroup } from "@/core/hooks/useContactMessage"
 import { useDeleteContactFromGroup } from "@/core/hooks/use-groups"
 import { groupsService } from "@/core/services/groups.service"
 import { useAuthContext } from "@/core/providers"
+import { useT } from "@/core/hooks"
 import { Skeleton } from "@/shared/ui/skeleton"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { ContactsDataTable } from "./components/contacts-data-table"
@@ -29,10 +30,12 @@ import { SMSModal } from "@/app/(dashbaord)/(admin)/users/_components/sms-modal"
 import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import { exportToExcelSecure } from "@/shared/utils/excel-secure.utils"
+import { i18next } from "@/core/lib/i18n"
 
 export default function GroupContactsViewPage() {
   const router = useRouter()
   const params = useParams()
+  const { t } = useT()
   const groupId = params.groupId as string
 
   const [searchTerm, setSearchTerm] = useState("")
@@ -63,10 +66,10 @@ export default function GroupContactsViewPage() {
     try {
       const result = await contactService.getContactsByGroup(groupId, user.companyId) as any
       setContacts(result.contacts || [])
-      setGroupInfo(result.groupInfo || { name: `Groupe ${groupId}` })
+      setGroupInfo(result.groupInfo || { name: `${i18next.t('groups.title')} ${groupId}` })
     } catch (err) {
-      setError("Erreur lors du chargement des contacts")
-      toast.error("Erreur lors du chargement des contacts")
+      setError(i18next.t("groupContacts.loadError"))
+      toast.error(i18next.t("groupContacts.loadError"))
     } finally {
       setIsLoading(false)
     }
@@ -78,21 +81,20 @@ export default function GroupContactsViewPage() {
 
   const handleSendMessageToGroup = async (message: string) => {
     if (!user?.companyId) {
-      toast.error("Erreur: Informations utilisateur manquantes")
+      toast.error(i18next.t("groupContacts.userInfoMissing"))
       return
     }
 
     try {
-      // Construct payload for sending to group
       const contactIds = contacts.map(c => c.id).join(',')
       await sendToGroup({
         groupId,
         message,
         enterpriseId: user.companyId,
         contacts: contactIds,
-        senderId: '', // TODO: Add sender selection
+        senderId: '',
       })
-      toast.success(`Message envoyé au groupe "${groupInfo?.name}"`)
+      toast.success(i18next.t("groupContacts.messageSentToGroup", { name: groupInfo?.name }))
       setIsMessageModalOpen(false)
     } catch (error) {
       // Error is already handled by the hook
@@ -100,10 +102,8 @@ export default function GroupContactsViewPage() {
   }
 
   const handleUpdate = (updatedContact: EnterpriseContactResponseType) => {
-    // Update local state
     setContacts(prev => prev.map(c => c.id === updatedContact.id ? updatedContact : c))
-    toast.success("Contact mis à jour")
-    // Refresh to get latest data from server
+    toast.success(i18next.t("groupContacts.contactUpdated"))
     loadContacts()
   }
 
@@ -115,23 +115,17 @@ export default function GroupContactsViewPage() {
   const handleConfirmDelete = async () => {
     if (!contactToDelete || !user?.companyId) return
 
-    // Optimistic update: remove from local state immediately
     const contactToRemove = contactToDelete
     setContacts(prev => prev.filter(c => c.id !== contactToRemove.id))
     setDeleteDialogOpen(false)
     setContactToDelete(null)
 
     try {
-      // Delete contact from group in background
       await deleteContactFromGroup(groupId, contactToRemove.id)
-      toast.success(`Contact "${contactToRemove.firstname} ${contactToRemove.lastname}" retiré du groupe`)
-
-      // Background refresh to sync with server
+      toast.success(i18next.t("groupContacts.contactRemovedFromGroup", { name: `${contactToRemove.firstname} ${contactToRemove.lastname}` }))
       loadContacts()
     } catch (error) {
-      toast.error("Erreur lors de la suppression du contact du groupe")
-
-      // Rollback: restore the contact on error
+      toast.error(i18next.t("groups.deleteContactError"))
       setContacts(prev => [...prev, contactToRemove])
     }
   }
@@ -146,21 +140,16 @@ export default function GroupContactsViewPage() {
 
     setIsAddingContacts(true)
 
-    // Optimistic update: add contacts to local state immediately
     setContacts(prev => [...prev, ...selectedContacts])
     setIsAddContactModalOpen(false)
-    toast.success(`${selectedContacts.length} contact(s) ajouté(s) au groupe`)
+    toast.success(i18next.t("groupContacts.contactsAddedToGroup", { count: selectedContacts.length }))
 
     try {
       const contactIds = selectedContacts.map(c => c.id)
       await groupsService.addContactsToGroup(groupId, contactIds)
-
-      // Background refresh to sync with server
       loadContacts()
     } catch (error) {
-      toast.error("Erreur lors de l'ajout des contacts au groupe")
-
-      // Rollback: remove the contacts on error
+      toast.error(i18next.t("groupContacts.addContactsError"))
       const addedIds = new Set(selectedContacts.map(c => c.id))
       setContacts(prev => prev.filter(c => !addedIds.has(c.id)))
     } finally {
@@ -170,39 +159,36 @@ export default function GroupContactsViewPage() {
 
   const handleExportContacts = async () => {
     if (filteredContacts.length === 0) {
-      toast.error("Aucun contact à exporter")
+      toast.error(i18next.t("groupContacts.noContactsToExport"))
       return
     }
 
     setIsExporting(true)
     try {
-      // Prepare data for export
       const exportData = filteredContacts.map(contact => ({
-        Prénom: contact.firstname || '',
-        Nom: contact.lastname || '',
-        Téléphone: contact.phoneNumber || '',
-        Email: contact.email || '',
-        Pays: contact.country || '',
-        Ville: contact.city || '',
-        Genre: contact.gender || '',
-        Archivé: contact.archived ? 'Oui' : 'Non',
-        Statut: (contact as { enabled?: boolean })?.enabled ? 'Actif' : 'Inactif',
+        [i18next.t("contactColumns.firstName")]: contact.firstname || '',
+        [i18next.t("contactColumns.lastName")]: contact.lastname || '',
+        [i18next.t("common.phone")]: contact.phoneNumber || '',
+        [i18next.t("common.email")]: contact.email || '',
+        [i18next.t("common.country")]: contact.country || '',
+        [i18next.t("common.city")]: contact.city || '',
+        [i18next.t("contactColumns.gender")]: contact.gender || '',
+        [i18next.t("contactColumns.archived")]: contact.archived ? i18next.t("common.yes") : i18next.t("common.no"),
+        [i18next.t("common.status")]: (contact as { enabled?: boolean })?.enabled ? i18next.t("contactColumns.active") : i18next.t("contactColumns.inactive"),
       }))
 
-      // Generate filename with group name and date
       const date = new Date().toISOString().split('T')[0]
       const filename = `contacts_${groupInfo?.name || groupId}_${date}`
 
-      // Use secure Excel export
       await exportToExcelSecure({
         fileName: filename,
         sheetName: 'Contacts',
         data: exportData,
       })
 
-      toast.success(`${filteredContacts.length} contact(s) exporté(s)`)
+      toast.success(i18next.t("groupContacts.contactsExported", { count: filteredContacts.length }))
     } catch (error) {
-      toast.error("Erreur lors de l'export des contacts")
+      toast.error(i18next.t("groupContacts.exportError"))
     } finally {
       setIsExporting(false)
     }
@@ -345,12 +331,12 @@ export default function GroupContactsViewPage() {
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft size={20} />
           </Button>
-          <h1 className="text-2xl font-bold">Contacts du groupe</h1>
+          <h1 className="text-2xl font-bold">{t('groupContacts.title')}</h1>
         </div>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-red-600">
-              Une erreur est survenue lors du chargement des contacts
+              {t('groupContacts.loadErrorMessage')}
             </div>
           </CardContent>
         </Card>
@@ -369,14 +355,14 @@ export default function GroupContactsViewPage() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Profile2User size={24}  variant="Bulk" color="currentColor" className="text-primary"  />
-              {groupInfo?.name || `Groupe ${groupId}`}
+              {groupInfo?.name || `${t('groups.title')} ${groupId}`}
             </h1>
             <p className="text-muted-foreground">
               {filteredContacts.length} contact{filteredContacts.length > 1 ? "s" : ""}
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -384,7 +370,7 @@ export default function GroupContactsViewPage() {
             disabled={isAddingContacts}
           >
             <UserAdd size={16} className="mr-2" variant="Bulk" color="currentColor" />
-            Ajouter des contacts
+            {t('groups.addContacts')}
           </Button>
           <Button
             variant="outline"
@@ -392,7 +378,7 @@ export default function GroupContactsViewPage() {
             disabled={filteredContacts.length === 0 || isExporting}
           >
             <DocumentDownload size={16} className="mr-2" variant="Bulk" color="currentColor" />
-            {isExporting ? "Export..." : "Exporter"}
+            {isExporting ? t('groupContacts.exporting') : t('common.export')}
           </Button>
           <Button
             onClick={() => setIsMessageModalOpen(true)}
@@ -400,7 +386,7 @@ export default function GroupContactsViewPage() {
             className="bg-pink-600 hover:bg-pink-700"
           >
             <Sms size={16} color="currentColor" className="mr-2" variant="Bulk" />
-            Envoyer un message
+            {t('groupContacts.sendMessage')}
           </Button>
         </div>
       </div>
@@ -413,7 +399,7 @@ export default function GroupContactsViewPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Contacts</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('groupContacts.totalContacts')}</p>
                   <p className="text-3xl font-bold mt-2">{contactStats.total}</p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -431,7 +417,7 @@ export default function GroupContactsViewPage() {
                   <p className="text-sm font-medium text-muted-foreground">MTN</p>
                   <p className="text-3xl font-bold mt-2 text-yellow-600">{contactStats.operators.MTN}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {contactStats.valid > 0 ? Math.round((contactStats.operators.MTN / contactStats.valid) * 100) : 0}% des valides
+                    {contactStats.valid > 0 ? Math.round((contactStats.operators.MTN / contactStats.valid) * 100) : 0}% {t('groupContacts.ofValid')}
                   </p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
@@ -449,7 +435,7 @@ export default function GroupContactsViewPage() {
                   <p className="text-sm font-medium text-muted-foreground">Orange</p>
                   <p className="text-3xl font-bold mt-2 text-orange-600">{contactStats.operators.ORANGE}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {contactStats.valid > 0 ? Math.round((contactStats.operators.ORANGE / contactStats.valid) * 100) : 0}% des valides
+                    {contactStats.valid > 0 ? Math.round((contactStats.operators.ORANGE / contactStats.valid) * 100) : 0}% {t('groupContacts.ofValid')}
                   </p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
@@ -464,7 +450,7 @@ export default function GroupContactsViewPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Autres</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('groupContacts.others')}</p>
                   <p className="text-3xl font-bold mt-2 text-purple-600">
                     {contactStats.operators.NEXTTEL + contactStats.operators.CAMTEL}
                   </p>
@@ -485,11 +471,11 @@ export default function GroupContactsViewPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-xl">Liste des contacts</CardTitle>
+            <CardTitle className="text-xl">{t('groupContacts.contactList')}</CardTitle>
             <div className="relative w-full md:w-96">
               <SearchNormal1  variant="Bulk" color="currentColor" className="text-primary absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
               <Input
-                placeholder="Rechercher un contact..."
+                placeholder={t('groupContacts.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -514,11 +500,11 @@ export default function GroupContactsViewPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
-              <CardTitle>Envoyer un message au groupe</CardTitle>
+              <CardTitle>{t('groupContacts.sendMessageToGroup')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <textarea
-                placeholder="Tapez votre message ici..."
+                placeholder={t('groupContacts.typeMessage')}
                 className="w-full min-h-[100px] p-3 border rounded-md resize-none"
                 id="group-message"
               />
@@ -528,7 +514,7 @@ export default function GroupContactsViewPage() {
                   onClick={() => setIsMessageModalOpen(false)}
                   className="flex-1"
                 >
-                  Annuler
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -540,7 +526,7 @@ export default function GroupContactsViewPage() {
                   disabled={isSending}
                   className="flex-1 bg-pink-600 hover:bg-pink-700"
                 >
-                  {isSending ? "Envoi en cours..." : "Envoyer"}
+                  {isSending ? t('sms.sending') : t('sms.send')}
                 </Button>
               </div>
             </CardContent>
@@ -552,23 +538,21 @@ export default function GroupContactsViewPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Retirer du groupe</AlertDialogTitle>
+            <AlertDialogTitle>{t('groupContacts.removeFromGroup')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir retirer le contact{" "}
-              <strong>
-                {contactToDelete?.firstname} {contactToDelete?.lastname}
-              </strong>{" "}
-              de ce groupe ? Le contact ne sera pas supprimé de votre liste de contacts.
+              {t('groupContacts.removeConfirm', {
+                name: `${contactToDelete?.firstname} ${contactToDelete?.lastname}`
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? "Suppression..." : "Retirer"}
+              {isDeleting ? t('groupContacts.removing') : t('groupContacts.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -583,7 +567,6 @@ export default function GroupContactsViewPage() {
         }}
         selectedContacts={selectedContactForMessage ? [selectedContactForMessage] : []}
         onSend={async () => {
-          // Message sending is handled inside SMSModal
           setIsSMSModalOpen(false)
           setSelectedContactForMessage(null)
         }}

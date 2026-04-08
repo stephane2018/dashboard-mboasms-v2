@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import {
   sendMessage,
   sendMessageToContact,
@@ -56,13 +57,13 @@ export function useSendMessage() {
     mutationFn: (data: SendMessageRequestType) => sendMessage(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messageKeys.all })
-      toast.success("Message envoyé", {
-        description: "Le message a été envoyé avec succès",
+      toast.success(i18next.t('sms.sentSuccess'), {
+        description: i18next.t('sms.sentSuccessDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de l'envoi", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('sms.sentError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -76,13 +77,13 @@ export function useSendMessageToContact() {
       sendMessageToContact(contactId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messageKeys.all })
-      toast.success("Message envoyé", {
-        description: "Le message a été envoyé avec succès au contact",
+      toast.success(i18next.t('sms.sentSuccess'), {
+        description: i18next.t('sms.sentSuccessContactDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de l'envoi", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('sms.sentError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -95,13 +96,13 @@ export function useSendMessageToGroup() {
     mutationFn: (payload: SendMessageToGroupPayload) => sendMessageToGroup(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messageKeys.all })
-      toast.success("Message envoyé", {
-        description: "Le message a été envoyé au groupe avec succès",
+      toast.success(i18next.t('sms.sentSuccess'), {
+        description: i18next.t('sms.sentSuccessGroupDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de l'envoi", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('sms.sentError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })

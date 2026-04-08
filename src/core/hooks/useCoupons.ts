@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import { couponService } from "@/core/services/coupon.service"
 import type {
   Coupon,
@@ -29,15 +30,15 @@ export function useCreateCoupon() {
   return useMutation({
     mutationFn: (data: CreateCouponInput) => couponService.createCoupon(data),
     onSuccess: (data) => {
-      toast.success("Coupon créé", {
-        description: `${data.name} a été créé avec succès`,
+      toast.success(i18next.t('coupons.created'), {
+        description: i18next.t('coupons.createdDesc', { name: data.name }),
       })
       queryClient.invalidateQueries({ queryKey: couponKeys.all })
     },
     onError: (error: any) => {
       const errorMessage =
-        error?.data?.message || error?.message || "Erreur lors de la création du coupon"
-      toast.error("Erreur", { description: errorMessage })
+        error?.data?.message || error?.message || i18next.t('coupons.createError')
+      toast.error(i18next.t('common.error'), { description: errorMessage })
     },
   })
 }
@@ -49,15 +50,15 @@ export function useUpdateCoupon() {
     mutationFn: ({ id, data }: { id: string; data: UpdateCouponInput }) =>
       couponService.updateCoupon(id, data),
     onSuccess: (data) => {
-      toast.success("Coupon modifié", {
-        description: `${data.name} a été modifié avec succès`,
+      toast.success(i18next.t('coupons.updated'), {
+        description: i18next.t('coupons.updatedDesc', { name: data.name }),
       })
       queryClient.invalidateQueries({ queryKey: couponKeys.all })
     },
     onError: (error: any) => {
       const errorMessage =
-        error?.data?.message || error?.message || "Erreur lors de la modification du coupon"
-      toast.error("Erreur", { description: errorMessage })
+        error?.data?.message || error?.message || i18next.t('coupons.updateError')
+      toast.error(i18next.t('common.error'), { description: errorMessage })
     },
   })
 }
@@ -68,15 +69,15 @@ export function useDeleteCoupon() {
   return useMutation({
     mutationFn: (id: string) => couponService.deleteCoupon(id),
     onSuccess: () => {
-      toast.success("Coupon supprimé", {
-        description: "Le coupon a été supprimé avec succès",
+      toast.success(i18next.t('coupons.deleted'), {
+        description: i18next.t('coupons.deletedDesc'),
       })
       queryClient.invalidateQueries({ queryKey: couponKeys.all })
     },
     onError: (error: any) => {
       const errorMessage =
-        error?.data?.message || error?.message || "Erreur lors de la suppression du coupon"
-      toast.error("Erreur", { description: errorMessage })
+        error?.data?.message || error?.message || i18next.t('coupons.deleteError')
+      toast.error(i18next.t('common.error'), { description: errorMessage })
     },
   })
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useT } from "@/core/hooks"
 import {
   Dialog,
   DialogContent,
@@ -29,12 +30,6 @@ interface ChangeStatusDialogProps {
   isLoading?: boolean
 }
 
-const statusLabels: Record<SenderIdStatus, string> = {
-  EN_ATTENTE: "En attente",
-  VALIDE: "Validé",
-  REJETE: "Rejeté",
-}
-
 export function ChangeStatusDialog({
   open,
   onOpenChange,
@@ -42,7 +37,14 @@ export function ChangeStatusDialog({
   onSave,
   isLoading = false,
 }: ChangeStatusDialogProps) {
+  const { t } = useT()
   const [status, setStatus] = useState<SenderIdStatus>(senderId.status)
+
+  const statusLabels: Record<SenderIdStatus, string> = {
+    EN_ATTENTE: t('senderIds.statusPending'),
+    VALIDE: t('senderIds.statusValidated'),
+    REJETE: t('senderIds.statusRejected'),
+  }
   const [rejectionReason, setRejectionReason] = useState(senderId.rejectionReason || "")
 
   useEffect(() => {
@@ -69,18 +71,18 @@ export function ChangeStatusDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Changer le statut</DialogTitle>
+          <DialogTitle>{t('senderIds.changeStatusTitle')}</DialogTitle>
           <DialogDescription>
-            Modifiez le statut du Sender ID "{senderId.name}".
+            {t('senderIds.changeStatusDesc', { name: senderId.name })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="status">Statut</Label>
+            <Label htmlFor="status">{t('common.status')}</Label>
             <Select value={status} onValueChange={(value) => setStatus(value as SenderIdStatus)} disabled={isLoading}>
               <SelectTrigger id="status">
-                <SelectValue placeholder="Sélectionner un statut" />
+                <SelectValue placeholder={t('senderIds.selectStatus')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="EN_ATTENTE">{statusLabels.EN_ATTENTE}</SelectItem>
@@ -92,12 +94,12 @@ export function ChangeStatusDialog({
 
           {status === "REJETE" && (
             <div className="space-y-2">
-              <Label htmlFor="rejectionReason">Raison du rejet</Label>
+              <Label htmlFor="rejectionReason">{t('senderIds.rejectionReason')}</Label>
               <Textarea
                 id="rejectionReason"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Entrez la raison du rejet"
+                placeholder={t('senderIds.enterRejectionReason')}
                 disabled={isLoading}
                 rows={4}
               />
@@ -107,13 +109,13 @@ export function ChangeStatusDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSave}
             disabled={isLoading || (status === "REJETE" && !rejectionReason.trim())}
           >
-            {isLoading ? "Enregistrement..." : "Enregistrer"}
+            {isLoading ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

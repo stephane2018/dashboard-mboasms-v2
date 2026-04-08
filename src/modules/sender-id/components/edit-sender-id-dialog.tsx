@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useT } from "@/core/hooks"
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export function EditSenderIdDialog({
   onSave,
   isLoading = false,
 }: EditSenderIdDialogProps) {
+  const { t } = useT()
   const [name, setName] = useState(senderId.name)
   const [description, setDescription] = useState(senderId.description)
 
@@ -49,31 +51,31 @@ export function EditSenderIdDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier le Sender ID</DialogTitle>
+          <DialogTitle>{t('senderIds.editTitle')}</DialogTitle>
           <DialogDescription>
-            Modifiez les informations du Sender ID.
+            {t('senderIds.editDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nom</Label>
+            <Label htmlFor="name">{t('common.name')}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Entrez le nom"
+              placeholder={t('senderIds.enterName')}
               disabled={isLoading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('common.description')}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Entrez la description"
+              placeholder={t('senderIds.enterDescription')}
               disabled={isLoading}
               rows={4}
             />
@@ -82,10 +84,10 @@ export function EditSenderIdDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
-            {isLoading ? "Enregistrement..." : "Enregistrer"}
+            {isLoading ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

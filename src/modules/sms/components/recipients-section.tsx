@@ -8,6 +8,7 @@ import { ContactSelectionModal } from "@/shared/common/contact-selection-modal"
 import { GroupSelectionModal } from "@/shared/common/group-selection-modal"
 import type { RecipientsSectionProps } from "./types"
 import { CountryCodeWarning } from "@/shared/common/country-code-warning"
+import { useT } from "@/core/hooks"
 
 export function RecipientsSection({
     phoneEntries,
@@ -18,6 +19,7 @@ export function RecipientsSection({
     invalidRecipientsCount,
     enterpriseId,
 }: RecipientsSectionProps) {
+    const { t } = useT()
     const [isContactModalOpen, setIsContactModalOpen] = useState(false)
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
 
@@ -27,7 +29,7 @@ export function RecipientsSection({
                 <div className="flex items-center justify-between p-4 pb-3">
                     <div className="flex items-center gap-2">
                         <People size={18} color="currentColor" variant="Bulk" className="text-primary" />
-                        <h2 className="text-sm font-semibold text-foreground">Destinataires</h2>
+                        <h2 className="text-sm font-semibold text-foreground">{t('sms.recipients')}</h2>
                         {phoneEntries.length > 0 && (
                             <div className="flex items-center gap-1.5 ml-2">
                                 {validRecipientsCount > 0 && (
@@ -53,7 +55,7 @@ export function RecipientsSection({
                             onClick={() => setIsGroupModalOpen(true)}
                         >
                             <People size={14} color="currentColor" variant="Bulk" />
-                            Groupes
+                            {t('groups.title')}
                         </Button>
                         <Button
                             type="button"
@@ -63,7 +65,7 @@ export function RecipientsSection({
                             onClick={() => setIsContactModalOpen(true)}
                         >
                             <AddCircle size={14} color="currentColor" variant="Bulk" />
-                            Contacts
+                            {t('nav.contacts')}
                         </Button>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useT } from "@/core/hooks"
 import { Trash } from "iconsax-react"
 import {
   AlertDialog,
@@ -28,13 +29,15 @@ export function DeleteConfirmationDialog({
   open,
   onOpenChange,
   onConfirm,
-  title = "Confirmer la suppression",
+  title,
   description,
   itemName,
   isDeleting = false,
   requireConfirmation = true,
 }: DeleteConfirmationDialogProps) {
+  const { t } = useT()
   const [confirmationText, setConfirmationText] = useState("")
+  const resolvedTitle = title || t('common.confirmDeletion')
 
   // Reset confirmation text when dialog opens/closes
   useEffect(() => {
@@ -44,8 +47,8 @@ export function DeleteConfirmationDialog({
   }, [open])
 
   const defaultDescription = itemName
-    ? `Êtes-vous sûr de vouloir supprimer "${itemName}" ? Cette action est irréversible.`
-    : "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible."
+    ? t('common.deleteItemConfirm', { name: itemName })
+    : t('common.deleteGenericConfirm')
 
   const isConfirmed = !requireConfirmation || (itemName && confirmationText === itemName)
 
@@ -64,7 +67,7 @@ export function DeleteConfirmationDialog({
               <Trash size={24} variant="Bulk" color="currentColor" className="text-destructive" />
             </div>
             <div>
-              <AlertDialogTitle>{title}</AlertDialogTitle>
+              <AlertDialogTitle>{resolvedTitle}</AlertDialogTitle>
             </div>
           </div>
           <AlertDialogDescription className="pt-3">
@@ -75,13 +78,13 @@ export function DeleteConfirmationDialog({
         {requireConfirmation && itemName && (
           <div className="space-y-2">
             <Label htmlFor="confirmation-input" className="text-sm font-medium">
-              Pour confirmer, tapez <span className="font-mono font-semibold text-destructive">{itemName}</span>
+              {t('common.typeToConfirm')} <span className="font-mono font-semibold text-destructive">{itemName}</span>
             </Label>
             <Input
               id="confirmation-input"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
-              placeholder={`Tapez "${itemName}" pour confirmer`}
+              placeholder={t('common.typeNameToConfirm', { name: itemName })}
               disabled={isDeleting}
               className="font-mono"
               autoComplete="off"
@@ -90,13 +93,13 @@ export function DeleteConfirmationDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={isDeleting || !isConfirmed}
           >
-            {isDeleting ? "Suppression..." : "Supprimer"}
+            {isDeleting ? t('common.deleting') : t('common.delete')}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

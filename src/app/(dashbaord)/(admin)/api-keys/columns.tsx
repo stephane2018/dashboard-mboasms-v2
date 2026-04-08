@@ -41,17 +41,18 @@ function CopyKeyCell({ apiKey }: { apiKey: string }) {
 
 interface ColumnsProps {
   onDelete: (apiKey: ApiKey) => void
+  t: (key: string) => string
 }
 
-export const createColumns = ({ onDelete }: ColumnsProps): ColumnDef<ApiKey>[] => [
+export const createColumns = ({ onDelete, t }: ColumnsProps): ColumnDef<ApiKey>[] => [
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nom" label="Nom" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('apiKeys.name')} label={t('apiKeys.name')} />,
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "prefix",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Clé" label="Clé" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('apiKeys.key')} label={t('apiKeys.key')} />,
     cell: ({ row }) => {
        return <CopyKeyCell apiKey={row.original.apiKey || ""} />
     },
@@ -59,7 +60,7 @@ export const createColumns = ({ onDelete }: ColumnsProps): ColumnDef<ApiKey>[] =
 
   {
     accessorKey: "createdAt",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Créée le" label="Créée le" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('apiKeys.createdAt')} label={t('apiKeys.createdAt')} />,
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return format(date, "dd MMM yyyy HH:mm", { locale: fr })
@@ -67,23 +68,23 @@ export const createColumns = ({ onDelete }: ColumnsProps): ColumnDef<ApiKey>[] =
   },
   {
     accessorKey: "lastUsedAt",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Dernière utilisation" label="Dernière utilisation" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('apiKeys.lastUsedAt')} label={t('apiKeys.lastUsedAt')} />,
     cell: ({ row }) => {
       const lastUsedAt = row.getValue("lastUsedAt") as string | null
-      if (!lastUsedAt) return <span className="text-muted-foreground">Jamais</span>
+      if (!lastUsedAt) return <span className="text-muted-foreground">{t('apiKeys.never')}</span>
       return format(new Date(lastUsedAt), "dd MMM yyyy HH:mm", { locale: fr })
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: t('common.actions'),
     cell: ({ row }) => {
       const apiKey = row.original
 
       const actions = [
         {
           icon: Trash2,
-          label: "Supprimer",
+          label: t('common.delete'),
           className: "text-destructive",
           onClick: () => onDelete(apiKey),
         },

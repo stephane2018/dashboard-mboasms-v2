@@ -30,6 +30,7 @@ import {
 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 import { PaymentMethod } from "@/core/models/recharges"
 import { couponService } from "@/core/services/coupon.service"
 import type { Coupon } from "@/modules/coupon/types"
@@ -59,14 +60,6 @@ export interface InternationalRechargeFormData {
     couponCode?: string
 }
 
-const paymentMethods = [
-    { value: PaymentMethod.CASH, label: "Espèces (CASH)", icon: Wallet },
-    { value: PaymentMethod.ORANGE_MONEY, label: "Orange Money", icon: MoneyRecive },
-    { value: PaymentMethod.MTN_MONEY, label: "MTN Money", icon: MoneyRecive },
-    { value: PaymentMethod.BANK_ACCOUNT, label: "Compte bancaire", icon: CardIcon },
-    { value: PaymentMethod.PAYPAL, label: "PayPal", icon: CardIcon },
-]
-
 export function InternationalRechargeModal({
     isOpen,
     onClose,
@@ -74,6 +67,15 @@ export function InternationalRechargeModal({
     isLoading = false,
     selectedCountry,
 }: InternationalRechargeModalProps) {
+    const { t } = useT()
+
+    const paymentMethods = [
+        { value: PaymentMethod.CASH, label: t("intlRecharge.cashPayment"), icon: Wallet },
+        { value: PaymentMethod.ORANGE_MONEY, label: "Orange Money", icon: MoneyRecive },
+        { value: PaymentMethod.MTN_MONEY, label: "MTN Money", icon: MoneyRecive },
+        { value: PaymentMethod.BANK_ACCOUNT, label: t("intlRecharge.bankAccount"), icon: CardIcon },
+        { value: PaymentMethod.PAYPAL, label: "PayPal", icon: CardIcon },
+    ]
     const [qteMessage, setQteMessage] = useState("")
     const [amount, setAmount] = useState("")
     const [paymentMethod, setPaymentMethod] = useState<string>("")
@@ -106,12 +108,12 @@ export function InternationalRechargeModal({
             const coupon = await couponService.verifyCouponByCode(couponCode.trim())
             const now = new Date()
             if (new Date(coupon.validTo) < now) {
-                setCouponError("Code promo expiré")
+                setCouponError(t("recharge.promoExpired"))
             } else {
                 setVerifiedCoupon(coupon)
             }
         } catch {
-            setCouponError("Code promo invalide")
+            setCouponError(t("recharge.promoInvalid"))
         } finally {
             setIsVerifyingCoupon(false)
         }
@@ -127,24 +129,24 @@ export function InternationalRechargeModal({
         const newErrors: Record<string, string> = {}
 
         if (!qteMessage || Number(qteMessage) <= 0) {
-            newErrors.qteMessage = "La quantité de SMS doit être supérieure à 0"
+            newErrors.qteMessage = t("intlRecharge.qteError")
         }
 
         const numAmount = Number(amount)
         if (!amount || numAmount <= 0) {
-            newErrors.amount = "Le montant doit être supérieur à 0"
+            newErrors.amount = t("intlRecharge.amountError")
         }
 
         if (!paymentMethod) {
-            newErrors.paymentMethod = "Veuillez sélectionner une méthode de paiement"
+            newErrors.paymentMethod = t("recharge.paymentMethodRequired")
         }
 
         if ((paymentMethod === PaymentMethod.ORANGE_MONEY || paymentMethod === PaymentMethod.MTN_MONEY) && !phoneNumber) {
-            newErrors.phoneNumber = "Le numéro de téléphone est requis"
+            newErrors.phoneNumber = t("recharge.phoneRequired")
         }
 
         if (paymentMethod === PaymentMethod.BANK_ACCOUNT && !bankAccount) {
-            newErrors.bankAccount = "Le numéro de compte bancaire est requis"
+            newErrors.bankAccount = t("recharge.bankAccountRequired")
         }
 
         setErrors(newErrors)
@@ -193,11 +195,11 @@ export function InternationalRechargeModal({
                 <DialogHeader>
                     <DialogTitle className="text-2xl flex items-center gap-2">
                         <Global size={24} color="currentColor" variant="Bulk" className="text-primary" />
-                        Recharge internationale
+                        {t("intlRecharge.title")}
                     </DialogTitle>
                     <DialogDescription asChild>
                         <div className="text-muted-foreground">
-                            Rechargez votre solde international en Franc CFA
+                            {t("intlRecharge.description")}
                         </div>
                     </DialogDescription>
                 </DialogHeader>
@@ -219,7 +221,7 @@ export function InternationalRechargeModal({
                 <div className="space-y-6 py-4">
                     {/* Quantity of SMS */}
                     <div className="space-y-2">
-                        <Label htmlFor="intl-qte">Quantité de SMS *</Label>
+                        <Label htmlFor="intl-qte">{t("intlRecharge.smsQuantity")} *</Label>
                         <Input
                             id="intl-qte"
                             type="number"
@@ -238,7 +240,7 @@ export function InternationalRechargeModal({
 
                     {/* Amount */}
                     <div className="space-y-2">
-                        <Label htmlFor="intl-amount">Montant (FCFA) *</Label>
+                        <Label htmlFor="intl-amount">{t("intlRecharge.amount")} *</Label>
                         <Input
                             id="intl-amount"
                             type="number"
@@ -256,20 +258,20 @@ export function InternationalRechargeModal({
                         <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
                             <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
                             <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs">
-                                Le montant saisi sera prélevé tel quel. Aucun plan tarifaire n&apos;est appliqué.
+                                {t("intlRecharge.amountNote")}
                             </AlertDescription>
                         </Alert>
                     </div>
 
                     {/* Payment Method */}
                     <div className="space-y-2">
-                        <Label htmlFor="intl-payment-method">Méthode de paiement *</Label>
+                        <Label htmlFor="intl-payment-method">{t("recharge.paymentMethod")} *</Label>
                         <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                             <SelectTrigger
                                 id="intl-payment-method"
                                 className={cn("h-12", errors.paymentMethod && "border-red-500 ring-1 ring-red-500")}
                             >
-                                <SelectValue placeholder="Sélectionnez une méthode" />
+                                <SelectValue placeholder={t("recharge.selectPaymentMethod")} />
                             </SelectTrigger>
                             <SelectContent>
                                 {paymentMethods.map((method) => (
@@ -290,7 +292,7 @@ export function InternationalRechargeModal({
                     {/* Phone Number */}
                     {requiresPhoneNumber && (
                         <div className="space-y-2">
-                            <Label htmlFor="intl-phone-number">Numéro de téléphone *</Label>
+                            <Label htmlFor="intl-phone-number">{t("recharge.phoneNumber")} *</Label>
                             <Input
                                 id="intl-phone-number"
                                 type="tel"
@@ -305,7 +307,7 @@ export function InternationalRechargeModal({
                             <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
                                 <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
                                 <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs">
-                                    Valider la transaction sur votre mobile et cliquer sur terminer la transaction
+                                    {t("intlRecharge.validateOnMobile")}
                                 </AlertDescription>
                             </Alert>
                         </div>
@@ -314,7 +316,7 @@ export function InternationalRechargeModal({
                     {/* Bank Account */}
                     {requiresBankAccount && (
                         <div className="space-y-2">
-                            <Label htmlFor="intl-bank-account">Numéro de compte bancaire *</Label>
+                            <Label htmlFor="intl-bank-account">{t("recharge.bankAccount")} *</Label>
                             <Input
                                 id="intl-bank-account"
                                 type="text"
@@ -331,7 +333,7 @@ export function InternationalRechargeModal({
 
                     {/* Coupon Code (Optional) */}
                     <div className="space-y-2">
-                        <Label htmlFor="intl-coupon-code">Code promo (optionnel)</Label>
+                        <Label htmlFor="intl-coupon-code">{t("recharge.promoCode")}</Label>
                         <div className="flex gap-2">
                             <Input
                                 id="intl-coupon-code"
@@ -353,7 +355,7 @@ export function InternationalRechargeModal({
                                     className="h-12 shrink-0"
                                     onClick={handleClearCoupon}
                                 >
-                                    Effacer
+                                    {t("recharge.clear")}
                                 </Button>
                             ) : (
                                 <Button
@@ -366,7 +368,7 @@ export function InternationalRechargeModal({
                                     {isVerifyingCoupon ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
-                                        "Vérifier"
+                                        t("recharge.verify")
                                     )}
                                 </Button>
                             )}
@@ -374,7 +376,7 @@ export function InternationalRechargeModal({
                         {verifiedCoupon && (
                             <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
                                 <TickCircle size={16} color="currentColor" variant="Bulk" />
-                                <span>{verifiedCoupon.name} - {verifiedCoupon.percentage}% de réduction</span>
+                                <span>{verifiedCoupon.name} - {verifiedCoupon.percentage}% {t("intlRecharge.discount")}</span>
                             </div>
                         )}
                         {couponError && (
@@ -385,30 +387,30 @@ export function InternationalRechargeModal({
                     {/* Summary */}
                     {amount && Number(amount) > 0 && (
                         <div className="border-t pt-4">
-                            <h3 className="font-semibold text-sm mb-3">Récapitulatif</h3>
+                            <h3 className="font-semibold text-sm mb-3">{t("recharge.summary")}</h3>
                             <div className="space-y-2 text-sm">
                                 {qteMessage && Number(qteMessage) > 0 && (
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Quantité de SMS</span>
+                                        <span className="text-muted-foreground">{t("intlRecharge.smsQuantity")}</span>
                                         <span className="font-medium">{Number(qteMessage).toLocaleString()}</span>
                                     </div>
                                 )}
                                 {selectedCountry && (
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Prix unitaire</span>
+                                        <span className="text-muted-foreground">{t("recharge.unitPrice")}</span>
                                         <span className="font-medium">{selectedCountry.pricePerSms} FCFA/SMS</span>
                                     </div>
                                 )}
                                 {verifiedCoupon && (
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Réduction ({verifiedCoupon.percentage}%)</span>
+                                        <span className="text-muted-foreground">{t("recharge.reductionLabel", { percentage: verifiedCoupon.percentage })}</span>
                                         <span className="font-medium text-green-600">
                                             -{Math.round(Number(amount) * verifiedCoupon.percentage / 100).toLocaleString()} FCFA
                                         </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between pt-2 border-t">
-                                    <span className="font-semibold">Total</span>
+                                    <span className="font-semibold">{t("recharge.total")}</span>
                                     {verifiedCoupon ? (
                                         <div className="text-right">
                                             <span className="line-through text-muted-foreground text-sm mr-2">
@@ -431,7 +433,7 @@ export function InternationalRechargeModal({
 
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-                        Annuler
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         onClick={handleSubmit}
@@ -441,12 +443,12 @@ export function InternationalRechargeModal({
                         {isLoading ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Traitement...
+                                {t("recharge.processing")}
                             </>
                         ) : (
                             <>
                                 <TickCircle size={18} color="currentColor" variant="Bulk" className="mr-2" />
-                                {requiresPhoneNumber ? "Valider la transaction" : "Créer la demande"}
+                                {requiresPhoneNumber ? t("recharge.validateTransaction") : t("recharge.createRequest")}
                             </>
                         )}
                     </Button>

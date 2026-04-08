@@ -7,6 +7,7 @@ import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/crea
 import { useRecharge } from "@/core/hooks/useRecharge"
 import { useUserStore } from "@/core/stores/userStore"
 import { toast } from "sonner"
+import { useT } from "@/core/hooks"
 
 interface RechargeSectionProps {
     hasInsufficientBalance: boolean
@@ -21,6 +22,7 @@ export function RechargeSection({
     userBalance,
     onRechargeSuccess,
 }: RechargeSectionProps) {
+    const { t } = useT()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const { createRechargeMutation } = useRecharge()
     const user = useUserStore((state) => state.user)
@@ -48,12 +50,12 @@ export function RechargeSection({
                     <div className="flex items-center gap-2">
                         <Warning2 size={16} color="currentColor" variant="Bulk" className="text-amber-600 dark:text-amber-400" />
                         <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-                            Solde insuffisant
+                            {t('sms.insufficientBalance')}
                         </span>
                     </div>
 
                     <p className="text-xs text-amber-700 dark:text-amber-400">
-                        Il vous manque <span className="font-bold">{deficit.toLocaleString()} SMS</span> pour effectuer cet envoi.
+                        {t('sms.missingSmsBefore')} <span className="font-bold">{deficit.toLocaleString()} SMS</span> {t('sms.missingSmsAfter')}
                     </p>
 
                     <Button
@@ -62,7 +64,7 @@ export function RechargeSection({
                         size="sm"
                     >
                         <AddCircle size={16} variant="Bulk" />
-                        Recharger mon solde
+                        {t('sms.rechargeBalance')}
                     </Button>
                 </div>
             </div>

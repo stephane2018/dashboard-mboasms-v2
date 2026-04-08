@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { login, loginAsUser } from "@/core/services/auth.service"
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import { getDefaultDashboardUrl } from "@/core/utils/role.utils"
 import { LoginCredentials } from "@/core/types/auth.types"
 import { useUserStore } from "@/core/stores/userStore"
@@ -103,8 +104,8 @@ export function useLogin() {
 
       // Email storage removed for security (PII leak via localStorage)
 
-      toast.success("Connexion réussie", {
-        description: "Bienvenue sur MboaSMS",
+      toast.success(i18next.t('auth.loginSuccess'), {
+        description: i18next.t('auth.loginWelcome'),
       })
 
       // Redirect based on user role
@@ -112,8 +113,8 @@ export function useLogin() {
       router.replace(dashboardUrl)
     },
     onError: (error: Error) => {
-      toast.error("Erreur de connexion", {
-        description: error.message || "Une erreur est survenue lors de la connexion",
+      toast.error(i18next.t('auth.loginError'), {
+        description: error.message || i18next.t('auth.loginErrorDesc'),
       })
     },
   })
@@ -142,7 +143,7 @@ export function useLoginAs() {
     onSuccess: async (data) => {
       // Ensure current user exists before impersonating
       if (!currentUser) {
-        toast.error("Impossible de se connecter en tant qu'utilisateur - utilisateur actuel non trouvé")
+        toast.error(i18next.t('toasts.impersonationError'))
         return
       }
 
@@ -172,16 +173,16 @@ export function useLoginAs() {
         }
       }
 
-      toast.success("Connexion réussie", {
-        description: `Connecté en tant que ${data.email}`,
+      toast.success(i18next.t('auth.loginSuccess'), {
+        description: `${i18next.t('toasts.impersonationStart')} ${data.email}`,
       })
 
       // Redirect to dashboard
       router.replace('/dashboard')
     },
     onError: (error: Error) => {
-      toast.error("Erreur de connexion", {
-        description: error.message || "Une erreur est survenue lors de la connexion",
+      toast.error(i18next.t('auth.loginError'), {
+        description: error.message || i18next.t('auth.loginErrorDesc'),
       })
     },
   })
@@ -193,7 +194,7 @@ export function useSwitchBack() {
 
   const switchBack = async () => {
     if (!originalUser) {
-      toast.error("Impossible de revenir à l'utilisateur original")
+      toast.error(i18next.t('toasts.impersonationExitError'))
       return
     }
 
@@ -204,14 +205,14 @@ export function useSwitchBack() {
       setUser(originalUser)
       setImpersonating(false)
 
-      toast.success("Fin de l'impersonation", {
-        description: `Veuillez vous reconnecter en tant que ${originalUser.email}`,
+      toast.success(i18next.t('toasts.impersonationEnd'), {
+        description: `${i18next.t('toasts.sessionExpired').split('.')[0]} - ${originalUser.email}`,
       })
 
       // Redirect to login for re-authentication
       router.replace('/auth/login')
     } catch (error) {
-      toast.error("Erreur lors du retour à la connexion originale")
+      toast.error(i18next.t('toasts.impersonationExitError'))
     }
   }
 

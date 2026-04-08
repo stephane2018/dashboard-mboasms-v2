@@ -27,6 +27,7 @@ interface ColumnsProps {
   onDelete: (plan: PricingPlanType) => void
   onToggleStatus: (plan: PricingPlanType) => void
   isSuperAdmin: boolean
+  t: (key: string) => string
 }
 
 const getPlanCodeColor = (planCode: string) => {
@@ -86,11 +87,12 @@ export const getColumns = ({
   onDelete,
   onToggleStatus,
   isSuperAdmin,
+  t,
 }: ColumnsProps): ColumnDef<PricingPlanType>[] => {
   const columns: ColumnDef<PricingPlanType>[] = [
     {
       accessorKey: "planNameFr",
-      header: "Nom du plan",
+      header: t('pricing.planName'),
       cell: ({ row }) => {
         const plan = row.original
         return (
@@ -105,7 +107,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "descriptionFr",
-      header: "Description",
+      header: t('pricing.description'),
       cell: ({ row }) => {
         const plan = row.original
         return (
@@ -120,7 +122,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "planCode",
-      header: "Code",
+      header: t('pricing.code'),
       cell: ({ row }) => {
         const planCode = row.original.planCode
         const colors = getPlanCodeColor(planCode)
@@ -136,7 +138,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "smsRange",
-      header: "Plage SMS",
+      header: t('pricing.smsRange'),
       cell: ({ row }) => {
         const plan = row.original
         return (
@@ -150,7 +152,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "smsUnitPrice",
-      header: "Prix unitaire",
+      header: t('pricing.unitPrice'),
       cell: ({ row }) => (
         <span className="font-mono font-semibold">
           {row.original.smsUnitPrice} FCFA
@@ -159,16 +161,16 @@ export const getColumns = ({
     },
     {
       accessorKey: "nbDaysToExpired",
-      header: "Validité",
+      header: t('pricing.validity'),
       cell: ({ row }) => (
         <span className="text-sm">
-          {row.original.nbDaysToExpired} jours
+          {row.original.nbDaysToExpired} {t('pricing.validityDays')}
         </span>
       ),
     },
     {
       accessorKey: "active",
-      header: "Statut",
+      header: t('pricing.status'),
       cell: ({ row }) => {
         const isActive = row.original.active
         return (
@@ -183,12 +185,12 @@ export const getColumns = ({
             {isActive ? (
               <span className="flex items-center gap-1">
                 <TickCircle color="currentColor" variant="Bulk" size={12} />
-                Actif
+                {t('pricing.active')}
               </span>
             ) : (
               <span className="flex items-center gap-1">
                 <CloseCircle color="currentColor" variant="Bulk" size={12} />
-                Inactif
+                {t('pricing.inactive')}
               </span>
             )}
           </Badge>
@@ -197,7 +199,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "createdAt",
-      header: "Créé le",
+      header: t('pricing.createdAtColumn'),
       cell: ({ row }) => {
         const date = new Date(row.original.createdAt)
         return (
@@ -218,7 +220,7 @@ export const getColumns = ({
   if (isSuperAdmin) {
     columns.push({
       id: "actions",
-      header: "Actions",
+      header: t('common.actions'),
       cell: ({ row }) => {
         const plan = row.original
         return (
@@ -234,7 +236,7 @@ export const getColumns = ({
                 className="cursor-pointer"
               >
                 <Edit color="currentColor" size={16} className="mr-2 text-blue-600" />
-                Modifier
+                {t('common.edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onToggleStatus(plan)}
@@ -243,12 +245,12 @@ export const getColumns = ({
                 {plan.active ? (
                   <>
                     <ToggleOff color="currentColor" size={16} className="mr-2 text-orange-600" />
-                    Désactiver
+                    {t('pricing.disable')}
                   </>
                 ) : (
                   <>
                     <ToggleOn color="currentColor" size={16} className="mr-2 text-green-600" />
-                    Activer
+                    {t('pricing.enable')}
                   </>
                 )}
               </DropdownMenuItem>
@@ -257,7 +259,7 @@ export const getColumns = ({
                 className="cursor-pointer text-destructive focus:text-destructive"
               >
                 <Trash color="currentColor" size={16} className="mr-2" />
-                Supprimer
+                {t('common.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

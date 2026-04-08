@@ -30,6 +30,7 @@ import { useSettingsStore } from "@/core/stores"
 import { useAuthContext } from "@/core/providers"
 import { ContactEditPopover } from "./contact-edit-popover"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 
 const EMPTY_SELECTED_IDS: string[] = []
 
@@ -63,6 +64,7 @@ export function ContactSelectionModal({
     existingContactIds = EMPTY_SELECTED_IDS,
     enterpriseId: propEnterpriseId,
 }: ContactSelectionModalProps) {
+    const { t } = useT()
     const { user } = useAuthContext()
     const { contactsPageSize, setContactsPageSize } = useSettingsStore()
 
@@ -222,10 +224,10 @@ export function ContactSelectionModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <People size={20} variant="Bulk" color="currentColor" className="text-primary" />
-                        Sélectionner des contacts
+                        {t("contactSelection.title")}
                         {totalElements > 0 && (
                             <span className="text-xs font-normal text-muted-foreground">
-                                ({totalElements} au total)
+                                ({totalElements} {t("contactSelection.total")})
                             </span>
                         )}
                     </DialogTitle>
@@ -240,7 +242,7 @@ export function ContactSelectionModal({
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                         />
                         <Input
-                            placeholder="Rechercher par nom, téléphone ou email..."
+                            placeholder={t("contactSelection.searchPlaceholder")}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-10"
@@ -265,7 +267,7 @@ export function ContactSelectionModal({
                     <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs p-3 rounded-lg">
                         <Warning2 size={16} color="currentColor" variant="Bulk" />
                         <span>
-                            {invalidContactsCount} contact(s) invalide(s) - Cliquez sur <Edit2 size={12} className="inline" /> pour modifier
+                            {t("contactSelection.invalidContacts", { count: invalidContactsCount })}
                         </span>
                     </div>
                 )}
@@ -273,14 +275,14 @@ export function ContactSelectionModal({
                 {/* Selection controls */}
                 <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                        {selectedIds.size} sélectionné(s) • {contacts.length} chargé(s)
+                        {t("contactSelection.selectedCount", { count: selectedIds.size })} • {t("contactSelection.loadedCount", { count: contacts.length })}
                     </span>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="sm" onClick={selectAll} disabled={isLoading}>
-                            Tout sélectionner
+                            {t("contactSelection.selectAll")}
                         </Button>
                         <Button variant="ghost" size="sm" onClick={deselectAll} disabled={isLoading}>
-                            Tout désélectionner
+                            {t("contactSelection.deselectAll")}
                         </Button>
                     </div>
                 </div>
@@ -296,7 +298,7 @@ export function ContactSelectionModal({
                             </div>
                         ) : filteredContacts.length === 0 ? (
                             <div className="flex items-center justify-center py-8 text-muted-foreground">
-                                {searchQuery ? "Aucun contact trouvé" : "Aucun contact disponible"}
+                                {searchQuery ? t("contactSelection.noContactFound") : t("contactSelection.noContactAvailable")}
                             </div>
                         ) : (
                             <div className="p-2 space-y-1">
@@ -336,17 +338,17 @@ export function ContactSelectionModal({
                                                     </span>
                                                     {!isValid && (
                                                         <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
-                                                            Invalide
+                                                            {t("contactSelection.invalid")}
                                                         </Badge>
                                                     )}
                                                     {isAlreadyInGroup && (
                                                         <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-blue-600 border-blue-500/50">
-                                                            Déjà dans le groupe
+                                                            {t("contactSelection.alreadyInGroup")}
                                                         </Badge>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                                                    <span>{contact.phoneNumber || "Pas de numéro"}</span>
+                                                    <span>{contact.phoneNumber || t("contactSelection.noNumber")}</span>
                                                     {contact.email && (
                                                         <span className="truncate">{contact.email}</span>
                                                     )}
@@ -390,12 +392,12 @@ export function ContactSelectionModal({
                                             {isLoadingMore ? (
                                                 <>
                                                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                    Chargement...
+                                                    {t("common.loading")}
                                                 </>
                                             ) : (
                                                 <>
                                                     <ArrowDown2 size={16} color="currentColor" variant="Bulk" className="mr-2" />
-                                                    Charger plus ({contacts.length} / {totalElements})
+                                                    {t("contactSelection.loadMore")} ({contacts.length} / {totalElements})
                                                 </>
                                             )}
                                         </Button>
@@ -408,11 +410,11 @@ export function ContactSelectionModal({
 
                 <DialogFooter className="flex gap-2">
                     <Button variant="outline" onClick={onClose}>
-                        Annuler
+                        {t("common.cancel")}
                     </Button>
                     <Button onClick={handleConfirm} disabled={selectedIds.size === 0}>
                         <TickCircle size={16} color="currentColor" variant="Bulk" className="mr-2" />
-                        Ajouter {selectedIds.size} contact(s)
+                        {t("contactSelection.addContacts", { count: selectedIds.size })}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -1,21 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useT } from "@/core/hooks"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight2, ArrowLeft2, Sms, SecuritySafe, Chart, MessageText } from "iconsax-react"
 import { Sparkles } from "lucide-react"
 
 const STORAGE_KEY = "mboasms_welcome_dismissed"
 
-const steps = [
+const stepConfigs = [
   {
     icon: Sparkles,
     iconColor: "text-primary",
     iconBg: "bg-primary/10",
-    title: "Bienvenue sur MboaSMS v2",
-    description:
-      "Notre plateforme a fait peau neuve ! Profitez d'une interface plus moderne, plus rapide et plus intuitive pour gerer vos campagnes SMS.",
-    features: ["Interface repensee", "Navigation simplifiee", "Mode sombre"],
+    titleKey: "welcome.title",
+    descriptionKey: "welcome.description",
+    featuresKeys: ["welcome.feature1", "welcome.feature2", "welcome.feature3"],
     illustration: (
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-violet-600/20 rounded-3xl" />
@@ -49,10 +49,9 @@ const steps = [
     icon: Chart,
     iconColor: "text-emerald-500",
     iconBg: "bg-emerald-500/10",
-    title: "Des fonctionnalites puissantes",
-    description:
-      "Suivez vos campagnes en temps reel, gerez vos contacts par groupes et analysez vos performances avec notre nouveau tableau de bord.",
-    features: ["Tableau de bord analytique", "Gestion avancee des contacts", "Historique detaille"],
+    titleKey: "welcome.features",
+    descriptionKey: "welcome.featuresDesc",
+    featuresKeys: ["welcome.featureAnalytics", "welcome.featureContacts", "welcome.featureHistory"],
     illustration: (
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/20 rounded-3xl" />
@@ -79,10 +78,9 @@ const steps = [
     icon: SecuritySafe,
     iconColor: "text-amber-500",
     iconBg: "bg-amber-500/10",
-    title: "Securite & support",
-    description:
-      "Vos donnees sont protegees. Notre equipe est disponible pour vous accompagner. Contactez-nous a tout moment.",
-    features: ["Donnees chiffrees", "Support reactif", "contact@mboasms.com"],
+    titleKey: "welcome.security",
+    descriptionKey: "welcome.securityDesc",
+    featuresKeys: ["welcome.featureEncrypted", "welcome.featureSupport", "welcome.featureEmail"],
     illustration: (
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-rose-500/20 rounded-3xl" />
@@ -108,9 +106,17 @@ const steps = [
 ]
 
 export function WelcomeModal() {
+  const { t } = useT()
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
+
+  const steps = stepConfigs.map((cfg) => ({
+    ...cfg,
+    title: t(cfg.titleKey),
+    description: t(cfg.descriptionKey),
+    features: cfg.featuresKeys.map((k) => t(k)),
+  }))
 
   useEffect(() => {
     const dismissed = localStorage.getItem(STORAGE_KEY)
@@ -204,7 +210,7 @@ export function WelcomeModal() {
                       onClick={dismiss}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Passer
+                      {t('welcome.skip')}
                     </button>
                   </div>
 
@@ -289,7 +295,7 @@ export function WelcomeModal() {
                       onClick={next}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                     >
-                      {isLast ? "J'ai compris" : "Suivant"}
+                      {isLast ? t('welcome.understood') : t('common.next')}
                       <ArrowRight2 size={16} color="currentColor" />
                     </button>
                   </div>

@@ -15,6 +15,7 @@ import { Label } from "@/shared/ui/label"
 import { Lock, Sms, Eye, EyeSlash } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 import { login } from "@/core/services/auth.service"
 import { useUserStore } from "@/core/stores/userStore"
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
@@ -55,6 +56,7 @@ interface LoginApiResponse {
 }
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+    const { t } = useT()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
@@ -67,14 +69,14 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {}
         if (!email) {
-            newErrors.email = "L'email est requis"
+            newErrors.email = t("loginModal.emailRequired")
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = "Email invalide"
+            newErrors.email = t("loginModal.emailInvalid")
         }
         if (!password) {
-            newErrors.password = "Le mot de passe est requis"
+            newErrors.password = t("loginModal.passwordRequired")
         } else if (password.length < 6) {
-            newErrors.password = "Minimum 6 caractères"
+            newErrors.password = t("loginModal.passwordMinLength")
         }
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
@@ -90,7 +92,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             const userData = response.user || response
             const name = userData.name ||
                 [userData.firstName, userData.lastName].filter(Boolean).join(" ") ||
-                "Utilisateur"
+                t("loginModal.defaultUser")
 
             const mappedUser = {
                 id: userData.id || "",
@@ -113,15 +115,15 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 } catch { }
             }
 
-            toast.success("Connexion réussie", {
-                description: `Bienvenue ${name}`,
+            toast.success(t("auth.loginSuccess"), {
+                description: `${t("loginModal.welcome")} ${name}`,
             })
 
             handleClose()
             onSuccess?.()
         } catch (error: any) {
-            const msg = error?.message || "Email ou mot de passe incorrect"
-            toast.error("Erreur de connexion", { description: msg })
+            const msg = error?.message || t("loginModal.invalidCredentials")
+            toast.error(t("auth.loginError"), { description: msg })
         } finally {
             setIsLoading(false)
         }
@@ -140,17 +142,17 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             <DialogContent className="sm:max-w-[420px]">
                 <DialogHeader className="text-center">
                     <DialogTitle className="text-2xl font-bold text-foreground">
-                        Connexion
+                        {t("auth.login")}
                     </DialogTitle>
                     <DialogDescription>
-                        Connectez-vous pour continuer votre recharge
+                        {t("loginModal.description")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-5 py-4">
                     {/* Email */}
                     <div className="space-y-2">
-                        <Label htmlFor="login-email">Email</Label>
+                        <Label htmlFor="login-email">{t("common.email")}</Label>
                         <div className="relative">
                             <Sms size="18" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             <Input
@@ -170,7 +172,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
                     {/* Password */}
                     <div className="space-y-2">
-                        <Label htmlFor="login-password">Mot de passe</Label>
+                        <Label htmlFor="login-password">{t("auth.password")}</Label>
                         <div className="relative">
                             <Lock size="18" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                             <Input
@@ -178,7 +180,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Votre mot de passe"
+                                placeholder={t("loginModal.passwordPlaceholder")}
                                 className={cn("h-12 pl-10 pr-10", errors.password && "border-red-500")}
                                 autoComplete="current-password"
                             />
@@ -204,19 +206,19 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                         {isLoading ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Connexion...
+                                {t("loginModal.loggingIn")}
                             </>
                         ) : (
-                            "Se connecter"
+                            t("auth.login")
                         )}
                     </Button>
 
                     {/* Links */}
                     <div className="text-center text-sm text-muted-foreground space-y-2">
                         <p>
-                            Pas encore de compte ?{" "}
+                            {t("loginModal.noAccount")}{" "}
                             <Link href="/auth/register" className="text-primary font-medium hover:underline" onClick={handleClose}>
-                                Créer un compte
+                                {t("auth.register")}
                             </Link>
                         </p>
                     </div>

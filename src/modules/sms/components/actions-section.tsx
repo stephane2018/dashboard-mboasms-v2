@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/button"
 import { Send2, Trash } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { ActionsSectionProps } from "./types"
+import { useT } from "@/core/hooks"
 
 export function ActionsSection({
     message,
@@ -13,6 +14,7 @@ export function ActionsSection({
     onClear,
     hasInsufficientBalance,
 }: ActionsSectionProps) {
+    const { t } = useT()
     return (
         <div className="space-y-2">
             <Button
@@ -24,12 +26,12 @@ export function ActionsSection({
                 {isSending ? (
                     <>
                         <Loader2 className="h-4 w-4 animate-spin" color="currentColor" />
-                        Envoi en cours...
+                        {t('sms.sending')}
                     </>
                 ) : (
                     <>
                         <Send2 size={18} variant="Bulk" color="currentColor"  />
-                        Envoyer
+                        {t('sms.send')}
                     </>
                 )}
             </Button>
@@ -41,7 +43,7 @@ export function ActionsSection({
                 className="w-full h-9 rounded-xl text-xs text-muted-foreground gap-2"
             >
                 <Trash size={14} variant="Bulk" color="currentColor" />
-                Effacer tout
+                {t('sms.clearAll')}
             </Button>
         </div>
     )

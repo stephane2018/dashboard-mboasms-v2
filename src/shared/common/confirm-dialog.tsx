@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/core/hooks";
 import { cn } from "@/core/lib/utils";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
@@ -21,6 +22,7 @@ interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({ isOpen, isLoading, onDismiss, onAction, messages, className }: ConfirmDialogProps) {
+  const { t } = useT();
   return (
     <AlertDialog open={isOpen} onOpenChange={isLoading ? undefined : onDismiss}>
       <AlertDialogContent className={cn("sm:max-w-md", className)} aria-describedby={undefined}>
@@ -40,13 +42,13 @@ export function ConfirmDialog({ isOpen, isLoading, onDismiss, onAction, messages
                 onDismiss(false);
               }}
             >
-              {messages.buttons?.cancel || "Non, annuler"}
+              {messages.buttons?.cancel || t('common.noCancel')}
             </Button>
           )}
 
           {onAction && (
             <Button onClick={onAction} isLoading={isLoading}>
-              {messages.buttons?.action || "Oui, continuer"}
+              {messages.buttons?.action || t('common.yesContinue')}
             </Button>
           )}
         </AlertDialogFooter>

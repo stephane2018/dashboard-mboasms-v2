@@ -1,8 +1,16 @@
 "use client"
 
 import { useState, lazy, Suspense } from "react";
-import Header from "@/shared/landing_components/components/layout/Header";
-import Footer from "@/shared/landing_components/components/layout/Footer";
+import dynamic from 'next/dynamic';
+
+const Header = dynamic(() => import("@/shared/landing_components/components/layout/Header"), {
+  ssr: false,
+  loading: () => <div className="h-20 bg-background animate-pulse" />
+});
+const Footer = dynamic(() => import("@/shared/landing_components/components/layout/Footer"), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-background animate-pulse" />
+});
 import { landingContent } from "@/shared/landing_components/i18n/landing-content";
 import { useLanguageStore } from "@/core/stores/languageStore";
 import { HeroSection } from "@/shared/landing_components/components/sections/HeroSection";

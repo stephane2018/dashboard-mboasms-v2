@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { i18next } from '@/core/lib/i18n';
 import { contactService } from '@/core/services/contact.service';
 import type { ContactFilters } from '@/core/services/contact.service';
 import type { CreateContactRequestType, UpdateContactRequestType } from '@/core/models/contact-new';
@@ -114,14 +115,14 @@ export function useUpdateContact() {
 
     contactService.updateContact(params.id, params.data)
       .then((result) => {
-        toast.success('Contact modifié avec succès');
+        toast.success(i18next.t('contacts.contactUpdated'));
         options?.onSuccess?.();
         return result;
       })
       .catch((err: any) => {
         const errorMessage = err?.data?.message || err?.message || 'Erreur lors de la mise à jour du contact';
         setError(errorMessage);
-        toast.error('Erreur lors de la modification', { description: errorMessage });
+        toast.error(i18next.t('contacts.updateError'), { description: errorMessage });
         options?.onError?.(err);
       })
       .finally(() => {

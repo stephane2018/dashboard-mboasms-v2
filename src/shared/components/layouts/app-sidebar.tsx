@@ -29,6 +29,7 @@ import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { useUserStore } from '@/core/stores/userStore'
 import { Role } from '@/core/config/enum'
+import { useT } from '@/core/hooks'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
@@ -36,6 +37,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userRole = user?.role || Role.USER
   const { state } = useSidebar()
   const { resolvedTheme } = useTheme()
+  const { t } = useT()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -94,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <Link href={dashboardConfig.url} className="flex items-center gap-2">
                     <dashboardConfig.icon className="size-4" />
-                    <span className="text-sm font-semibold">{dashboardConfig.title}</span>
+                    <span className="text-sm font-semibold">{t('nav.dashboard')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import {
   createRecharge,
   validateRecharge,
@@ -37,13 +38,13 @@ export function useEnterpriseRecharges(enterpriseId: string, page: number, size:
     mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rechargeKeys.all })
-      toast.success("Demande de recharge créée", {
-        description: "La demande de recharge a été créée avec succès",
+      toast.success(i18next.t('recharge.rechargeCreated'), {
+        description: i18next.t('recharge.rechargeCreatedDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de la création", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('recharge.createError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -90,13 +91,13 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     mutationFn: (payload: CreateRechargeRequestType) => createRecharge(payload),
     onSuccess: () => {
       invalidate()
-      toast.success("Demande de recharge créée", {
-        description: "La demande de recharge a été créée avec succès",
+      toast.success(i18next.t('recharge.rechargeCreated'), {
+        description: i18next.t('recharge.rechargeCreatedDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de la création", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('recharge.createError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -105,13 +106,13 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     mutationFn: (rechargeId: string) => validateRecharge(rechargeId),
     onSuccess: () => {
       invalidate()
-      toast.success("Demande validée", {
-        description: "La demande de recharge a été validée avec succès",
+      toast.success(i18next.t('recharge.rechargeValidated'), {
+        description: i18next.t('recharge.rechargeValidatedDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors de la validation", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('recharge.validationError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -120,13 +121,13 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     mutationFn: (rechargeId: string) => refuseRecharge(rechargeId),
     onSuccess: () => {
       invalidate()
-      toast.success("Demande refusée", {
-        description: "La demande de recharge a été refusée",
+      toast.success(i18next.t('recharge.rechargeRefused'), {
+        description: i18next.t('recharge.rechargeRefusedDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors du refus", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('recharge.refuseError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })
@@ -136,13 +137,13 @@ export function useRecharge(options: UseRechargeOptions = {}) {
       creditAccount(payload.enterpriseId, { qteMessage: payload.qteMessage }),
     onSuccess: () => {
       invalidate()
-      toast.success("Compte crédité", {
-        description: "Le compte de l'entreprise a été crédité avec succès",
+      toast.success(i18next.t('recharge.accountCredited'), {
+        description: i18next.t('recharge.accountCreditedDesc'),
       })
     },
     onError: (error: any) => {
-      toast.error("Erreur lors du crédit", {
-        description: error?.message || "Une erreur s'est produite",
+      toast.error(i18next.t('recharge.creditError'), {
+        description: error?.message || i18next.t('toasts.genericError'),
       })
     },
   })

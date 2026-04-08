@@ -12,17 +12,18 @@ import { fr } from "date-fns/locale"
 interface ColumnsProps {
   onEdit: (coupon: Coupon) => void
   onDelete: (coupon: Coupon) => void
+  t: (key: string) => string
 }
 
-export const createColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Coupon>[] => [
+export const createColumns = ({ onEdit, onDelete, t }: ColumnsProps): ColumnDef<Coupon>[] => [
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nom" label="Nom" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('common.name')} label={t('common.name')} />,
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "code",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Code" label="Code" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('coupons.code')} label={t('coupons.code')} />,
     cell: ({ row }) => (
       <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
         {row.getValue("code")}
@@ -31,14 +32,14 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Cou
   },
   {
     accessorKey: "percentage",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Pourcentage" label="Pourcentage" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('coupons.percentage')} label={t('coupons.percentage')} />,
     cell: ({ row }) => (
       <span className="font-semibold">{row.getValue("percentage")}%</span>
     ),
   },
   {
     accessorKey: "validFrom",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Valide du" label="Valide du" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('coupons.validFrom')} label={t('coupons.validFrom')} />,
     cell: ({ row }) => {
       const date = new Date(row.getValue("validFrom"))
       return format(date, "dd MMM yyyy", { locale: fr })
@@ -46,7 +47,7 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Cou
   },
   {
     accessorKey: "validTo",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Valide au" label="Valide au" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title={t('coupons.validToShort')} label={t('coupons.validToShort')} />,
     cell: ({ row }) => {
       const date = new Date(row.getValue("validTo"))
       return format(date, "dd MMM yyyy", { locale: fr })
@@ -54,32 +55,32 @@ export const createColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Cou
   },
   {
     id: "status",
-    header: "Statut",
+    header: t('coupons.status'),
     cell: ({ row }) => {
       const validTo = new Date(row.original.validTo)
       const isExpired = validTo < new Date()
       return (
         <Badge variant={isExpired ? "destructive" : "secondary"}>
-          {isExpired ? "Expiré" : "Actif"}
+          {isExpired ? t('coupons.expired') : t('coupons.active')}
         </Badge>
       )
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: t('common.actions'),
     cell: ({ row }) => {
       const coupon = row.original
 
       const actions = [
         {
           icon: Edit2,
-          label: "Modifier",
+          label: t('common.edit'),
           onClick: () => onEdit(coupon),
         },
         {
           icon: Trash2,
-          label: "Supprimer",
+          label: t('common.delete'),
           className: "text-destructive",
           onClick: () => onDelete(coupon),
         },

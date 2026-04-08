@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/core/hooks"
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,13 @@ export function CreateApiKeyDialog({
   onSave,
   isLoading = false,
 }: CreateApiKeyDialogProps) {
+  const { t } = useT()
   const [name, setName] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
-    if (!name.trim()) newErrors.name = "Le nom est requis"
+    if (!name.trim()) newErrors.name = t('apiKeys.nameRequired')
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -57,21 +59,20 @@ export function CreateApiKeyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Créer une API Key</DialogTitle>
+          <DialogTitle>{t('apiKeys.createTitle')}</DialogTitle>
           <DialogDescription>
-            Générez une nouvelle clé API pour authentifier vos appels SMS.
-            La clé ne sera affichée qu&apos;une seule fois après la création.
+            {t('apiKeys.createDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="api-key-name">Nom *</Label>
+            <Label htmlFor="api-key-name">{t('apiKeys.nameLabel')}</Label>
             <Input
               id="api-key-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Production, Staging, Mon App"
+              placeholder={t('apiKeys.namePlaceholder')}
               disabled={isLoading}
             />
             {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
@@ -80,10 +81,10 @@ export function CreateApiKeyDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
-            {isLoading ? "Création..." : "Générer la clé"}
+            {isLoading ? t('apiKeys.creating') : t('apiKeys.generateKey')}
           </Button>
         </DialogFooter>
       </DialogContent>

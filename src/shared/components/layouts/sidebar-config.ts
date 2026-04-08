@@ -52,138 +52,138 @@ export interface RoleBasedNavSection extends NavSection {
 
 export const navigationConfig: RoleBasedNavSection[] = [
     {
-        title: 'Admin',
+        title: 'nav.admin',
         roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
         items: [
             {
-                title: 'Tableau de bord',
+                title: 'nav.dashboard',
                 url: '/dashboard',
                 icon: Category,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Mes contacts',
+                title: 'nav.contacts',
                 url: '/users',
                 icon: People,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Contacts Globale ',
+                title: 'nav.globalContacts',
                 url: '/contacts-management',
                 icon: People,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'Companies',
+                title: 'nav.companies',
                 url: '/compagnie',
                 icon: Building,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'SMS',
+                title: 'nav.sms',
                 url: '/sms',
                 icon: Sms,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Sender IDs',
+                title: 'nav.senderIds',
                 url: '/sender-ids',
                 icon: MessageText,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
              {
-                title: 'Groupes',
+                title: 'nav.groups',
                 url: '/groupes-management',
                 icon: Element3,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Recharge',
+                title: 'nav.recharge',
                 url: '/recharge',
                 icon: WalletMoney,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {
-                title: 'Terms & Conditions',
+                title: 'nav.termsConditions',
                 url: '/termes-and-condition',
                 icon: DocumentText,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'Pricing',
+                title: 'nav.pricing',
                 url: '/pricing',
                 icon: MoneyRecive,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'Prix internationaux',
+                title: 'nav.internationalPrices',
                 url: '/country-prices',
                 icon: Global,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'Codes promo',
+                title: 'nav.promoCodes',
                 url: '/coupons',
                 icon: TicketDiscount,
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'Historique',
+                title: 'nav.history',
                 url: '/historique-plateforme',
                 icon: Clock,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
              {
-                title: 'API Keys',
+                title: 'nav.apiKeys',
                 url: '/api-keys',
                 icon: Key,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
         ],
     },
-   
+
     {
-        title: 'Menu',
+        title: 'nav.menu',
         roles: [Role.USER],
         items: [
             {
-                title: 'Contacts',
+                title: 'nav.contacts',
                 url: '/contacts',
                 icon: People,
                 roles: [Role.USER],
             },
             {
-                title: 'Envoyer SMS',
+                title: 'nav.sendSms',
                 url: '/sms-client',
                 icon: Sms,
                 roles: [Role.USER],
             },
             {
-                title: 'Groups',
+                title: 'nav.groups',
                 url: '/groupes',
                 icon: Element3,
                 roles: [Role.USER],
             },
             {
-                title: 'History',
+                title: 'nav.history',
                 url: '/historique',
                 icon: Clock,
                 roles: [Role.USER],
             },
             {
-                title: 'Recharges',
+                title: 'nav.recharges',
                 url: '/recharges',
                 icon: WalletMoney,
                 roles: [Role.USER],
             },
             {
-                title: 'API Keys',
+                title: 'nav.apiKeys',
                 url: '/api-keys',
                 icon: Key,
                 roles: [Role.USER],
             },
             {
-                title: 'Profile',
+                title: 'nav.profile',
                 url: '/profile',
                 icon: ProfileCircle,
                 roles: [Role.USER],
@@ -194,13 +194,13 @@ export const navigationConfig: RoleBasedNavSection[] = [
 
 export const secondaryNavConfig: RoleBasedNavItem[] = [
     {
-        title: 'Settings',
+        title: 'nav.settings',
         url: '/settings',
         icon: Setting2,
         roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER, Role.ADMIN_USER],
     },
     {
-        title: 'Support',
+        title: 'nav.support',
         url: '/support',
         icon: Lifebuoy,
         roles: [Role.ADMIN, Role.SUPER_ADMIN, Role.USER, Role.ADMIN_USER],
@@ -236,10 +236,10 @@ export const getDashboardConfig = (userRole: UserRole) => {
 
 export const getNameOfDashboard = (role: UserRole): string => {
     const roleNames: Record<UserRole, string> = {
-        [Role.ADMIN]: 'Administration',
-        [Role.ADMIN_USER]: 'Administration',
-        [Role.USER]: 'Client Dashboard',
-        [Role.SUPER_ADMIN]: 'Super Admin',
+        [Role.ADMIN]: 'layout.dashboardNameAdmin',
+        [Role.ADMIN_USER]: 'layout.dashboardNameAdmin',
+        [Role.USER]: 'layout.dashboardNameUser',
+        [Role.SUPER_ADMIN]: 'layout.dashboardNameSuperAdmin',
     }
-    return roleNames[role] || 'Dashboard'
+    return roleNames[role] || 'layout.dashboardNameDefault'
 }

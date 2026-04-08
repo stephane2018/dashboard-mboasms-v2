@@ -6,6 +6,7 @@ import { useEnterpriseDetails } from "@/core/hooks/useCompany"
 import { useMessageHistory } from "@/core/hooks/useMessage"
 import { useGroups } from "@/core/hooks/useGroups"
 import { useCreditEnterprise } from "@/core/hooks/useCompany"
+import { useT } from "@/core/hooks"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
@@ -24,6 +25,7 @@ import { CompanyDetailsTab } from "./_components/company-details-tab"
 export default function CompanyDetailsPage() {
   const params = useParams()
   const router = useRouter()
+  const { t } = useT()
   const enterpriseId = params.id as string
   const [activeTab, setActiveTab] = useState("details")
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false)
@@ -32,7 +34,7 @@ export default function CompanyDetailsPage() {
   const { data: historyPage, isLoading: isHistoryLoading } = useMessageHistory(enterpriseId, 0, 200, !!enterpriseId)
   const { groups, isLoading: isGroupsLoading } = useGroups({ enterpriseId })
   const { mutate: creditEnterprise, isPending: isCrediting } = useCreditEnterprise()
-  
+
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
@@ -65,11 +67,11 @@ export default function CompanyDetailsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-red-600">Erreur</CardTitle>
+            <CardTitle className="text-red-600">{t('common.error')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Impossible de charger les détails de l'entreprise
+              {t('companyDetails.loadError')}
             </p>
           </CardContent>
         </Card>
@@ -79,7 +81,7 @@ export default function CompanyDetailsPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Header avec bouton Connecter en tant que */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
           <Button
@@ -87,11 +89,11 @@ export default function CompanyDetailsPage() {
             variant="ghost"
             className="h-9 px-2 gap-2"
             onClick={() => router.back()}
-            aria-label="Retour"
+            aria-label={t('common.back')}
           >
             <ArrowLeft2 className="h-5 w-5" variant="Bulk" color="currentColor" />
             <span className="text-sm font-medium">
-              Retour
+              {t('common.back')}
               {enterprise?.socialRaison ? ` • ${enterprise.socialRaison}` : ""}
             </span>
           </Button>
@@ -114,11 +116,11 @@ export default function CompanyDetailsPage() {
             disabled={isLoading}
           >
             <Wallet className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Recharger crédit
+            {t('companyDetails.rechargeCredit')}
           </Button>
           <Button className="flex items-center gap-2" size="lg">
             <Login className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Connecter en tant que
+            {t('companyDetails.loginAs')}
           </Button>
         </div>
       </div>
@@ -132,14 +134,14 @@ export default function CompanyDetailsPage() {
         </div>
       </div>
 
-      {/* Stats mensuelles */}
+      {/* Monthly stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <Sms className="h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-                Messages (ce mois)
+                {t('companyDetails.messagesThisMonth')}
               </span>
             </CardTitle>
           </CardHeader>
@@ -149,7 +151,7 @@ export default function CompanyDetailsPage() {
             ) : (
               <p className="text-2xl font-bold">{messagesThisMonth}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Basé sur l'historique chargé</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('companyDetails.basedOnHistory')}</p>
           </CardContent>
         </Card>
 
@@ -157,7 +159,7 @@ export default function CompanyDetailsPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <People className="h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-              Groupes
+              {t('groups.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -166,7 +168,7 @@ export default function CompanyDetailsPage() {
             ) : (
               <p className="text-2xl font-bold">{groupsCount}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Total des groupes</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('companyDetails.totalGroups')}</p>
           </CardContent>
         </Card>
 
@@ -174,7 +176,7 @@ export default function CompanyDetailsPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <User className="h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-              Utilisateurs
+              {t('companyDetails.users')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -183,7 +185,7 @@ export default function CompanyDetailsPage() {
             ) : (
               <p className="text-2xl font-bold">{usersCount}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Total des utilisateurs</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('companyDetails.totalUsers')}</p>
           </CardContent>
         </Card>
 
@@ -191,7 +193,7 @@ export default function CompanyDetailsPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Wallet className="h-4 w-4 text-primary" variant="Bulk" color="currentColor" />
-              Crédit SMS
+              {t('companyDetails.smsCredit')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -200,49 +202,45 @@ export default function CompanyDetailsPage() {
             ) : (
               <p className="text-2xl font-bold">{enterprise?.smsCredit ?? 0}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">SMS restants</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('companyDetails.remainingSms')}</p>
           </CardContent>
         </Card>
       </div>
 
 
-      {/* Onglets */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-fit grid-cols-4">
           <TabsTrigger value="details" className="gap-2">
             <Buildings2 className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Détails
+            {t('companyDetails.tabDetails')}
           </TabsTrigger>
           <TabsTrigger value="historiques" className="gap-2">
             <Sms className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Historiques
+            {t('companyDetails.tabHistory')}
           </TabsTrigger>
           <TabsTrigger value="groupes" className="gap-2">
             <People className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Groupes
+            {t('groups.title')}
           </TabsTrigger>
           <TabsTrigger value="utilisateurs" className="gap-2">
             <User className="h-4 w-4" variant="Bulk" color="currentColor" />
-            Utilisateurs
+            {t('companyDetails.users')}
           </TabsTrigger>
         </TabsList>
 
-        {/* Onglet Détails */}
         <TabsContent value="details" className="space-y-4">
           <CompanyDetailsTab enterprise={enterprise} isLoading={isLoading} />
         </TabsContent>
 
-        {/* Onglet Historiques */}
         <TabsContent value="historiques">
           <MessageHistoryTab enterpriseId={enterpriseId} />
         </TabsContent>
 
-        {/* Onglet Groupes */}
         <TabsContent value="groupes">
           <GroupsTab enterpriseId={enterpriseId} />
         </TabsContent>
 
-        {/* Onglet Utilisateurs */}
         <TabsContent value="utilisateurs">
           <UsersTab enterprise={enterprise} isLoading={isLoading} />
         </TabsContent>

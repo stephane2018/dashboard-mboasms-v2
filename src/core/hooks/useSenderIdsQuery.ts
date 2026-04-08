@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { i18next } from "@/core/lib/i18n"
 import { senderIdService } from "@/core/services/sender-id.service"
 import type {
   SenderId,
@@ -68,14 +69,14 @@ export function useCreateSenderId() {
   return useMutation({
     mutationFn: (data: CreateSenderIdInput) => senderIdService.createSenderId(data),
     onSuccess: (data) => {
-      toast.success("Sender ID créé", {
-        description: `${data.name} a été créé avec succès`,
+      toast.success(i18next.t('senderIds.created'), {
+        description: i18next.t('senderIds.createdDesc', { name: data.name }),
       })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.all })
     },
     onError: (error: any) => {
-      const errorMessage = error?.data?.message || error?.message || "Erreur lors de la création du Sender ID"
-      toast.error("Erreur", {
+      const errorMessage = error?.data?.message || error?.message || i18next.t('senderIds.createError')
+      toast.error(i18next.t('common.error'), {
         description: errorMessage,
       })
     },
@@ -92,15 +93,15 @@ export function useUpdateSenderId() {
     mutationFn: ({ id, data }: { id: string; data: UpdateSenderIdInput }) =>
       senderIdService.updateSenderId(id, data),
     onSuccess: (data, variables) => {
-      toast.success("Sender ID modifié", {
-        description: `${data.name} a été modifié avec succès`,
+      toast.success(i18next.t('senderIds.updated'), {
+        description: i18next.t('senderIds.updatedDesc', { name: data.name }),
       })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.all })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.detail(variables.id) })
     },
     onError: (error: any) => {
-      const errorMessage = error?.data?.message || error?.message || "Erreur lors de la modification du Sender ID"
-      toast.error("Erreur", {
+      const errorMessage = error?.data?.message || error?.message || i18next.t('senderIds.updateError')
+      toast.error(i18next.t('common.error'), {
         description: errorMessage,
       })
     },
@@ -117,15 +118,15 @@ export function useUpdateSenderIdStatus() {
     mutationFn: ({ id, data }: { id: string; data: UpdateSenderIdStatusInput }) =>
       senderIdService.updateSenderIdStatus(id, data),
     onSuccess: (data, variables) => {
-      toast.success("Statut mis à jour", {
-        description: `Le statut de ${data.name} a été mis à jour avec succès`,
+      toast.success(i18next.t('senderIds.statusUpdated'), {
+        description: i18next.t('senderIds.statusUpdatedDesc', { name: data.name }),
       })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.all })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.detail(variables.id) })
     },
     onError: (error: any) => {
-      const errorMessage = error?.data?.message || error?.message || "Erreur lors de la mise à jour du statut"
-      toast.error("Erreur", {
+      const errorMessage = error?.data?.message || error?.message || i18next.t('senderIds.statusUpdateError')
+      toast.error(i18next.t('common.error'), {
         description: errorMessage,
       })
     },
@@ -141,14 +142,14 @@ export function useDeleteSenderId() {
   return useMutation({
     mutationFn: (id: string) => senderIdService.deleteSenderId(id),
     onSuccess: () => {
-      toast.success("Sender ID supprimé", {
-        description: "Le Sender ID a été supprimé avec succès",
+      toast.success(i18next.t('senderIds.deleted'), {
+        description: i18next.t('senderIds.deletedDesc'),
       })
       queryClient.invalidateQueries({ queryKey: senderIdKeys.all })
     },
     onError: (error: any) => {
-      const errorMessage = error?.data?.message || error?.message || "Erreur lors de la suppression du Sender ID"
-      toast.error("Erreur", {
+      const errorMessage = error?.data?.message || error?.message || i18next.t('senderIds.deleteError')
+      toast.error(i18next.t('common.error'), {
         description: errorMessage,
       })
     },

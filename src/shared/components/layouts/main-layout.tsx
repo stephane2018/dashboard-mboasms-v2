@@ -48,6 +48,7 @@ import {
 } from "iconsax-react"
 import { useTheme } from "next-themes"
 import { LanguageSwitcher } from "@/shared/common/language-switcher"
+import { useT } from "@/core/hooks"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -62,13 +63,14 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const { user, clearUser, actingCompanyId, actingCompanyName, setActingCompany, clearActingCompany } = useUserStore()
   const { enterprise } = useEnterpriseStore()
   const { resolvedTheme, setTheme } = useTheme()
+  const { t } = useT()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  const userDisplayName = user?.name || user?.email || "Utilisateur"
+  const userDisplayName = user?.name || user?.email || t('layout.user')
   const userInitials = userDisplayName
     .split(" ")
     .map((part) => part[0])
@@ -152,7 +154,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
             <Button variant="outline" size="icon" className="rounded-full" asChild>
               <Link href="/">
                 <Home2 size="18" variant="Bulk" color="currentColor" className="text-primary" />
-                <span className="sr-only">Aller à l&apos;accueil</span>
+                <span className="sr-only">{t('layout.goHome')}</span>
               </Link>
             </Button>
 
@@ -169,7 +171,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
               ) : (
                 <Moon size="18" variant="Bulk" color="currentColor" className="text-primary" />
               )}
-              <span className="sr-only">Changer le thème</span>
+              <span className="sr-only">{t('layout.changeTheme')}</span>
             </Button>
 
             <DropdownMenu>
@@ -184,7 +186,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                   <div className="flex items-center gap-3">
                     <div className="text-left">
                       <p className="text-sm font-semibold leading-tight">{userDisplayName}</p>
-                      <p className="text-xs text-muted-foreground">Mon espace</p>
+                      <p className="text-xs text-muted-foreground">{t('layout.mySpace')}</p>
                     </div>
                     
                   </div>
@@ -208,11 +210,11 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
 
                 <DropdownMenuItem onClick={() => router.push("/profile")} className="flex items-center gap-2 cursor-pointer">
                   <Setting2 size="16" variant="Bulk" color="currentColor" className="text-primary" />
-                  Paramètres
+                  {t('layout.settings')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/dashboard")} className="flex items-center gap-2 cursor-pointer">
                   <Information size="16" variant="Bulk" color="currentColor" className="text-primary" />
-                  Centre d&apos;activité
+                  {t('layout.activityCenter')}
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -222,7 +224,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                   className="flex items-center gap-2 text-red-500 focus:text-red-500 focus:bg-red-50 cursor-pointer"
                 >
                   <Logout size="16"variant="Bulk" color="currentColor" className="text-primary" />
-                  Déconnexion
+                  {t('layout.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -235,11 +237,11 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 <span>
-                  Connecté en tant que <span className="font-semibold">{actingCompanyName || "Entreprise"}</span>
+                  {t('layout.connectedAs')} <span className="font-semibold">{actingCompanyName || t('layout.company')}</span>
                 </span>
               </div>
               <Button variant="outline" size="sm" className="rounded-full" onClick={exitImpersonation}>
-                Quitter l&apos;impersonation
+                {t('layout.exitImpersonation')}
               </Button>
             </div>
           )}

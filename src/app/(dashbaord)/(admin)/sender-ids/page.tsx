@@ -15,10 +15,11 @@ import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/co
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
-import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useGetSenderIdsByEnterprise, useUpdateSenderId, useUpdateSenderIdStatus } from "@/core/hooks"
+import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useGetSenderIdsByEnterprise, useUpdateSenderId, useUpdateSenderIdStatus, useT } from "@/core/hooks"
 
 export default function SenderIdsPage() {
   const { user } = useAuthContext()
+  const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
   const [selectedSenderId, setSelectedSenderId] = useState<SenderId | null>(null)
@@ -64,7 +65,7 @@ export default function SenderIdsPage() {
     if (error) {
       const errorMessage = (error as any)?.response?.data?.message ||
                           (error as any)?.message ||
-                          "Erreur lors du chargement des Sender IDs"
+                          t('toasts.loadingError')
       toast.error(errorMessage)
     }
   }, [error])
@@ -124,6 +125,7 @@ export default function SenderIdsPage() {
     onDelete: handleDelete,
     onChangeStatus: handleChangeStatus,
     userRole: user?.role as Role | undefined,
+    t,
   })
 
   return (
@@ -135,18 +137,18 @@ export default function SenderIdsPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {_isSuperAdmin ? "Sender IDs (Plateforme)" : "Mes Sender IDs"}
+              {_isSuperAdmin ? t('senderIds.titlePlatform') : t('senderIds.title')}
             </h1>
             <p className="text-xs text-muted-foreground">
               {_isSuperAdmin
-                ? "Gérez tous les Sender IDs de la plateforme."
-                : "Gérez les Sender IDs de votre entreprise."}
+                ? t('senderIds.subtitlePlatform')
+                : t('senderIds.subtitle')}
             </p>
           </div>
         </div>
         <Button size="sm" className="gap-1.5 rounded-xl" onClick={handleCreate}>
           <Add size={18} variant="Bulk" color="currentColor" />
-          Nouveau
+          {t('senderIds.new')}
         </Button>
       </div>
 
@@ -162,7 +164,7 @@ export default function SenderIdsPage() {
         initialState={{
           pagination,
         }}
-        emptyMessage="Aucun Sender ID trouvé."
+        emptyMessage={t('senderIds.noResults')}
       />
 
       <CreateSenderIdDialog
@@ -195,8 +197,8 @@ export default function SenderIdsPage() {
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
             onConfirm={handleConfirmDelete}
-            title="Supprimer le Sender ID"
-            description={`Êtes-vous sûr de vouloir supprimer le Sender ID "${selectedSenderId.name}" ? Cette action est irréversible.`}
+            title={t('senderIds.delete')}
+            description={t('senderIds.deleteConfirm', { name: selectedSenderId.name })}
             itemName={selectedSenderId.name}
             isDeleting={deleteSenderIdMutation.isPending}
           />

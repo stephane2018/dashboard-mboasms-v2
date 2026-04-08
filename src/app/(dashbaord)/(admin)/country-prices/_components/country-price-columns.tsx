@@ -25,17 +25,19 @@ interface ColumnsProps {
   onEdit: (price: SmsCountryPriceType) => void
   onDelete: (price: SmsCountryPriceType) => void
   isSuperAdmin: boolean
+  t: (key: string) => string
 }
 
 export const getColumns = ({
   onEdit,
   onDelete,
   isSuperAdmin,
+  t,
 }: ColumnsProps): ColumnDef<SmsCountryPriceType>[] => {
   const columns: ColumnDef<SmsCountryPriceType>[] = [
     {
       accessorKey: "countryName",
-      header: "Pays",
+      header: t('countryPrices.country'),
       cell: ({ row }) => {
         const price = row.original
         return (
@@ -51,7 +53,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "countryCode",
-      header: "Code pays",
+      header: t('countryPrices.countryCode'),
       cell: ({ row }) => (
         <div className="inline-flex items-center px-2.5 py-1 rounded-md border border-dashed border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20">
           <span className="font-mono text-xs font-medium text-blue-700 dark:text-blue-400">
@@ -62,7 +64,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "pricePerSms",
-      header: "Prix par SMS",
+      header: t('countryPrices.pricePerSms'),
       cell: ({ row }) => (
         <span className="font-mono font-semibold text-primary">
           {row.original.pricePerSms} FCFA
@@ -71,7 +73,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "createdAt",
-      header: "Créé le",
+      header: t('countryPrices.createdAtColumn'),
       cell: ({ row }) => {
         const date = new Date(row.original.createdAt)
         return (
@@ -86,7 +88,7 @@ export const getColumns = ({
     },
     {
       accessorKey: "updatedAt",
-      header: "Modifié le",
+      header: t('countryPrices.updatedAtColumn'),
       cell: ({ row }) => {
         const date = new Date(row.original.updatedAt)
         return (
@@ -104,7 +106,7 @@ export const getColumns = ({
   if (isSuperAdmin) {
     columns.push({
       id: "actions",
-      header: "Actions",
+      header: t('common.actions'),
       cell: ({ row }) => {
         const price = row.original
         return (
@@ -120,14 +122,14 @@ export const getColumns = ({
                 className="cursor-pointer"
               >
                 <Edit color="currentColor" size={16} className="mr-2 text-blue-600" />
-                Modifier
+                {t('common.edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(price)}
                 className="cursor-pointer text-destructive focus:text-destructive"
               >
                 <Trash color="currentColor" size={16} className="mr-2" />
-                Supprimer
+                {t('common.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

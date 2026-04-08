@@ -3,6 +3,29 @@ import { persist } from 'zustand/middleware';
 
 export type Lang = "fr" | "en";
 
+const SUPPORTED_LANGS: Lang[] = ["fr", "en"];
+
+/**
+ * Detect browser language on first visit.
+ * Returns "en" if browser is English, "fr" otherwise (default).
+ */
+function detectBrowserLang(): Lang {
+  if (typeof window === 'undefined') return 'fr';
+  const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
+  if (browserLang && SUPPORTED_LANGS.includes(browserLang as Lang)) {
+    return browserLang as Lang;
+  }
+  return 'fr';
+}
+
+/**
+ * Check if the user has already saved a language preference.
+ */
+function hasPersistedLang(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem('mboasms-language') !== null;
+}
+
 interface LanguageState {
   lang: Lang;
   setLang: (lang: Lang) => void;
@@ -11,7 +34,8 @@ interface LanguageState {
 export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
-      lang: "fr",
+      // First visit: detect browser language. Subsequent visits: Zustand hydrates from localStorage.
+      lang: hasPersistedLang() ? "fr" : detectBrowserLang(),
       setLang: (lang: Lang) => set({ lang }),
     }),
     {

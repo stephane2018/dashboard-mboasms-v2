@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/core/hooks"
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ export function ApiKeyCreatedDialog({
   onOpenChange,
   apiKeyData,
 }: ApiKeyCreatedDialogProps) {
+  const { t } = useT()
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -37,21 +39,21 @@ export function ApiKeyCreatedDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>API Key créée avec succès</DialogTitle>
+          <DialogTitle>{t('apiKeys.createdTitle')}</DialogTitle>
           <DialogDescription>
-            Copiez votre clé API maintenant. Elle ne sera plus affichée après la fermeture de cette fenêtre.
+            {t('apiKeys.createdCopyDesc')}
           </DialogDescription>
         </DialogHeader>
 
         {apiKeyData && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm font-medium">Nom</p>
+              <p className="text-sm font-medium">{t('common.name')}</p>
               <p className="text-sm text-muted-foreground">{apiKeyData.name}</p>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">Clé API</p>
+              <p className="text-sm font-medium">{t('apiKeys.key')}</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-muted px-3 py-2 rounded text-sm font-mono break-all">
                   {apiKeyData.apiKey}
@@ -68,11 +70,7 @@ export function ApiKeyCreatedDialog({
 
             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                Conservez cette clé en lieu sûr. Utilisez-la dans le header{" "}
-                <code className="font-mono text-xs bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded">
-                  X-API-Key
-                </code>{" "}
-                pour authentifier vos appels API sans JWT.
+                {t('apiKeys.headerNote')}
               </p>
             </div>
           </div>
@@ -80,7 +78,7 @@ export function ApiKeyCreatedDialog({
 
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>
-            {copied ? "Fermer" : "J'ai copié ma clé, fermer"}
+            {copied ? t('apiKeys.closeCopied') : t('apiKeys.closeAfterCopy')}
           </Button>
         </DialogFooter>
       </DialogContent>

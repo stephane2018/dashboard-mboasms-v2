@@ -15,6 +15,7 @@ import { Label } from "@/shared/ui/label"
 import { Textarea } from "@/shared/ui/textarea"
 import { DatePicker } from "@/shared/ui/date-picker"
 import type { Coupon, UpdateCouponInput } from "../types"
+import { useT } from "@/core/hooks"
 
 interface EditCouponDialogProps {
   open: boolean
@@ -31,6 +32,7 @@ export function EditCouponDialog({
   onSave,
   isLoading = false,
 }: EditCouponDialogProps) {
+  const { t } = useT()
   const [name, setName] = useState(coupon.name)
   const [description, setDescription] = useState(coupon.description)
   const [code, setCode] = useState(coupon.code)
@@ -54,15 +56,15 @@ export function EditCouponDialog({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = "Le nom est requis"
-    if (!code.trim()) newErrors.code = "Le code est requis"
+    if (!name.trim()) newErrors.name = t('couponForm.nameRequired')
+    if (!code.trim()) newErrors.code = t('couponForm.codeRequired')
     if (!percentage || Number(percentage) < 0 || Number(percentage) > 100) {
-      newErrors.percentage = "Le pourcentage doit être entre 0 et 100"
+      newErrors.percentage = t('couponForm.percentageInvalid')
     }
-    if (!validFrom) newErrors.validFrom = "La date de début est requise"
-    if (!validTo) newErrors.validTo = "La date de fin est requise"
+    if (!validFrom) newErrors.validFrom = t('couponForm.validFromRequired')
+    if (!validTo) newErrors.validTo = t('couponForm.validToRequired')
     if (validFrom && validTo && validTo <= validFrom) {
-      newErrors.validTo = "La date de fin doit être après la date de début"
+      newErrors.validTo = t('couponForm.validToAfterFrom')
     }
 
     setErrors(newErrors)
@@ -88,32 +90,32 @@ export function EditCouponDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Modifier le coupon</DialogTitle>
+          <DialogTitle>{t('couponForm.editTitle')}</DialogTitle>
           <DialogDescription>
-            Modifiez les informations du code promo.
+            {t('couponForm.editDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-coupon-name">Nom *</Label>
+            <Label htmlFor="edit-coupon-name">{t('couponForm.nameLabel')}</Label>
             <Input
               id="edit-coupon-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Promo Noël"
+              placeholder={t('couponForm.namePlaceholder')}
               disabled={isLoading}
             />
             {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-coupon-description">Description</Label>
+            <Label htmlFor="edit-coupon-description">{t('common.description')}</Label>
             <Textarea
               id="edit-coupon-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description du coupon"
+              placeholder={t('couponForm.descriptionPlaceholder')}
               disabled={isLoading}
               rows={3}
             />
@@ -121,7 +123,7 @@ export function EditCouponDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-coupon-code">Code *</Label>
+              <Label htmlFor="edit-coupon-code">{t('couponForm.codeLabel')}</Label>
               <Input
                 id="edit-coupon-code"
                 value={code}
@@ -133,7 +135,7 @@ export function EditCouponDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-coupon-percentage">Pourcentage (%) *</Label>
+              <Label htmlFor="edit-coupon-percentage">{t('couponForm.percentageLabel')}</Label>
               <Input
                 id="edit-coupon-percentage"
                 type="number"
@@ -150,22 +152,22 @@ export function EditCouponDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Valide du *</Label>
+              <Label>{t('couponForm.validFromLabel')}</Label>
               <DatePicker
                 value={validFrom}
                 onChange={setValidFrom}
-                placeholder="Date de début"
+                placeholder={t('couponForm.startDatePlaceholder')}
                 disabled={isLoading}
               />
               {errors.validFrom && <p className="text-xs text-red-500">{errors.validFrom}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label>Valide au *</Label>
+              <Label>{t('couponForm.validToLabel')}</Label>
               <DatePicker
                 value={validTo}
                 onChange={setValidTo}
-                placeholder="Date de fin"
+                placeholder={t('couponForm.endDatePlaceholder')}
                 disabled={isLoading}
               />
               {errors.validTo && <p className="text-xs text-red-500">{errors.validTo}</p>}
@@ -175,10 +177,10 @@ export function EditCouponDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={isLoading || !name.trim() || !code.trim()}>
-            {isLoading ? "Enregistrement..." : "Enregistrer"}
+            {isLoading ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
