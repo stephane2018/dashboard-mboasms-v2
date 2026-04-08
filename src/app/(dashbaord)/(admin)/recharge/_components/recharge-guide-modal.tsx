@@ -8,8 +8,8 @@ import { CheckCircle2, Smartphone, X } from "lucide-react"
 const STORAGE_KEY = "mboasms_recharge_guide_dismissed"
 
 const SUPPORT_CONTACTS = [
-  { name: "WhatsApp", number: "+237 6 96 05 04 76", href: "https://wa.me/237696050476", icon: Whatsapp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  { name: "Appel", number: "+237 6 96 05 04 76", href: "tel:+237696050476", icon: Call, color: "text-primary", bg: "bg-primary/10" },
+  { name: "WhatsApp", number: "+237 6 94 16 08 32", href: "https://wa.me/237694160832", icon: Whatsapp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { name: "Appel", number: "+237 6 70 42 45 89", href: "tel:+23770424589", icon: Call, color: "text-primary", bg: "bg-primary/10" },
 ]
 
 const steps = [
