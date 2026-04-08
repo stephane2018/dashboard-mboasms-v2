@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight2, CloseCircle, User, Logout, Profile, Sms, Global, CloseSquare } from 'iconsax-react';
 import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
+import { LanguageSwitcher } from '@/shared/common/language-switcher';
 import { useUserStore } from '@/core/stores/userStore';
 import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
@@ -339,6 +340,7 @@ const Header = () => {
                 </motion.div>
               </>
             )}
+            <LanguageSwitcher variant="pill" />
             <ThemeToggle />
             <button
               className="md:hidden text-foreground p-1 rounded-full hover:bg-primary/10 transition-colors"
