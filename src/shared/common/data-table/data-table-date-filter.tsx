@@ -6,6 +6,7 @@ import type { Column } from "@tanstack/react-table";
 import { Calendar as CalendarIcon, CloseCircle } from "iconsax-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import { useT } from "@/core/hooks";
 
 
 type DateSelection = Date[] | DateRange;
@@ -54,6 +55,7 @@ export function DataTableDateFilter<TData>({
   title,
   multiple,
 }: DataTableDateFilterProps<TData>) {
+  const { t } = useT();
   const columnFilterValue = column.getFilterValue();
 
   const selectedDates = React.useMemo<DateSelection>(() => {
@@ -124,7 +126,7 @@ export function DataTableDateFilter<TData>({
       const hasSelectedDates = selectedDates.from || selectedDates.to;
       const dateText = hasSelectedDates
         ? formatDateRange(selectedDates)
-        : "Select date range";
+        : t('dataTable.selectDateRange');
 
       return (
         <span className="flex items-center gap-2">
@@ -147,7 +149,7 @@ export function DataTableDateFilter<TData>({
     const hasSelectedDate = selectedDates.length > 0;
     const dateText = hasSelectedDate
       ? formatDate(selectedDates[0])
-      : "Select date";
+      : t('dataTable.selectDate');
 
     return (
       <span className="flex items-center gap-2">

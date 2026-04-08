@@ -6,6 +6,7 @@ import { People, Trash, AddCircle, CloseCircle } from "iconsax-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Button } from "@/shared/ui/button"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 
 interface SelectionToolbarProps {
     table: Table<EnterpriseContactResponseType>
@@ -20,6 +21,8 @@ export function SelectionToolbar({
     onCreateGroup,
     onDeleteSelected,
 }: SelectionToolbarProps) {
+    const { t } = useT()
+
     // Use useMemo to ensure we recalculate when row selection changes
     const { selectedRows, selectedCount, selectedContacts } = useMemo(() => {
         const rows = table.getSelectedRowModel().rows
@@ -43,7 +46,9 @@ export function SelectionToolbar({
                 <>
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                            {selectedCount} contact{selectedCount > 1 ? "s" : ""} sélectionné{selectedCount > 1 ? "s" : ""}
+                            {selectedCount > 1
+                                ? t("users.selectedCountPlural", { count: selectedCount })
+                                : t("users.selectedCount", { count: selectedCount })}
                         </span>
                         <Button
                             variant="ghost"
@@ -52,7 +57,7 @@ export function SelectionToolbar({
                             className="h-7 px-2 text-muted-foreground hover:text-foreground"
                         >
                             <CloseCircle size={14} variant="Bulk" color="currentColor" className="mr-1" />
-                            Désélectionner
+                            {t("users.deselect")}
                         </Button>
                     </div>
 
@@ -65,7 +70,7 @@ export function SelectionToolbar({
                             className="h-8"
                         >
                             <AddCircle size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                            Ajouter à un groupe
+                            {t("users.addToGroup")}
                         </Button>
 
                         {/* Create New Group */}
@@ -76,7 +81,7 @@ export function SelectionToolbar({
                             className="h-8"
                         >
                             <People size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                            Créer un groupe
+                            {t("users.createGroup")}
                         </Button>
 
                         {/* Delete Selected */}
@@ -87,7 +92,7 @@ export function SelectionToolbar({
                             className="h-8"
                         >
                             <Trash size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                            Supprimer
+                            {t("users.delete")}
                         </Button>
                     </div>
                 </>

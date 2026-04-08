@@ -20,23 +20,24 @@ import { Badge } from "@/shared/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip"
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 import { getPhoneValidationStatus, checkPhoneValidation, isCameroonNumber } from "@/core/utils/phone-validation"
-
 interface GetColumnsProps {
     onEdit: (contact: EnterpriseContactResponseType) => void
     onDelete: (contact: EnterpriseContactResponseType) => void
     onSendSMS: (contact: EnterpriseContactResponseType) => void
+    t: (key: string, options?: Record<string, unknown>) => string
 }
 
 export function getColumns({
     onEdit,
     onDelete,
     onSendSMS,
+    t,
 }: GetColumnsProps): ColumnDef<EnterpriseContactResponseType>[] {
     return [
         {
             accessorKey: "firstname",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Name" />
+                <DataTableColumnHeader column={column} label={t("users.colName")} />
             ),
             cell: ({ row }) => {
                 const firstname = row.original.firstname
@@ -59,15 +60,15 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Name",
+                label: t("users.colName"),
                 variant: "text",
-                placeholder: "Search by name...",
+                placeholder: t("users.searchByName"),
             },
         },
         {
             accessorKey: "phoneNumber",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Phone" />
+                <DataTableColumnHeader column={column} label={t("users.colPhone")} />
             ),
             cell: ({ row }) => {
                 const phone = row.original.phoneNumber
@@ -84,8 +85,8 @@ export function getColumns({
                                     </div>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="max-w-[250px] text-xs">
-                                    <p className="font-bold">Indicatif pays manquant !</p>
-                                    <p>Ce numéro risque de ne pas recevoir de SMS. Ajoutez l&apos;indicatif (ex: +237).</p>
+                                    <p className="font-bold">{t("users.missingCountryCode")}</p>
+                                    <p>{t("users.missingCountryCodeDesc")}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -95,15 +96,15 @@ export function getColumns({
                 return <span className="font-mono text-sm">{phone}</span>
             },
             meta: {
-                label: "Phone",
+                label: t("users.colPhone"),
                 variant: "text",
-                placeholder: "Search by phone...",
+                placeholder: t("users.searchByPhone"),
             },
         },
         {
             id: "type",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Type" />
+                <DataTableColumnHeader column={column} label={t("users.colType")} />
             ),
             cell: ({ row }) => {
                 const phoneNumber = row.original.phoneNumber
@@ -111,24 +112,24 @@ export function getColumns({
 
                 return isCM ? (
                     <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-400">
-                        National
+                        {t("users.typeNational")}
                     </Badge>
                 ) : (
                     <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-400">
                         <Global size={12} color="currentColor" variant="Bulk" className="mr-1" />
-                        International
+                        {t("users.typeInternational")}
                     </Badge>
                 )
             },
             meta: {
-                label: "Type",
+                label: t("users.colType"),
                 className: "w-[130px]",
             },
         },
         {
             id: "operator",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Opérateur" />
+                <DataTableColumnHeader column={column} label={t("users.colOperator")} />
             ),
             cell: ({ row }) => {
                 const phoneNumber = row.original.phoneNumber
@@ -155,14 +156,14 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Opérateur",
+                label: t("users.colOperator"),
                 className: "w-[120px]",
             },
         },
         {
             id: "status",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Statut" />
+                <DataTableColumnHeader column={column} label={t("users.colStatus")} />
             ),
             cell: ({ row }) => {
                 const phoneNumber = row.original.phoneNumber
@@ -185,7 +186,7 @@ export function getColumns({
                                     className="text-green-600"
                                 />
                                 <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
-                                    Correct
+                                    {t("users.statusCorrect")}
                                 </Badge>
                             </>
                         ) : (
@@ -197,7 +198,7 @@ export function getColumns({
                                     className="text-red-600"
                                 />
                                 <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
-                                    Invalid
+                                    {t("users.statusInvalid")}
                                 </Badge>
                             </>
                         )}
@@ -205,14 +206,14 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Statut",
+                label: t("users.colStatus"),
                 className: "w-[120px]",
             },
         },
         {
             accessorKey: "country",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Pays" />
+                <DataTableColumnHeader column={column} label={t("users.colCountry")} />
             ),
             cell: ({ row }) => {
                 const isCM = isCameroonNumber(row.original.phoneNumber)
@@ -220,15 +221,15 @@ export function getColumns({
                 return <span>{row.original.country}</span>
             },
             meta: {
-                label: "Country",
+                label: t("users.colCountry"),
                 variant: "text",
-                placeholder: "Filter by country...",
+                placeholder: t("users.searchByCountry"),
             },
         },
         {
             accessorKey: "city",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Ville" />
+                <DataTableColumnHeader column={column} label={t("users.colCity")} />
             ),
             cell: ({ row }) => {
                 const isCM = isCameroonNumber(row.original.phoneNumber)
@@ -236,15 +237,15 @@ export function getColumns({
                 return <span>{row.original.city}</span>
             },
             meta: {
-                label: "City",
+                label: t("users.colCity"),
                 variant: "text",
-                placeholder: "Filter by city...",
+                placeholder: t("users.searchByCity"),
             },
         },
         {
             accessorKey: "gender",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Gender" />
+                <DataTableColumnHeader column={column} label={t("users.colGender")} />
             ),
             cell: ({ row }) => {
                 const gender = row.original.gender
@@ -252,23 +253,23 @@ export function getColumns({
 
                 return (
                     <Badge variant={gender === Gender.MALE ? "default" : "secondary"}>
-                        {gender === Gender.MALE ? "Male" : "Female"}
+                        {gender === Gender.MALE ? t("users.genderMale") : t("users.genderFemale")}
                     </Badge>
                 )
             },
             meta: {
-                label: "Gender",
+                label: t("users.colGender"),
                 variant: "select",
                 options: [
-                    { label: "Male", value: Gender.MALE },
-                    { label: "Female", value: Gender.FEMALE },
+                    { label: t("users.genderMale"), value: Gender.MALE },
+                    { label: t("users.genderFemale"), value: Gender.FEMALE },
                 ],
             },
         },
         {
             accessorKey: "createdAt",
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} label="Created" />
+                <DataTableColumnHeader column={column} label={t("users.colCreated")} />
             ),
             cell: ({ row }) => {
                 const date = new Date(row.original.createdAt)
@@ -279,7 +280,7 @@ export function getColumns({
                 )
             },
             meta: {
-                label: "Created Date",
+                label: t("users.colCreatedDate"),
                 variant: "date",
             },
         },
@@ -292,27 +293,27 @@ export function getColumns({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t("users.openMenu")}</span>
                                 <More size={16} variant="Bulk" color="currentColor" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("users.actionsLabel")}</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => onSendSMS(contact)}>
                                 <Sms size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                                Envoyer SMS
+                                {t("users.actionSendSms")}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onEdit(contact)}>
                                 <Edit2 size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                                Edit
+                                {t("users.actionEdit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => onDelete(contact)}
                                 className="text-red-600 focus:text-red-600"
                             >
                                 <Trash size={16} variant="Bulk" color="currentColor" className="mr-2" />
-                                Delete
+                                {t("users.actionDelete")}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

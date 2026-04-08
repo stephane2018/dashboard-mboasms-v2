@@ -4,24 +4,26 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { cn } from '@/shared/utils/cn';
-
-const texts = [
-  {
-    title: "Connectez-vous au monde entier",
-    description: "Créez votre compte et rejoignez un écosystème qualifié de professionnels. Développez votre entreprise grâce à notre puissante plateforme de gestion de SMS.",
-  },
-  {
-    title: "Des outils SMS puissants",
-    description: "Accédez à une suite complète d'outils pour gérer vos campagnes SMS, suivre les analyses et interagir efficacement avec votre audience.",
-  },
-  {
-    title: "Sécurité et Fiabilité Garanties",
-    description: "Notre plateforme est conçue pour la sécurité, garantissant la protection de vos données et la livraison fiable de vos messages à chaque fois.",
-  },
-];
+import { useT } from '@/core/hooks';
 
 export function AnimatedPanel() {
   const [index, setIndex] = useState(0);
+  const { t } = useT();
+
+  const texts = [
+    {
+      title: t('auth.slidePanelTitle1'),
+      description: t('auth.slidePanelDesc1'),
+    },
+    {
+      title: t('auth.slidePanelTitle2'),
+      description: t('auth.slidePanelDesc2'),
+    },
+    {
+      title: t('auth.slidePanelTitle3'),
+      description: t('auth.slidePanelDesc3'),
+    },
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {

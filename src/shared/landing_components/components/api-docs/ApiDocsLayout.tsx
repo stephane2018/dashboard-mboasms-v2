@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book1, Code1, DocumentCode2, ArrowRight2, HambergerMenu, CloseCircle } from 'iconsax-react';
 import { cn } from '@/lib/utils';
+import { useT } from "@/core/hooks";
 
 interface ApiDocsLayoutProps {
   children: React.ReactNode;
@@ -17,10 +18,9 @@ type NavSectionItem = {
   method?: string;
 };
 
-const navSections: { key: string; title: string; icon: React.ElementType; items: NavSectionItem[] }[] = [
+const navSections: { key: string; icon: React.ElementType; items: NavSectionItem[] }[] = [
   {
     key: "getting-started",
-    title: "Pour commencer",
     icon: Book1,
     items: [
       { title: "Introduction", href: "#introduction", section: "getting-started" },
@@ -32,7 +32,6 @@ const navSections: { key: string; title: string; icon: React.ElementType; items:
   },
   {
     key: "endpoints",
-    title: "Endpoints",
     icon: Code1,
     items: [
       { title: "Send SMS", href: "#send-sms", section: "endpoints", method: "POST" },
@@ -43,7 +42,6 @@ const navSections: { key: string; title: string; icon: React.ElementType; items:
   },
   {
     key: "reference",
-    title: "Reference",
     icon: DocumentCode2,
     items: [
       { title: "Response Format", href: "#response-format", section: "reference" },
@@ -63,6 +61,7 @@ const methodColors: Record<string, string> = {
 };
 
 export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
+  const { t } = useT();
   const [activeItem, setActiveItem] = useState<string>("#introduction");
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
@@ -141,7 +140,7 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
               <div className="flex items-center gap-2 px-3 mb-2">
                 <SectionIcon size="12" variant="Bulk" color="currentColor" className="text-muted-foreground" />
                 <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {section.title}
+                  {t(`landing.apiDocs.nav.${section.key}`)}
                 </h3>
               </div>
               <ul className="space-y-0.5">
@@ -193,7 +192,7 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg shadow-primary/25 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200"
-        aria-label={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+        aria-label={sidebarOpen ? t('landing.apiDocs.closeMenu') : t('landing.apiDocs.openMenu')}
       >
         {sidebarOpen ? (
           <CloseCircle size="22" variant="Bold" color="currentColor" />
@@ -233,7 +232,7 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
           >
             {/* Mobile close */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border/60">
-              <span className="text-sm font-semibold text-foreground">Navigation</span>
+              <span className="text-sm font-semibold text-foreground">{t('landing.apiDocs.navigationLabel')}</span>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-1.5 rounded-lg hover:bg-muted transition-colors"
@@ -258,7 +257,7 @@ export function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
       {/* Right sidebar — Table of contents (xl only) */}
       <aside className="hidden xl:block w-52 shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto py-8 pr-6">
         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-3 pl-3">
-          Sur cette page
+          {t('landing.apiDocs.onThisPage')}
         </p>
         <ul className="space-y-0.5 border-l border-border/50 pl-0">
           {allNavItems.map((item) => {

@@ -18,6 +18,7 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 
 interface UsersCustomFilterProps {
     table: Table<EnterpriseContactResponseType>
@@ -28,6 +29,7 @@ export function UsersCustomFilter({
     table,
     onAddContact,
 }: UsersCustomFilterProps) {
+    const { t } = useT()
     const [date, setDate] = useState<Date | undefined>()
 
     // Get column filter values
@@ -68,7 +70,7 @@ export function UsersCustomFilter({
                         color="currentColor"
                         className="mr-2"
                     />
-                    Ajouter un contact
+                    {t("users.addContact")}
                 </Button>
             </div>
         </div>

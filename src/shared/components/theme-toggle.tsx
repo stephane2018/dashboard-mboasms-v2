@@ -1,8 +1,10 @@
 import { Moon, Sun1 } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { useEffect, useState } from "react"
+import { useT } from "@/core/hooks"
 
 export function ThemeToggle() {
+  const { t } = useT();
   const [theme, setTheme] = useState<"light" | "dark">("light")
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function ThemeToggle() {
       ) : (
         <Moon size={20} variant="Bulk" className="text-post-green" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t('layout.changeTheme')}</span>
     </Button>
   )
 }

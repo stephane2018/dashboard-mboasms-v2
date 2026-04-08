@@ -5,7 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useSidebar } from '@/shared/ui/sidebar'
 import { useUserStore } from '@/core/stores/userStore'
-import { UseGetConnectedCompagnieData, useRecharge } from '@/core/hooks'
+import { UseGetConnectedCompagnieData, useRecharge, useT } from '@/core/hooks'
 import { useState } from 'react'
 import { CreateRechargeModal, type RechargeFormData } from '@/shared/common/create-recharge-modal'
 import { createRecharge } from '@/core/services/recharge.service'
@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Global, ArrowRight2 } from 'iconsax-react'
 
 export function PlanDetails() {
+  const { t } = useT()
   const { state } = useSidebar()
   const { user } = useUserStore()
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
@@ -37,8 +38,8 @@ export function PlanDetails() {
 
   const handleRecharge = async (data: RechargeFormData) => {
     if (!user?.companyId) {
-      toast.error('Erreur', {
-        description: 'Impossible de créer la recharge. ID entreprise manquant.'
+      toast.error(t('recharge.createError'), {
+        description: t('layout.planRechargeNoCompanyId')
       })
       return
     }
@@ -52,11 +53,11 @@ export function PlanDetails() {
         debitBankAccountNumber: data.debitBankAccountNumber,
         couponCode: data.couponCode,
       })
-      toast.success('Demande de recharge créée avec succès')
+      toast.success(t('recharge.rechargeCreatedDesc'))
       setIsRechargeModalOpen(false)
       refetchEnterprise()
     } catch (error) {
-      toast.error('Erreur lors de la création de la recharge')
+      toast.error(t('recharge.createError'))
     }
   }
 
@@ -66,7 +67,7 @@ export function PlanDetails() {
       <Card className="bg-gradient-to-br from-purple-600 to-purple-800 border-none text-white">
         <CardContent className="p-2 space-y-2">
           <div className="space-y-1">
-            <p className="text-[10px] text-purple-200">Forfait</p>
+            <p className="text-[10px] text-purple-200">{t('layout.planLabel')}</p>
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium">{planName}</span>
             </div>
@@ -90,13 +91,13 @@ export function PlanDetails() {
           </div>
 
           <div className="pt-1">
-            <p className="text-[10px] text-purple-200 mb-1">{Math.round(usagePercent)}% utilisé</p>
+            <p className="text-[10px] text-purple-200 mb-1">{t('layout.planUsagePercent', { percent: Math.round(usagePercent) })}</p>
             <Button
               onClick={() => setIsRechargeModalOpen(true)}
               className="w-full bg-white text-purple-700 hover:bg-purple-50 font-semibold text-xs"
               size="sm"
             >
-              Recharger
+              {t('layout.planRecharge')}
             </Button>
           </div>
         </CardContent>
@@ -107,7 +108,7 @@ export function PlanDetails() {
         <CardContent className="p-2 space-y-2">
           <div className="flex items-center gap-1.5">
             <Global size={14} color="currentColor" variant="Bulk" className="text-sky-200" />
-            <p className="text-[10px] text-sky-200">Forfait International</p>
+            <p className="text-[10px] text-sky-200">{t('layout.planInternational')}</p>
           </div>
 
           {/* Circular Progress - Solde International */}
@@ -144,7 +145,7 @@ export function PlanDetails() {
               className="w-full bg-white/15 hover:bg-white/25 text-white font-semibold text-xs gap-1.5 border border-white/20"
               size="sm"
             >
-              Voir les tarifs
+              {t('layout.planViewPricing')}
               <ArrowRight2 size={14} color="currentColor" />
             </Button>
           </Link>

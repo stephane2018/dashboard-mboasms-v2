@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/shared/ui/button"
 import { validateAndExtractContacts } from "./utils"
 import { CloudAdd, DocumentDownload, Trash } from "iconsax-react"
+import { useT } from "@/core/hooks"
 import type { ContactData } from "./types"
 
 interface ImportStepProps {
@@ -12,6 +13,7 @@ interface ImportStepProps {
 }
 
 export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
+  const { t } = useT()
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -24,7 +26,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
     // Limit file size to 5MB
     const MAX_FILE_SIZE = 5 * 1024 * 1024
     if (file.size > MAX_FILE_SIZE) {
-      setError("Le fichier ne doit pas dépasser 5 Mo")
+      setError(t('users.fileSizeError'))
       return
     }
 
@@ -47,7 +49,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
 
       onFileLoad(result.contacts, errorMessages)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors du traitement du fichier")
+      setError(err instanceof Error ? err.message : t('users.validationError'))
       setSelectedFile(null)
     } finally {
       setIsProcessing(false)
@@ -115,9 +117,9 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
             <CloudAdd size={24} className="text-blue-600" variant="Bulk" color="currentColor" />
           </div>
           <div>
-            <p className="font-medium text-sm">Déposez votre fichier ici</p>
+            <p className="font-medium text-sm">{t('users.dropFileHere')}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              ou cliquez pour parcourir (CSV, Excel)
+              {t('users.clickToBrowse')}
             </p>
           </div>
         </div>
@@ -152,7 +154,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
       {/* Error Message */}
       {error && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-          <p className="text-sm font-medium text-red-900">Erreur de validation</p>
+          <p className="text-sm font-medium text-red-900">{t('users.validationError')}</p>
           <p className="text-xs text-red-700 mt-1 whitespace-pre-wrap">{error}</p>
           <Button
             variant="outline"
@@ -160,7 +162,7 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
             onClick={handleClearFile}
             className="mt-2"
           >
-            Réessayer
+            {t('users.retry')}
           </Button>
         </div>
       )}
@@ -168,18 +170,18 @@ export function ImportStep({ onFileLoad, isLoading = false }: ImportStepProps) {
       {/* Processing State */}
       {isProcessing && (
         <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-900">Traitement du fichier en cours...</p>
+          <p className="text-sm text-blue-900">{t('users.processingFile')}</p>
         </div>
       )}
 
       {/* Instructions */}
       <div className="p-3 rounded-lg bg-muted/50">
-        <p className="text-xs font-medium mb-2">Format attendu:</p>
+        <p className="text-xs font-medium mb-2">{t('users.expectedFormat')}</p>
         <ul className="text-xs text-muted-foreground space-y-1">
-          <li>• La première colonne doit contenir les numéros de téléphone</li>
-          <li>• Les colonnes optionnelles: Prénom, Nom, Email</li>
-          <li>• Les numéros doivent être valides (7-15 chiffres)</li>
-          <li>• Formats acceptés: CSV, Excel (.xlsx, .xls)</li>
+          <li>• {t('users.firstColumn')}</li>
+          <li>• {t('users.optionalColumns')}</li>
+          <li>• {t('users.validNumbers')}</li>
+          <li>• {t('users.acceptedFormats')}</li>
         </ul>
       </div>
     </div>

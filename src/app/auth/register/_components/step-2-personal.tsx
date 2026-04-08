@@ -1,10 +1,14 @@
+"use client"
+
 import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { User, Sms, Call } from 'iconsax-react';
+import { useT } from '@/core/hooks';
 
 export function Step2Personal() {
   const { control } = useFormContext();
+  const { t } = useT();
 
   return (
     <div className="space-y-4">
@@ -14,11 +18,11 @@ export function Step2Personal() {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground">Prénom</FormLabel>
+              <FormLabel className="text-foreground">{t('auth.firstName')}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Entrez votre prénom" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                  <Input placeholder={t('auth.firstNamePlaceholder')} {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -30,11 +34,11 @@ export function Step2Personal() {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground">Nom de famille</FormLabel>
+              <FormLabel className="text-foreground">{t('auth.lastName')}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <User size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Entrez votre nom" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                  <Input placeholder={t('auth.lastNamePlaceholder')} {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -47,7 +51,7 @@ export function Step2Personal() {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-foreground">Email</FormLabel>
+            <FormLabel className="text-foreground">{t('auth.email')}</FormLabel>
             <FormControl>
               <div className="relative">
                 <Sms size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -63,11 +67,11 @@ export function Step2Personal() {
         name="phoneNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-foreground">Numéro de téléphone</FormLabel>
+            <FormLabel className="text-foreground">{t('auth.phoneNumber')}</FormLabel>
             <FormControl>
               <div className="relative">
                 <Call size={20} variant="Bulk" color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Entrez votre numéro" {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
+                <Input placeholder={t('auth.phonePlaceholder')} {...field} className="pl-10 h-11 rounded-xl bg-background border-border" />
               </div>
             </FormControl>
             <FormMessage />

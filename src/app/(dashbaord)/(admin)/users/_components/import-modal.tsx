@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
+import { useT } from "@/core/hooks"
 
 import type { ContactData } from "./import-steps/types"
 import { ImportStep } from "./import-steps/ImportStep"
@@ -31,6 +32,7 @@ export function ImportModal({
   onImport,
   isLoading = false,
 }: ImportModalProps) {
+  const { t } = useT()
   const [currentStep, setCurrentStep] = useState<ImportStepType>("upload")
   const [contacts, setContacts] = useState<ContactData[]>([])
   const [validationErrors, setValidationErrors] = useState<string[]>([])
@@ -88,12 +90,12 @@ export function ImportModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Importer des contacts</DialogTitle>
+          <DialogTitle>{t('users.importContacts')}</DialogTitle>
           <DialogDescription>
-            {currentStep === "upload" && "Chargez un fichier CSV ou Excel avec vos contacts"}
-            {currentStep === "validation" && "Vérification de la structure et des numéros"}
-            {currentStep === "review" && "Vérifiez et modifiez les contacts"}
-            {currentStep === "confirm" && "Confirmez l'importation"}
+            {currentStep === "upload" && t('users.uploadDesc')}
+            {currentStep === "validation" && t('users.validationDesc')}
+            {currentStep === "review" && t('users.reviewDesc')}
+            {currentStep === "confirm" && t('users.confirmDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -131,7 +133,7 @@ export function ImportModal({
             disabled={currentStep === "upload" || isProcessing}
             className="flex-1"
           >
-            Retour
+            {t('common.back')}
           </Button>
           <Button
             variant="outline"
@@ -139,7 +141,7 @@ export function ImportModal({
             disabled={isProcessing}
             className="flex-1"
           >
-            Annuler
+            {t('common.cancel')}
           </Button>
         </div>
       </DialogContent>

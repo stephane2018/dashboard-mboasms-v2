@@ -27,6 +27,7 @@ import { Loader2, Upload, X } from "lucide-react"
 import { Card, CardContent } from "@/shared/ui/card"
 import type { CreatePricingPlanRequest } from "@/core/services/pricing.service"
 import type { PricingPlanType } from "@/core/models/pricing"
+import { useT } from "@/core/hooks"
 
 const createPlanSchema = z.object({
   planNameFr: z.string().min(1, "Le nom français est requis"),
@@ -60,6 +61,7 @@ export function CreatePricingModal({
   onSubmit,
   isLoading,
 }: CreatePricingModalProps) {
+  const { t } = useT()
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
 
@@ -135,9 +137,9 @@ export function CreatePricingModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Créer un nouveau plan tarifaire</DialogTitle>
+          <DialogTitle>{t('pricing.createNewPlan')}</DialogTitle>
           <DialogDescription>
-            Remplissez les informations pour créer un nouveau plan tarifaire.
+            {t('pricing.createNewPlanDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -149,7 +151,7 @@ export function CreatePricingModal({
                 name="planNameFr"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du plan (Français)</FormLabel>
+                    <FormLabel>{t('pricing.planNameFr')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Pack Premium" {...field} />
                     </FormControl>
@@ -162,7 +164,7 @@ export function CreatePricingModal({
                 name="planNameEn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom du plan (Anglais)</FormLabel>
+                    <FormLabel>{t('pricing.planNameEn')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Premium Pack" {...field} />
                     </FormControl>
@@ -178,7 +180,7 @@ export function CreatePricingModal({
                 name="descriptionFr"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Français)</FormLabel>
+                    <FormLabel>{t('pricing.descriptionFr')}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Description du plan en français"
@@ -194,7 +196,7 @@ export function CreatePricingModal({
                 name="descriptionEn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Anglais)</FormLabel>
+                    <FormLabel>{t('pricing.descriptionEn')}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Description du plan en anglais"
@@ -212,7 +214,7 @@ export function CreatePricingModal({
               name="planCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Code du plan</FormLabel>
+                  <FormLabel>{t('pricing.planCode')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: PREMIUM_2024" {...field} />
                   </FormControl>
@@ -227,7 +229,7 @@ export function CreatePricingModal({
                 name="minSMS"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Minimum de SMS</FormLabel>
+                    <FormLabel>{t('pricing.minSms')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -245,7 +247,7 @@ export function CreatePricingModal({
                 name="maxSMS"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Maximum de SMS</FormLabel>
+                    <FormLabel>{t('pricing.maxSms')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -266,7 +268,7 @@ export function CreatePricingModal({
                 name="nbDaysToExpired"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Validité (jours)</FormLabel>
+                    <FormLabel>{t('pricing.validityDaysLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -284,7 +286,7 @@ export function CreatePricingModal({
                 name="smsUnitPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Prix unitaire (FCFA)</FormLabel>
+                    <FormLabel>{t('pricing.unitPriceFcfa')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -305,7 +307,7 @@ export function CreatePricingModal({
               name="illustrationImgUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Illustration du plan</FormLabel>
+                  <FormLabel>{t('pricing.illustrationLabel')}</FormLabel>
                   <div className="space-y-3">
                     {imagePreview ? (
                       <Card className="relative">
@@ -338,10 +340,10 @@ export function CreatePricingModal({
                             <Upload className="h-8 w-8 text-muted-foreground" />
                             <div className="text-center">
                               <p className="text-sm font-medium">
-                                Cliquez pour télécharger une illustration
+                                {t('pricing.uploadClick')}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                PNG, JPG, GIF jusqu'à 2 Mo
+                                {t('pricing.uploadHint')}
                               </p>
                             </div>
                             <Input
@@ -373,16 +375,16 @@ export function CreatePricingModal({
                 onClick={onClose}
                 disabled={isLoading}
               >
-                Annuler
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Création...
+                    {t('pricing.creating')}
                   </>
                 ) : (
-                  "Créer le plan"
+                  t('pricing.createPlanBtn')
                 )}
               </Button>
             </DialogFooter>

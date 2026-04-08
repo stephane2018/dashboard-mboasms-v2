@@ -18,6 +18,7 @@ import {
 import { Add, People, User, TickCircle, SearchNormal1 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
+import { useT } from "@/core/hooks"
 import { useGroups } from "@/core/hooks/useGroups"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/core/hooks/useMediaQuery"
@@ -36,6 +37,7 @@ export function AddToGroupModal({
     contacts,
     enterpriseId,
 }: AddToGroupModalProps) {
+    const { t } = useT()
     const [selectedGroupId, setSelectedGroupId] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [newGroupName, setNewGroupName] = useState("")
@@ -60,19 +62,19 @@ export function AddToGroupModal({
 
     const handleAddToExistingGroup = async () => {
         if (!selectedGroupId) {
-            toast.error("Veuillez sélectionner un groupe")
+            toast.error(t('users.selectGroupError'))
             return
         }
 
         setIsSubmitting(true)
         try {
             await addContactsToGroup(selectedGroupId, contacts.map(c => c.id))
-            toast.success("Contacts ajoutés au groupe", {
-                description: `${contacts.length} contact(s) ajouté(s) avec succès`,
+            toast.success(t('users.contactsAdded'), {
+                description: t('users.contactsAddedDesc', { count: contacts.length }),
             })
             onClose()
         } catch (error) {
-            toast.error("Erreur lors de l'ajout au groupe")
+            toast.error(t('users.addToGroupError'))
         } finally {
             setIsSubmitting(false)
         }
@@ -80,7 +82,7 @@ export function AddToGroupModal({
 
     const handleCreateAndAdd = async () => {
         if (!newGroupName.trim()) {
-            toast.error("Veuillez entrer un nom de groupe")
+            toast.error(t('users.groupNameError'))
             return
         }
 
@@ -94,12 +96,12 @@ export function AddToGroupModal({
 
             await addContactsToGroup(newGroup.id, contacts.map(c => c.id))
 
-            toast.success("Groupe créé et contacts ajoutés", {
-                description: `Le groupe "${newGroupName}" a été créé avec ${contacts.length} contact(s)`,
+            toast.success(t('users.groupCreated'), {
+                description: t('users.groupCreatedDesc', { name: newGroupName, count: contacts.length }),
             })
             onClose()
         } catch (error) {
-            toast.error("Erreur lors de la création du groupe")
+            toast.error(t('users.createGroupError'))
         } finally {
             setIsSubmitting(false)
         }
@@ -120,7 +122,7 @@ export function AddToGroupModal({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <People size={14} color="currentColor" variant="Bulk" />
-                        Contacts sélectionnés
+                        {t('users.selectedContacts')}
                     </div>
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full tabular-nums">
                         {contacts.length}
@@ -144,7 +146,7 @@ export function AddToGroupModal({
                             </span>
                         ))}
                         <span className="inline-flex items-center text-[11px] text-muted-foreground bg-muted/50 rounded-lg px-2 py-1 tabular-nums">
-                            +{contacts.length - 3} autre{contacts.length - 3 > 1 ? "s" : ""}
+                            +{contacts.length - 3}
                         </span>
                     </div>
                 )}
@@ -164,7 +166,7 @@ export function AddToGroupModal({
                         )}
                     >
                         <People size={14} color="currentColor" variant="Bulk" />
-                        Groupe existant
+                        {t('users.existingGroup')}
                     </button>
                     <button
                         type="button"
@@ -177,7 +179,7 @@ export function AddToGroupModal({
                         )}
                     >
                         <Add size={14} color="currentColor" variant="Bulk" />
-                        Nouveau groupe
+                        {t('users.newGroup')}
                     </button>
                 </div>
             </div>
@@ -191,7 +193,7 @@ export function AddToGroupModal({
                             <div className="relative">
                                 <SearchNormal1 size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Rechercher un groupe..."
+                                    placeholder={t('users.searchGroup')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="h-8 pl-8 text-xs rounded-lg"
@@ -209,7 +211,7 @@ export function AddToGroupModal({
                                 <div className="text-center py-6">
                                     <People size={24} color="currentColor" variant="Bulk" className="text-muted-foreground/40 mx-auto mb-2" />
                                     <p className="text-xs text-muted-foreground">
-                                        {searchQuery ? "Aucun groupe trouvé" : "Aucun groupe disponible"}
+                                        {searchQuery ? t('users.noGroupFound') : t('users.noGroupAvailable')}
                                     </p>
                                 </div>
                             ) : (
@@ -256,10 +258,10 @@ export function AddToGroupModal({
                     <div className="space-y-3 bg-muted/10 p-3 rounded-lg">
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">
-                                Nom du groupe <span className="text-red-500">*</span>
+                                {t('users.groupName')} <span className="text-red-500">*</span>
                             </label>
                             <Input
-                                placeholder="Ex: Clients VIP"
+                                placeholder={t('users.groupNamePlaceholder')}
                                 value={newGroupName}
                                 onChange={(e) => setNewGroupName(e.target.value)}
                                 className="h-9 rounded-xl text-sm"
@@ -267,10 +269,10 @@ export function AddToGroupModal({
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">
-                                Code <span className="text-[11px] text-muted-foreground/60">(optionnel)</span>
+                                {t('users.groupCode')} <span className="text-[11px] text-muted-foreground/60">({t('users.optional')})</span>
                             </label>
                             <Input
-                                placeholder="Ex: GRP-VIP"
+                                placeholder={t('users.groupCodePlaceholder')}
                                 value={newGroupCode}
                                 onChange={(e) => setNewGroupCode(e.target.value)}
                                 className="h-9 rounded-xl text-sm"
@@ -288,7 +290,7 @@ export function AddToGroupModal({
                     disabled={isSubmitting}
                     className="flex-1 sm:flex-none rounded-xl"
                 >
-                    Annuler
+                    {t('common.cancel')}
                 </Button>
                 <Button
                     onClick={handleSubmit}
@@ -298,17 +300,17 @@ export function AddToGroupModal({
                     {isSubmitting ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Traitement...
+                            {t('users.processing')}
                         </>
                     ) : activeTab === "existing" ? (
                         <>
                             <People size={16} color="currentColor" variant="Bulk" />
-                            Ajouter au groupe
+                            {t('users.addToGroupBtn')}
                         </>
                     ) : (
                         <>
                             <Add size={16} color="currentColor" variant="Bulk" />
-                            Créer et ajouter
+                            {t('users.createAndAdd')}
                         </>
                     )}
                 </Button>
@@ -325,7 +327,7 @@ export function AddToGroupModal({
                             <div className="rounded-lg bg-primary/10 p-1.5">
                                 <People size={18} variant="Bulk" color="currentColor" className="text-primary" />
                             </div>
-                            Ajouter à un groupe
+                            {t('users.addToGroup')}
                         </DialogTitle>
                     </DialogHeader>
                     {content}
@@ -342,7 +344,7 @@ export function AddToGroupModal({
                         <div className="rounded-lg bg-primary/10 p-1.5">
                             <People size={18} variant="Bulk" color="currentColor" className="text-primary" />
                         </div>
-                        Ajouter à un groupe
+                        {t('users.addToGroup')}
                     </DrawerTitle>
                 </DrawerHeader>
                 {content}

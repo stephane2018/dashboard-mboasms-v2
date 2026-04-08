@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/shared/ui/card"
 import { Wallet, Clock, TickCircle, CloseCircle, MoneyRecive } from "iconsax-react"
+import { useT } from "@/core/hooks"
 
 interface RechargeStatisticsProps {
   totalRecharges: number
@@ -18,9 +19,11 @@ export function RechargeStatistics({
   refusedRecharges,
   totalAmount,
 }: RechargeStatisticsProps) {
+  const { t } = useT()
+
   const stats = [
     {
-      title: "Total recharges",
+      title: t('recharge.totalRecharges'),
       value: totalRecharges.toLocaleString(),
       icon: Wallet,
       gradient: "from-blue-500/10 to-blue-600/5",
@@ -29,7 +32,7 @@ export function RechargeStatistics({
       borderAccent: "border-l-blue-500",
     },
     {
-      title: "En attente",
+      title: t('recharge.pendingRecharges'),
       value: pendingRecharges.toLocaleString(),
       icon: Clock,
       gradient: "from-amber-500/10 to-amber-600/5",
@@ -38,7 +41,7 @@ export function RechargeStatistics({
       borderAccent: "border-l-amber-500",
     },
     {
-      title: "Validées",
+      title: t('recharge.validatedRecharges'),
       value: validatedRecharges.toLocaleString(),
       icon: TickCircle,
       gradient: "from-emerald-500/10 to-emerald-600/5",
@@ -47,7 +50,7 @@ export function RechargeStatistics({
       borderAccent: "border-l-emerald-500",
     },
     {
-      title: "Refusées",
+      title: t('recharge.refusedRecharges'),
       value: refusedRecharges.toLocaleString(),
       icon: CloseCircle,
       gradient: "from-rose-500/10 to-rose-600/5",
@@ -56,7 +59,7 @@ export function RechargeStatistics({
       borderAccent: "border-l-rose-500",
     },
     {
-      title: "Montant total",
+      title: t('recharge.totalAmount'),
       value: `${totalAmount.toLocaleString()} FCFA`,
       icon: MoneyRecive,
       gradient: "from-violet-500/10 to-violet-600/5",

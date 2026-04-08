@@ -254,8 +254,9 @@ export default function UsersListPage() {
         onEdit: handleEditContact,
         onDelete: handleDeleteContact,
         onSendSMS: handleSendSingleSMS,
+        t,
       }),
-    []
+    [t]
   )
 
   return (

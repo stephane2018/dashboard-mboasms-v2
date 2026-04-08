@@ -14,6 +14,7 @@ import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { toast } from "sonner"
 import { Wallet, Sms, Add, CloseCircle } from "iconsax-react"
+import { useT } from "@/core/hooks"
 
 interface CreditModalProps {
   isOpen: boolean
@@ -24,6 +25,7 @@ interface CreditModalProps {
 }
 
 export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCredit }: CreditModalProps) {
+  const { t } = useT()
   const [creditAmount, setCreditAmount] = useState<string>("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,7 +34,7 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
     const amount = Number(creditAmount)
     
     if (!creditAmount || isNaN(amount) || amount <= 0) {
-      toast.error("Veuillez entrer un montant valide")
+      toast.error(t("companies.invalidAmount"))
       return
     }
 
@@ -54,10 +56,10 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
             </div>
             <div className="text-left">
               <DialogTitle className="text-xl font-semibold">
-                Crédit SMS
+                {t("companies.creditSmsTitle")}
               </DialogTitle>
               <DialogDescription className="text-sm">
-                Ajoutez des crédits SMS à l'entreprise
+                {t("companies.creditSmsDesc")}
               </DialogDescription>
             </div>
           </div>
@@ -72,12 +74,12 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
                   <Sms className="h-5 w-5 text-blue-600 dark:text-blue-400" variant="Bulk" color="currentColor" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Crédit actuel</p>
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">{t("companies.currentCredit")}</p>
                   <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{currentCredit}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-blue-600 dark:text-blue-400">SMS disponibles</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">{t("companies.availableSms")}</p>
               </div>
             </div>
           </div>
@@ -87,7 +89,7 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
             <div className="flex items-center gap-2 pb-2">
               <Add className="h-5 w-5 text-primary" variant="Bulk" color="currentColor" />
               <label className="text-sm font-semibold text-foreground">
-                Montant à ajouter
+                {t("companies.amountToAdd")}
               </label>
             </div>
             <div className="flex items-center gap-2">
@@ -144,7 +146,7 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
                     <Wallet className="h-5 w-5 text-green-600 dark:text-green-400" variant="Bulk" color="currentColor" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-green-900 dark:text-green-100">Nouveau total</p>
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">{t("companies.newTotal")}</p>
                     <p className="text-2xl font-bold text-green-900 dark:text-green-100">
                       {currentCredit + Number(creditAmount)}
                     </p>
@@ -167,7 +169,7 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
               className="flex-1 h-11 flex items-center justify-center gap-2"
             >
               <CloseCircle className="h-4 w-4" variant="Bulk" color="currentColor" />
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -177,12 +179,12 @@ export function CreditModal({ isOpen, onClose, onSubmit, isSubmitting, currentCr
               {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Ajout en cours...
+                  {t("companies.addingCredit")}
                 </>
               ) : (
                 <>
                   <Wallet className="h-4 w-4" variant="Bulk" color="currentColor" />
-                  Ajouter le crédit
+                  {t("companies.addCreditBtn")}
                 </>
               )}
             </Button>

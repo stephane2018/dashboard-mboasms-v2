@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Gender } from "@/core/config/enum"
+import { useT } from "@/core/hooks"
 import { useCreateContact, useUpdateContact } from "@/core/hooks/useContacts"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import {
@@ -62,6 +63,7 @@ export function ContactFormModal({
     enterpriseId,
     onSuccess,
 }: ContactFormModalProps) {
+    const { t } = useT()
     const isEditMode = !!contact
     const { mutate: createContact, isPending: isCreating } = useCreateContact()
     const { mutate: updateContact, isPending: isUpdating } = useUpdateContact()
@@ -172,7 +174,7 @@ export function ContactFormModal({
                         <div className="rounded-lg bg-primary/10 p-1.5">
                             <HeaderIcon size={18} variant="Bulk" color="currentColor" className="text-primary" />
                         </div>
-                        {isEditMode ? "Modifier le contact" : "Nouveau contact"}
+                        {isEditMode ? t('contacts.editContactTitle') : t('contacts.newContact')}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -185,7 +187,7 @@ export function ContactFormModal({
                             <div className="space-y-2.5">
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <User size={13} color="currentColor" variant="Bulk" />
-                                    Identité
+                                    {t('contacts.identity')}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <FormField
@@ -194,7 +196,7 @@ export function ContactFormModal({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input placeholder="Prénom" className="h-9 rounded-xl text-sm" {...field} />
+                                                    <Input placeholder={t('contacts.firstnamePlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -206,7 +208,7 @@ export function ContactFormModal({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input placeholder="Nom" className="h-9 rounded-xl text-sm" {...field} />
+                                                    <Input placeholder={t('contacts.lastnamePlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -219,7 +221,7 @@ export function ContactFormModal({
                             <div className="space-y-2.5">
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Call size={13} color="currentColor" variant="Bulk" />
-                                    Coordonnées
+                                    {t('contacts.contactInfo')}
                                 </div>
                                 <div className="space-y-3">
                                     <FormField
@@ -232,7 +234,7 @@ export function ContactFormModal({
                                                         <Sms size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                         <Input
                                                             type="email"
-                                                            placeholder="Email"
+                                                            placeholder={t('common.email')}
                                                             className="h-9 pl-9 rounded-xl text-sm"
                                                             {...field}
                                                         />
@@ -251,7 +253,7 @@ export function ContactFormModal({
                                                     <div className="relative">
                                                         <Call size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                         <Input
-                                                            placeholder="Numéro de téléphone"
+                                                            placeholder={t('contacts.phonePlaceholder')}
                                                             className="h-9 pl-9 rounded-xl text-sm"
                                                             {...field}
                                                         />
@@ -268,7 +270,7 @@ export function ContactFormModal({
                             <div className="space-y-2.5">
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Location size={13} color="currentColor" variant="Bulk" />
-                                    Localisation
+                                    {t('contacts.location')}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <FormField
@@ -277,7 +279,7 @@ export function ContactFormModal({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input placeholder="Pays" className="h-9 rounded-xl text-sm" {...field} />
+                                                    <Input placeholder={t('contacts.countryPlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -289,7 +291,7 @@ export function ContactFormModal({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <Input placeholder="Ville" className="h-9 rounded-xl text-sm" {...field} />
+                                                    <Input placeholder={t('contacts.cityPlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -306,7 +308,7 @@ export function ContactFormModal({
                                     <FormItem>
                                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
                                             <User size={13} color="currentColor" variant="Bulk" />
-                                            Genre <span className="text-[11px] text-muted-foreground/60">(optionnel)</span>
+                                            {t('contacts.gender')} <span className="text-[11px] text-muted-foreground/60">({t('contacts.optional')})</span>
                                         </div>
                                         <Select
                                             onValueChange={field.onChange}
@@ -314,12 +316,12 @@ export function ContactFormModal({
                                         >
                                             <FormControl>
                                                 <SelectTrigger className="h-9 rounded-xl text-sm">
-                                                    <SelectValue placeholder="Sélectionner" />
+                                                    <SelectValue placeholder={t('contacts.select')} />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value={Gender.MALE}>Homme</SelectItem>
-                                                <SelectItem value={Gender.FEMALE}>Femme</SelectItem>
+                                                <SelectItem value={Gender.MALE}>{t('contacts.male')}</SelectItem>
+                                                <SelectItem value={Gender.FEMALE}>{t('contacts.female')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage className="text-[11px]" />
@@ -337,7 +339,7 @@ export function ContactFormModal({
                                 disabled={isPending}
                                 className="flex-1 sm:flex-none rounded-xl"
                             >
-                                Annuler
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
@@ -347,12 +349,12 @@ export function ContactFormModal({
                                 {isPending ? (
                                     <>
                                         <Loader2 className="h-4 w-4 animate-spin" />
-                                        {isEditMode ? "Modification..." : "Création..."}
+                                        {isEditMode ? t('contacts.modifying') : t('contacts.creating')}
                                     </>
                                 ) : (
                                     <>
                                         <HeaderIcon size={16} color="currentColor" variant="Bulk" />
-                                        {isEditMode ? "Modifier" : "Créer le contact"}
+                                        {isEditMode ? t('contacts.modify') : t('contacts.createContact')}
                                     </>
                                 )}
                             </Button>

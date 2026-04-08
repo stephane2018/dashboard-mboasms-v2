@@ -1,3 +1,5 @@
+"use client";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,6 +9,7 @@ import {
 import { Button } from "@/shared/ui/button";
 import { MoreVerticalIcon, type LucideIcon } from "lucide-react";
 import { cn } from "@/core/lib/utils";
+import { useT } from "@/core/hooks";
 
 interface ActionDropdownItem {
   icon?: LucideIcon;
@@ -21,6 +24,8 @@ interface ActionsDropdownProps {
 }
 
 export function ActionsDropdown({ items, contentClassName }: ActionsDropdownProps) {
+  const { t } = useT();
+
   return (
     <div className="w-full flex justify-center">
       <DropdownMenu>
@@ -31,7 +36,7 @@ export function ActionsDropdown({ items, contentClassName }: ActionsDropdownProp
             size="icon"
           >
             <MoreVerticalIcon />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('dataTable.openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

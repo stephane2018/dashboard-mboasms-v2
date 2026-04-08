@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useLanguageStore, type Lang } from "@/core/stores/languageStore"
 import { cn } from "@/core/lib/utils"
 import { LanguageSquare } from "iconsax-react"
+import { useT } from "@/core/hooks"
 
 interface LanguageSwitcherProps {
   variant?: "pill" | "icon" | "dropdown"
@@ -21,6 +22,7 @@ const labels: Record<Lang, string> = {
 }
 
 export function LanguageSwitcher({ variant = "pill", className }: LanguageSwitcherProps) {
+  const { t } = useT()
   const { lang, setLang } = useLanguageStore()
   const [open, setOpen] = useState(false)
 
@@ -32,7 +34,7 @@ export function LanguageSwitcher({ variant = "pill", className }: LanguageSwitch
           "flex items-center justify-center w-9 h-9 rounded-full border border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-200",
           className
         )}
-        title={lang === "fr" ? "Switch to English" : "Passer en Francais"}
+        title={lang === "fr" ? t('layout.switchToEnglish') : t('layout.switchToFrench')}
       >
         <span className="text-sm leading-none">{flags[lang === "fr" ? "en" : "fr"]}</span>
       </button>

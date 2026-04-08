@@ -4,6 +4,7 @@ import { DataTable } from "@/shared/common/data-table/table"
 import { getContactsColumns } from "./contacts-table"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { Skeleton } from "@/shared/ui/skeleton"
+import { useT } from "@/core/hooks"
 
 interface ContactsDataTableProps {
   data: any[]
@@ -14,7 +15,16 @@ interface ContactsDataTableProps {
   onSendMessage: (contact: EnterpriseContactResponseType) => void
 }
 
-export function ContactsDataTable({ data, isLoading = false, enterpriseId, onUpdate, onDelete, onSendMessage }: ContactsDataTableProps) {
+export function ContactsDataTable({
+  data,
+  isLoading = false,
+  enterpriseId,
+  onUpdate,
+  onDelete,
+  onSendMessage,
+}: ContactsDataTableProps) {
+  const { t } = useT()
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -50,12 +60,7 @@ export function ContactsDataTable({ data, isLoading = false, enterpriseId, onUpd
     )
   }
 
-  const columns = getContactsColumns({ enterpriseId, onUpdate, onDelete, onSendMessage })
+  const columns = getContactsColumns({ enterpriseId, onUpdate, onDelete, onSendMessage, t })
 
-  return (
-    <DataTable
-      columns={columns}
-      data={data}
-    />
-  )
+  return <DataTable columns={columns} data={data} />
 }

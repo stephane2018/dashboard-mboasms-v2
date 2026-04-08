@@ -5,6 +5,7 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Edit2, TickCircle, CloseCircle, Call, ProfileTick, ArrowRight2 } from "iconsax-react"
+import { useT } from "@/core/hooks"
 import { isValidPhoneNumber } from "./utils"
 import type { ContactData } from "./types"
 
@@ -19,6 +20,7 @@ export function ReviewStep({
   onContactsUpdate,
   onReviewComplete,
 }: ReviewStepProps) {
+  const { t } = useT()
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
   const [editedContacts, setEditedContacts] = useState<ContactData[]>(contacts)
@@ -40,7 +42,7 @@ export function ReviewStep({
     if (!newPhone) {
       setValidationErrors({
         ...validationErrors,
-        [index]: "Le numéro ne peut pas être vide",
+        [index]: t('users.phoneRequiredMsg'),
       })
       return
     }
@@ -78,16 +80,16 @@ export function ReviewStep({
       {/* Summary */}
       <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
         <p className="text-sm font-medium text-blue-900">
-          {editedContacts.length} contact{editedContacts.length > 1 ? "s" : ""} à importer
+          {t('users.contactsToImport', { count: editedContacts.length })}
         </p>
         <p className="text-xs text-blue-700 mt-1">
-          Vous pouvez modifier les numéros de téléphone si nécessaire
+          {t('users.editPhoneHint')}
         </p>
       </div>
 
       {/* Contacts List */}
       <div className="space-y-2">
-        <p className="text-sm font-medium">Contacts:</p>
+        <p className="text-sm font-medium">{t('users.contacts')}</p>
         <ScrollArea className="h-96 w-full rounded-lg border bg-muted/50 p-3">
           <div className="space-y-2">
             {editedContacts.map((contact, index) => {
@@ -111,7 +113,7 @@ export function ReviewStep({
                           <Input
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            placeholder="Numéro de téléphone"
+                            placeholder={t('contacts.phonePlaceholder')}
                             className="flex-1 text-sm"
                             autoFocus
                           />
@@ -121,14 +123,14 @@ export function ReviewStep({
                             onClick={() => handleEditCancel()}
                             className="px-2"
                           >
-                            Annuler
+                            {t('users.cancel')}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => handleEditSave(index)}
                             className="px-2 bg-green-600 hover:bg-green-700"
                           >
-                            Valider
+                            {t('users.validate')}
                           </Button>
                         </>
                       ) : (
@@ -177,7 +179,7 @@ export function ReviewStep({
                           <TickCircle size={14} className="text-green-600" variant="Bulk" color="currentColor"/>
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {error ? "Invalide" : "Valide"}
+                          {error ? t('users.invalid') : t('users.valid')}
                         </span>
                       </div>
                     )}
@@ -195,7 +197,7 @@ export function ReviewStep({
         disabled={!isValid}
         className="w-full bg-blue-600 hover:bg-blue-700 gap-2"
       >
-        Continuer vers la confirmation
+        {t('users.continueToConfirm')}
         <ArrowRight2 size={16} variant="Bulk" color="currentColor" />
       </Button>
     </div>

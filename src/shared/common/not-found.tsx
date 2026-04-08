@@ -1,6 +1,9 @@
+"use client";
+
 import { Button } from "@/shared/ui/button";
 import { MoveLeft } from "lucide-react";
 import Link from "next/link";
+import { useT } from "@/core/hooks";
 
 interface NotFoundProps {
   title?: string;
@@ -13,6 +16,8 @@ interface NotFoundProps {
 }
 
 export function NotFound({ title, subtitle, shouldRedirect, redirection }: NotFoundProps) {
+  const { t } = useT();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/30 px-4 text-center">
       <div className="relative max-w-md mx-auto">
@@ -30,10 +35,9 @@ export function NotFound({ title, subtitle, shouldRedirect, redirection }: NotFo
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">{title || "Oups ! Page non trouvée"}</h2>
+            <h2 className="text-2xl font-bold">{title || t('common.notFoundTitle')}</h2>
             <p className="text-muted-foreground">
-              {subtitle ||
-                "La page que vous recherchez a peut-être été supprimée, son nom a changé, ou elle est temporairement indisponible."}
+              {subtitle || t('common.notFoundSubtitle')}
             </p>
           </div>
 
@@ -41,7 +45,7 @@ export function NotFound({ title, subtitle, shouldRedirect, redirection }: NotFo
             <Button asChild size="lg" className="group relative overflow-hidden">
               <Link href={redirection?.href || "/"} className="flex items-center gap-2">
                 <MoveLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                <span>{redirection?.label || "Retour à l'accueil"}</span>
+                <span>{redirection?.label || t('common.notFoundGoHome')}</span>
               </Link>
             </Button>
           )}

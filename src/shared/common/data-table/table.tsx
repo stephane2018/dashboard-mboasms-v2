@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import type {
   ColumnDef,
@@ -26,6 +28,7 @@ import { cn } from "@/core/lib/utils";
 import { DataTablePagination } from "./pagination";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { useT } from "@/core/hooks";
 
 // Extend TanStack Table's ColumnMeta to include custom properties
 declare module "@tanstack/react-table" {
@@ -86,6 +89,7 @@ export function DataTable<T>({
   toolbar,
   initialState,
 }: DataTableProps<T>) {
+  const { t } = useT();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -166,7 +170,7 @@ export function DataTable<T>({
                         }
                       })
                       }}
-                      aria-label="Sélectionner tout"
+                      aria-label={t('dataTable.selectAll')}
                       disabled={
                         getRowCanBeSelected
                           ? !table.getRowModel().rows.some((row) => getRowCanBeSelected(row.original))
@@ -187,7 +191,7 @@ export function DataTable<T>({
                           row.toggleSelected(!!value);
                         }
                       }}
-                      aria-label="Sélectionner la ligne"
+                      aria-label={t('dataTable.selectRow')}
                       disabled={!canSelect}
                     />
                   </div>
@@ -339,7 +343,7 @@ export function DataTable<T>({
             ) : (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {emptyMessage || "Aucun résultat."}
+                  {emptyMessage || t('dataTable.noResults')}
                 </TableCell>
               </TableRow>
             )}

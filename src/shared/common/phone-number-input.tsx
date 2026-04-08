@@ -24,6 +24,7 @@ import {
 } from "@/core/utils/phone-validation"
 import { cn } from "@/lib/utils"
 import { PhoneImportModal } from "./phone-import-modal"
+import { useT } from "@/core/hooks"
 
 // Types
 export interface PhoneEntry {
@@ -221,11 +222,14 @@ const getOperatorColor = (operator: PhoneOperator): string => {
 export function PhoneNumberInput({
     entries,
     onEntriesChange,
-    label = "Destinataires",
-    placeholder = "Numéros séparés par des virgules",
+    label,
+    placeholder,
     className,
     maxHeight = "h-32"
 }: PhoneNumberInputProps) {
+    const { t } = useT()
+    const resolvedLabel = label ?? t('common.phoneInputRecipients')
+    const resolvedPlaceholder = placeholder ?? t('common.phoneInputPlaceholder')
     const [inputValue, setInputValue] = useState("")
     const [showPhoneNumber, setShowPhoneNumber] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -272,9 +276,9 @@ export function PhoneNumberInput({
         }
 
         if (duplicates.length > 0) {
-            setValidationError(`Numéro(s) déjà existant(s): ${duplicates.join(", ")}`)
+            setValidationError(t('common.phoneInputDuplicates', { numbers: duplicates.join(", ") }))
         } else if (invalidNumbers.length > 0 && newEntries.length === 0) {
-            setValidationError(`Format invalide: ${invalidNumbers.join(", ")}`)
+            setValidationError(t('common.phoneInputInvalidFormat', { numbers: invalidNumbers.join(", ") }))
         } else {
             setValidationError(null)
         }
@@ -425,11 +429,11 @@ export function PhoneNumberInput({
             {/* Header with label and toggle */}
             <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                    {label} ({entries.length})
+                    {resolvedLabel} ({entries.length})
                 </Label>
                 <div className="flex items-center gap-2">
                     <Label htmlFor="show-phone" className="text-xs text-muted-foreground">
-                        Afficher numéros
+                        {t('common.phoneInputShowNumbers')}
                     </Label>
                     <Switch
                         id="show-phone"
@@ -445,7 +449,7 @@ export function PhoneNumberInput({
                     <Input
                         ref={inputRef}
                         type="tel"
-                        placeholder={placeholder}
+                        placeholder={resolvedPlaceholder}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -479,7 +483,7 @@ export function PhoneNumberInput({
                     className="h-12 w-12 shrink-0"
                     onClick={() => setIsImportModalOpen(true)}
                     disabled={isProcessing}
-                    title="Importer depuis un fichier"
+                    title={t('common.phoneInputImportFile')}
                 >
                     <DocumentUpload size={20} variant="Bulk" color="currentColor" />
                 </Button>
@@ -490,11 +494,11 @@ export function PhoneNumberInput({
                 {isProcessing ? (
                     <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-sm text-muted-foreground">Traitement en cours...</span>
+                        <span className="ml-2 text-sm text-muted-foreground">{t('common.phoneInputProcessing')}</span>
                     </div>
                 ) : entries.length === 0 ? (
                     <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
-                        Aucun destinataire. Ajoutez des numéros ou collez depuis Excel.
+                        {t('common.phoneInputEmpty')}
                     </div>
                 ) : (
                     <div className="flex flex-wrap gap-2">
@@ -520,6 +524,7 @@ export function PhoneNumberInput({
                                                 if (e.key === "Enter") handleSaveEdit()
                                                 if (e.key === "Escape") handleCancelEdit()
                                             }}
+                                            aria-label={t('common.phoneInputEditAriaLabel')}
                                         />
                                         <button
                                             onClick={handleSaveEdit}
@@ -579,20 +584,20 @@ export function PhoneNumberInput({
             {entries.length > 0 && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
                     <span>
-                        {entries.filter(e => e.isValid).length} valide(s), {entries.filter(e => !e.isValid).length} invalide(s)
+                        {t('common.phoneInputSummary', { valid: entries.filter(e => e.isValid).length, invalid: entries.filter(e => !e.isValid).length })}
                     </span>
                     <div className="flex items-center gap-2">
                         {entries.filter(e => !e.isValid).length > 0 && (
                             <span className="text-amber-600">
-                                Les numéros invalides ne recevront pas de SMS
+                                {t('common.phoneInputInvalidWillNotReceive')}
                             </span>
                         )}
                         <button
                             onClick={() => onEntriesChange([])}
                             className="text-xs p-3 cursor-pointer bg-red-500 text-white hover:bg-red-600 px-2 py-1 rounded transition-colors"
-                            title="Vider tous les destinataires"
+                            title={t('common.phoneInputClearAll')}
                         >
-                            Vider tout
+                            {t('common.phoneInputClearAll')}
                         </button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
 
+import { useT } from "@/core/hooks"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { ChartContainer, type ChartConfig } from "@/shared/ui/chart"
 
@@ -18,6 +19,7 @@ function clamp(n: number, min: number, max: number) {
 }
 
 export function CreditRadialChart({ credit }: { credit: number }) {
+  const { t } = useT()
   const max = 1000
   const value = clamp(Number(credit) || 0, 0, max)
 
@@ -29,8 +31,8 @@ export function CreditRadialChart({ credit }: { credit: number }) {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Solde SMS</CardTitle>
-        <CardDescription>Crédit restant</CardDescription>
+        <CardTitle>{t("companies.smsBalance")}</CardTitle>
+        <CardDescription>{t("companies.remainingCredit")}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
@@ -65,7 +67,9 @@ export function CreditRadialChart({ credit }: { credit: number }) {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-1 text-sm">
-        <div className="text-muted-foreground leading-none">Affichage plafonné à {max.toLocaleString()} pour le cadran</div>
+        <div className="text-muted-foreground leading-none">
+          {t("companies.cappedDisplay", { max: max.toLocaleString() })}
+        </div>
       </CardFooter>
     </Card>
   )

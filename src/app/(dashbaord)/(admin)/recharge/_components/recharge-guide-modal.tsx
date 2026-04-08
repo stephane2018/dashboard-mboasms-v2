@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight2, ArrowLeft2, MoneyRecive, Global, Call, Whatsapp } from "iconsax-react"
 import { CheckCircle2, Smartphone, X } from "lucide-react"
+import { useT } from "@/core/hooks"
 
 const STORAGE_KEY = "mboasms_recharge_guide_dismissed"
 
@@ -49,6 +50,7 @@ const steps = [
 ]
 
 export function RechargeGuideModal() {
+  const { t } = useT()
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -122,7 +124,7 @@ export function RechargeGuideModal() {
                   <MoneyRecive size={14} variant="Bulk" color="currentColor" className="text-primary" />
                 </div>
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Guide Recharge
+                  {t('recharge.guideTitle')}
                 </span>
               </div>
               <button
@@ -215,7 +217,7 @@ export function RechargeGuideModal() {
                   onClick={next}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
-                  {isLast ? "J'ai compris" : "Suivant"}
+                  {isLast ? t('recharge.understood') : t('common.next')}
                   {!isLast && <ArrowRight2 size={14} color="currentColor" />}
                 </button>
               </div>
@@ -229,6 +231,8 @@ export function RechargeGuideModal() {
 
 /** Inline support contact banner for the recharge page */
 export function RechargeSupportBanner() {
+  const { t } = useT()
+
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl bg-card border border-border/50">
       <div className="flex items-center gap-2.5 min-w-0">
@@ -236,8 +240,8 @@ export function RechargeSupportBanner() {
           <Call size={18} variant="Bulk" color="currentColor" className="text-amber-500" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Besoin d&apos;aide ?</p>
-          <p className="text-xs text-muted-foreground">En cas de probleme lors de votre recharge, contactez-nous</p>
+          <p className="text-sm font-semibold text-foreground">{t('recharge.needHelp')}</p>
+          <p className="text-xs text-muted-foreground">{t('recharge.needHelpDesc')}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 sm:ml-auto shrink-0">

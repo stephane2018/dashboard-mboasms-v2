@@ -6,6 +6,7 @@ import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { Add, Minus } from "iconsax-react"
 import { cn } from "@/lib/utils"
+import { useT } from "@/core/hooks"
 
 interface SMSQuantityInputProps {
     value: number
@@ -24,10 +25,12 @@ export function SMSQuantityInput({
     min = 1,
     max = 1000000,
     step = 100,
-    label = "Nombre de SMS",
+    label,
     className,
     disabled = false
 }: SMSQuantityInputProps) {
+    const { t } = useT()
+    const resolvedLabel = label ?? t('common.smsQuantityLabel')
     const [inputValue, setInputValue] = useState(value.toString())
 
     useEffect(() => {
@@ -71,8 +74,8 @@ export function SMSQuantityInput({
 
     return (
         <div className={cn("space-y-2", className)}>
-            {label && (
-                <Label className="text-sm font-medium">{label}</Label>
+            {resolvedLabel && (
+                <Label className="text-sm font-medium">{resolvedLabel}</Label>
             )}
             <div className="flex items-center gap-2">
                 <Button

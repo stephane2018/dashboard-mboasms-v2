@@ -220,8 +220,9 @@ export default function RechargePage() {
         onRefuse: handleRefuseRecharge,
         onCredit: handleCreditAccount,
         isSuperAdmin: isSuperAdmin(),
+        t,
       }),
-    [isSuperAdmin]
+    [isSuperAdmin, t]
   )
 
   // Redirect if not super admin or admin user

@@ -3,6 +3,7 @@
 import { Button } from "@/shared/ui/button"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { TickCircle, CloseCircle, Warning2 } from "iconsax-react"
+import { useT } from "@/core/hooks"
 import type { ContactData } from "./types"
 
 interface ValidationStepProps {
@@ -16,6 +17,7 @@ export function ValidationStep({
   errors,
   onValidationComplete,
 }: ValidationStepProps) {
+  const { t } = useT()
   const hasErrors = errors.length > 0
   const totalRows = contacts.length + errors.length
 
@@ -24,16 +26,16 @@ export function ValidationStep({
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-xs text-blue-600 font-medium">Total</p>
+          <p className="text-xs text-blue-600 font-medium">{t('users.total')}</p>
           <p className="text-2xl font-bold text-blue-900">{totalRows}</p>
         </div>
         <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-xs text-green-600 font-medium">Valides</p>
+          <p className="text-xs text-green-600 font-medium">{t('users.valid')}</p>
           <p className="text-2xl font-bold text-green-900">{contacts.length}</p>
         </div>
         <div className={`p-3 rounded-lg ${hasErrors ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
           <p className={`text-xs font-medium ${hasErrors ? "text-red-600" : "text-gray-600"}`}>
-            Erreurs
+            {t('users.errors')}
           </p>
           <p className={`text-2xl font-bold ${hasErrors ? "text-red-900" : "text-gray-900"}`}>
             {errors.length}
@@ -52,12 +54,12 @@ export function ValidationStep({
           <div>
             <p className={`font-medium text-sm ${hasErrors ? "text-red-900" : "text-green-900"}`}>
               {hasErrors
-                ? `${errors.length} ligne(s) avec erreur(s)`
-                : "Tous les contacts sont valides"}
+                ? t('users.linesWithErrors', { count: errors.length })
+                : t('users.allValid')}
             </p>
             {hasErrors && (
               <p className="text-xs text-red-700 mt-1">
-                Les contacts avec erreurs seront ignorés lors de l'importation
+                {t('users.errorsIgnored')}
               </p>
             )}
           </div>
@@ -67,7 +69,7 @@ export function ValidationStep({
       {/* Errors List */}
       {hasErrors && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Détails des erreurs:</p>
+          <p className="text-sm font-medium">{t('users.errorDetails')}</p>
           <ScrollArea className="h-48 w-full rounded-lg border bg-muted/50 p-3">
             <div className="space-y-2">
               {errors.map((error, index) => (
@@ -89,7 +91,7 @@ export function ValidationStep({
       {/* Valid Contacts Preview */}
       {contacts.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Aperçu des contacts valides:</p>
+          <p className="text-sm font-medium">{t('users.validContactsPreview')}</p>
           <ScrollArea className="h-40 w-full rounded-lg border bg-muted/50 p-3">
             <div className="space-y-2">
               {contacts.slice(0, 5).map((contact, index) => (
@@ -110,7 +112,7 @@ export function ValidationStep({
               ))}
               {contacts.length > 5 && (
                 <p className="text-xs text-muted-foreground p-2">
-                  ... et {contacts.length - 5} autres
+                  {t('users.andMore', { count: contacts.length - 5 })}
                 </p>
               )}
             </div>
@@ -124,7 +126,7 @@ export function ValidationStep({
         disabled={contacts.length === 0}
         className="w-full bg-blue-600 hover:bg-blue-700"
       >
-        Continuer vers la révision ({contacts.length} contact{contacts.length > 1 ? "s" : ""})
+        {t('users.continueToReview', { count: contacts.length })}
       </Button>
     </div>
   )
