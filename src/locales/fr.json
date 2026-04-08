@@ -1293,5 +1293,32 @@
         "optionalBadge": "Optionnel"
       }
     }
+  },
+  "scheduleCall": {
+    "title": "Planifier un appel",
+    "step1Subtitle": "Choisissez une date et une heure",
+    "step2Subtitle": "Sélectionnez le type d'appel",
+    "step3Subtitle": "Confirmation de votre rendez-vous",
+    "chooseDate": "Choisissez une date",
+    "chooseTime": "Choisissez une heure",
+    "morning": "Matin",
+    "afternoon": "Après-midi",
+    "continue": "Continuer",
+    "back": "Retour",
+    "howContact": "Comment souhaitez-vous être contacté ?",
+    "calendarDesc": "Ajoutez l'événement à votre agenda",
+    "whatsappDesc": "Planifiez via WhatsApp directement",
+    "scheduled": "Appel planifié !",
+    "scheduledDesc": "Votre appel {{type}} a été planifié avec succès.",
+    "openCalendar": "Ouvrir l'agenda",
+    "openWhatsapp": "Ouvrir WhatsApp",
+    "daySun": "Dim",
+    "dayMon": "Lun",
+    "dayTue": "Mar",
+    "dayWed": "Mer",
+    "dayThu": "Jeu",
+    "dayFri": "Ven",
+    "daySat": "Sam",
+    "whatsappMessage": "Bonjour! Je souhaite planifier un appel le {{date}} à {{time}}.\n\n{{title}}\n{{description}}"
   }
 }
