@@ -4,23 +4,26 @@ import { NextRequest, NextResponse } from 'next/server';
 const TOKEN_COOKIE = 'mboasms-access-token';
 const REFRESH_COOKIE = 'mboasms-refresh-token';
 
-const ALLOWED_ORIGINS = [
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-];
-
 function isAllowedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
-  // Allow same-origin requests (no origin header = same-origin fetch)
+  // Allow same-origin requests (no origin/referer = same-origin fetch)
   if (!origin && !referer) return true;
   try {
+    const host = request.headers.get('host');
+    const protocol = request.url.startsWith('https') ? 'https' : 'http';
+    const serverOrigin = host ? `${protocol}://${host}` : null;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
     if (origin) {
       const requestOrigin = new URL(origin).origin;
-      if (ALLOWED_ORIGINS.some(allowed => new URL(allowed).origin === requestOrigin)) return true;
+      if (serverOrigin && requestOrigin === serverOrigin) return true;
+      if (appUrl && new URL(appUrl).origin === requestOrigin) return true;
     }
     if (referer) {
       const refererOrigin = new URL(referer).origin;
-      if (ALLOWED_ORIGINS.some(allowed => new URL(allowed).origin === refererOrigin)) return true;
+      if (serverOrigin && refererOrigin === serverOrigin) return true;
+      if (appUrl && new URL(appUrl).origin === refererOrigin) return true;
     }
   } catch {
     return false;
