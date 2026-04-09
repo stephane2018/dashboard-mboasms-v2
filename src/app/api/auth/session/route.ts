@@ -11,17 +11,22 @@ const COOKIE_OPTIONS = {
   path: '/',
 };
 
-const ALLOWED_ORIGINS = [
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-];
-
 function isAllowedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
-  // Same-origin fetch may not send Origin, allow it
+  // Same-origin fetch may not send Origin header — allow it
   if (!origin) return true;
   try {
     const requestOrigin = new URL(origin).origin;
-    return ALLOWED_ORIGINS.some(allowed => new URL(allowed).origin === requestOrigin);
+    // Allow if origin matches the server's own host (works in dev + prod)
+    const host = request.headers.get('host');
+    if (host) {
+      const protocol = request.url.startsWith('https') ? 'https' : 'http';
+      if (requestOrigin === `${protocol}://${host}`) return true;
+    }
+    // Fallback: explicit allow list from env
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (appUrl && new URL(appUrl).origin === requestOrigin) return true;
+    return false;
   } catch {
     return false;
   }

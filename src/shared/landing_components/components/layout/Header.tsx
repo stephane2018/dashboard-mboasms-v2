@@ -162,7 +162,7 @@ const Header = () => {
                   <span className="sm:hidden"> {t('nav.oldVersionMobile')}</span>
                   {' '}
                   <a
-                    href="https://old.mboasms.com"
+                    href="https://v1.mboasms.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline font-bold hover:text-white/80 transition-colors"
