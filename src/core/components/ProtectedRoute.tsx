@@ -24,12 +24,19 @@ export const ProtectedRoute = ({
   const { user, isAuthenticated, isHydrated, isTokenHydrated } = useUserStore()
 
   useEffect(() => {
+    const hasToken = tokenManager.hasToken()
+    console.log('[PROTECTED_ROUTE] useEffect', {
+      isHydrated,
+      isTokenHydrated,
+      isAuthenticated,
+      hasToken,
+      user: user ? { id: user.id, role: user.role } : null,
+    })
+
     // Wait for both Zustand store hydration and token hydration from httpOnly cookies
     if (!isHydrated || !isTokenHydrated) {
       return
     }
-
-    const hasToken = tokenManager.hasToken()
 
     // If we have a token but user is not yet in store, wait for auth provider to fetch profile
     if (hasToken && !user) {
@@ -39,6 +46,7 @@ export const ProtectedRoute = ({
 
     // If not authenticated and no valid token, redirect to login
     if (!isAuthenticated || !user) {
+      console.warn('[PROTECTED_ROUTE] Redirection → login (pas authentifié)', { isAuthenticated, user: !!user })
       router.push(redirectTo)
       return
     }

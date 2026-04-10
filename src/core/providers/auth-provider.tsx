@@ -76,7 +76,10 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   // Hydrate tokens from httpOnly cookies on mount -- must complete before any API call
   useEffect(() => {
+    console.log('[AUTH] Hydratation du token depuis les cookies...')
     tokenManager.hydrateFromServer().then(() => {
+      const hasToken = tokenManager.hasToken()
+      console.log('[AUTH] Token hydraté ✅', { hasToken })
       setIsTokenHydrated(true);
       setTokenHydrated(true);
     });
@@ -115,6 +118,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
     const fetchUserProfile = async () => {
       const token = tokenManager.getToken();
+      console.log('[AUTH] fetchUserProfile', { hasToken: !!token, hasUser: !!user, hasFetchedProfile })
 
       // Skip if we already have a user or already attempted fetch
       if (user || hasFetchedProfile) {
@@ -123,23 +127,27 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
       // No token = no fetch needed
       if (!token) {
+        console.warn('[AUTH] Pas de token → pas de fetch profil')
         setHasFetchedProfile(true);
         return;
       }
 
       setIsLoadingProfile(true);
       try {
+        console.log('[AUTH] Récupération du profil...')
         const profileData = await getProfile() as ProfileApiResponse | null;
+        console.log('[AUTH] Profil reçu ✅', profileData ? { id: profileData.id, role: profileData.role } : null)
         if (profileData && profileData.id && profileData.email) {
           const mappedUser = mapProfileToUser(profileData);
           setUser(mappedUser);
         } else {
-          // Profile fetch returned invalid data, clear user
+          console.warn('[AUTH] Profil invalide → clearUser')
           clearUser();
         }
       } catch (error: any) {
         // Only clear user on auth errors (401/403) - not on transient network issues
         const status = error?.response?.status;
+        console.error('[AUTH] Erreur fetch profil ❌', { status, error })
         if (status === 401 || status === 403) {
           clearUser();
         }
