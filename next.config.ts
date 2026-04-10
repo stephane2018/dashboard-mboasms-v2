@@ -72,15 +72,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // DEBUG TEMPORAIRE — retirer après diagnostic
-  logging: {
-    fetches: {
-      fullUrl: true,
-    },
-  },
-
-  reactCompiler: true,
-
   // Enable standalone output for Docker
   output: 'standalone',
 
