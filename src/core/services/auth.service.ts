@@ -100,10 +100,13 @@ export async function login(credentials: LoginCredentials) {
 }
 
 export async function getProfile(): Promise<ProfileResponse> {
-  const response = await httpClient.get<ProfileResponse>('/api/v1/auth/profile');
+  const response = await httpClient.get<unknown>('/api/v1/auth/profile');
 
   const parsed = ProfileSchema.safeParse(response);
   if (!parsed.success) {
+    // Log exact fields that failed so we can diagnose schema mismatches
+    console.error('[getProfile] Zod validation failed:', parsed.error.issues);
+    console.error('[getProfile] Raw API response:', JSON.stringify(response));
     throw new Error('Réponse profil invalide');
   }
 

@@ -150,9 +150,14 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         console.error('[AUTH] Erreur fetch profil ❌', { status, error })
         if (status === 401 || status === 403) {
           clearUser();
+        } else if (!user) {
+          // Profile fetch failed with a non-HTTP error (e.g. Zod schema mismatch) and
+          // there's no cached user in the store. We can't show the dashboard without a user,
+          // so clear everything to let ProtectedRoute redirect to login instead of blank page.
+          clearUser();
         }
-        // For other errors (network, 500, etc.), keep the user from sessionStorage
-        // They'll get a proper error on their next API call
+        // For other errors (network, 500, etc.) when a cached user exists, keep it —
+        // they'll get a proper error on their next API call
       } finally {
         setIsLoadingProfile(false);
         setHasFetchedProfile(true);
