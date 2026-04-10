@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import dynamic from 'next/dynamic';
 
 const Header = dynamic(() => import("@/shared/landing_components/components/layout/Header"), {
@@ -34,8 +34,14 @@ function SectionFallback() {
 
 export default function Home() {
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { lang } = useLanguageStore();
-  const t = landingContent[lang];
+
+  // Use 'fr' on the first client render to match SSR output, then switch to stored lang
+  const t = landingContent[mounted ? lang : 'fr'];
+
+  // Mark as mounted after hydration so the real language takes effect
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <div className="min-h-screen bg-background pt-20 noise-overlay relative">

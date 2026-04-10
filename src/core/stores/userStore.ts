@@ -109,6 +109,18 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'user-storage',
+      // Exclude runtime-only flags from sessionStorage — they must always start false
+      // isHydrated: set by onRehydrateStorage callback after rehydration completes
+      // isTokenHydrated: set by AuthProvider after hydrateFromServer() async call
+      // Persisting these would cause ProtectedRoute to skip the hydration wait on reload
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        actingCompanyId: state.actingCompanyId,
+        actingCompanyName: state.actingCompanyName,
+        isImpersonating: state.isImpersonating,
+        originalUser: state.originalUser,
+      }),
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
