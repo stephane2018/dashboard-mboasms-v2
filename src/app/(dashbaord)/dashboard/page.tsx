@@ -57,6 +57,15 @@ export default function DashboardHome() {
   const { statistics, isLoading } = useMainStatistics();
   const { t } = useT();
 
+  // Logs de debug pour diagnostiquer les problèmes en prod
+  if (typeof window !== 'undefined') {
+    console.log('[DASHBOARD] Rendu', {
+      hasStatistics: !!statistics,
+      isLoading,
+      hasCookie: document.cookie.includes('mboasms-access-token'),
+    })
+  }
+
   const kpiCards = [
     {
       label: t('dashboard.groups'),

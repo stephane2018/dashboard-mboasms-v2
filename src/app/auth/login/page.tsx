@@ -76,12 +76,24 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
+      console.log('[LOGIN] Envoi de la requête de connexion...')
       return await httpClient.post<LoginResponse>('/api/v1/auth/login', data, {
         useToken: false
       })
     },
-    onSuccess: (data) => {
-      tokenManager.setTokens(data.token, data.refreshToken)
+    onSuccess: async (data) => {
+      console.log('[LOGIN] Réponse reçue ✅', {
+        id: data.id,
+        email: data.email,
+        role: data.role,
+        hasToken: !!data.token,
+        hasRefreshToken: !!data.refreshToken,
+      })
+
+      console.log('[LOGIN] Sauvegarde des tokens en cookie...')
+      await tokenManager.setTokens(data.token, data.refreshToken)
+      console.log('[LOGIN] Tokens sauvegardés ✅')
+
       setUser({
         id: data.id,
         email: data.email,
@@ -89,15 +101,25 @@ export default function LoginPage() {
         role: data.role as Role,
         companyId: data.userEnterprise?.id,
       })
+      console.log('[LOGIN] User store mis à jour ✅', { role: data.role })
 
       toast.success(t('auth.loginSuccess'))
       setError(null)
 
+      // Petite pause pour laisser le cookie s'installer avant la redirection
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       const dashboardUrl = getDefaultDashboardUrl()
+      console.log('[LOGIN] Redirection vers:', dashboardUrl)
       router.push(dashboardUrl)
     },
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || t('auth.loginFailed')
+      console.error('[LOGIN] Erreur ❌', {
+        status: error?.response?.status,
+        message: errorMessage,
+        raw: error,
+      })
       setError({ message: errorMessage })
       toast.error(errorMessage)
     },

@@ -71,10 +71,10 @@ export class TokenManager {
     if (this.token) this.persistToServer(this.token, refreshToken);
   }
 
-  public setTokens(token: string, refreshToken: string): void {
+  public async setTokens(token: string, refreshToken: string): Promise<void> {
     this.token = token;
     this.refreshToken = refreshToken;
-    this.persistToServer(token, refreshToken);
+    await this.persistToServer(token, refreshToken);
   }
 
   public clearToken(): void {
