@@ -20,7 +20,8 @@ function isAllowedOrigin(request: NextRequest): boolean {
     // Allow if origin matches the server's own host (works in dev + prod)
     const host = request.headers.get('host');
     if (host) {
-      const protocol = request.url.startsWith('https') ? 'https' : 'http';
+      const forwardedProto = request.headers.get('x-forwarded-proto');
+      const protocol = forwardedProto || (request.url.startsWith('https') ? 'https' : 'http');
       if (requestOrigin === `${protocol}://${host}`) return true;
     }
     // Fallback: explicit allow list from env

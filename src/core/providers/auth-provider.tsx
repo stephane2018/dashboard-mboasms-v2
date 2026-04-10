@@ -55,6 +55,7 @@ interface AuthContextType {
   user: User | null;
   isConnected: boolean;
   isLoadingProfile: boolean;
+  isTokenHydrated: boolean;
   updateUser: (user: User | null) => void;
   clearUser: () => void;
   getRole: () => Role | null;
@@ -68,15 +69,18 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
-  const { user, isAuthenticated, setUser, clearUser: clearUserStore, isHydrated } = useUserStore();
+  const { user, isAuthenticated, setUser, clearUser: clearUserStore, isHydrated, setTokenHydrated } = useUserStore();
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
   const [isTokenHydrated, setIsTokenHydrated] = useState(false);
 
   // Hydrate tokens from httpOnly cookies on mount -- must complete before any API call
   useEffect(() => {
-    tokenManager.hydrateFromServer().then(() => setIsTokenHydrated(true));
-  }, []);
+    tokenManager.hydrateFromServer().then(() => {
+      setIsTokenHydrated(true);
+      setTokenHydrated(true);
+    });
+  }, [setTokenHydrated]);
 
   const clearUser = useCallback(() => {
     tokenManager.clearTokens();
@@ -155,12 +159,13 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       user,
       isConnected: isAuthenticated,
       isLoadingProfile,
+      isTokenHydrated,
       updateUser,
       clearUser,
       getRole: () => user?.role || null,
       getUserInfo: () => user,
     }),
-    [user, isAuthenticated, isLoadingProfile, updateUser, clearUser]
+    [user, isAuthenticated, isLoadingProfile, isTokenHydrated, updateUser, clearUser]
   );
 
   return <AuthContext.Provider value={providerValue}>{children}</AuthContext.Provider>;

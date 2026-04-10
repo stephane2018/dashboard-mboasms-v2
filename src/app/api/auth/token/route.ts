@@ -11,7 +11,9 @@ function isAllowedOrigin(request: NextRequest): boolean {
   if (!origin && !referer) return true;
   try {
     const host = request.headers.get('host');
-    const protocol = request.url.startsWith('https') ? 'https' : 'http';
+    // Use X-Forwarded-Proto if behind a reverse proxy (Traefik/Nginx), else detect from URL
+    const forwardedProto = request.headers.get('x-forwarded-proto');
+    const protocol = forwardedProto || (request.url.startsWith('https') ? 'https' : 'http');
     const serverOrigin = host ? `${protocol}://${host}` : null;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 

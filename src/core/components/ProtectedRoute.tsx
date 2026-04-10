@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { type ReactNode } from "react"
 import { useUserStore } from "@/core/stores"
@@ -21,12 +21,11 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
 
   const router = useRouter()
-  const { user, isAuthenticated, isHydrated } = useUserStore()
-  const [isReady, setIsReady] = useState(false)
+  const { user, isAuthenticated, isHydrated, isTokenHydrated } = useUserStore()
 
   useEffect(() => {
-    // Wait for store to hydrate from localStorage
-    if (!isHydrated) {
+    // Wait for both Zustand store hydration and token hydration from httpOnly cookies
+    if (!isHydrated || !isTokenHydrated) {
       return
     }
 
@@ -67,13 +66,10 @@ export const ProtectedRoute = ({
       }
       return
     }
+  }, [isHydrated, isTokenHydrated, isAuthenticated, user, allowedRoles, redirectTo, router])
 
-    // All checks passed
-    setIsReady(true)
-  }, [isHydrated, isAuthenticated, user, allowedRoles, redirectTo, router])
-
-  // Show loading state while store is hydrating
-  if (!isHydrated) {
+  // Wait for both store hydration and token hydration before making decisions
+  if (!isHydrated || !isTokenHydrated) {
     return null
   }
 

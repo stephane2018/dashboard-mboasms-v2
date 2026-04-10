@@ -22,6 +22,7 @@ interface UserStore {
   user: User | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+  isTokenHydrated: boolean;
   actingCompanyId?: string;
   actingCompanyName?: string;
   isImpersonating: boolean;
@@ -36,6 +37,7 @@ interface UserStore {
   isSuperAdmin: () => boolean;
   isRegularUser: () => boolean;
   setHydrated: (hydrated: boolean) => void;
+  setTokenHydrated: (hydrated: boolean) => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -44,6 +46,7 @@ export const useUserStore = create<UserStore>()(
       user: null,
       isAuthenticated: false,
       isHydrated: false,
+      isTokenHydrated: false,
       actingCompanyId: undefined,
       actingCompanyName: undefined,
       isImpersonating: false,
@@ -102,6 +105,7 @@ export const useUserStore = create<UserStore>()(
       },
 
       setHydrated: (hydrated: boolean) => set({ isHydrated: hydrated }),
+      setTokenHydrated: (hydrated: boolean) => set({ isTokenHydrated: hydrated }),
     }),
     {
       name: 'user-storage',

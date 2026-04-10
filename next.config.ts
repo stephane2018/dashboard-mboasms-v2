@@ -77,6 +77,19 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
 
+  // Turbopack root to suppress workspace detection warning
+  turbopack: {
+    root: __dirname,
+  },
+
+  // Rename JS chunks so ad-blockers don't mistake long hashes for tracking IDs
+  webpack(config, { isServer, dev }) {
+    if (!isServer && !dev) {
+      config.output.chunkFilename = 'static/chunks/[contenthash:10].js';
+    }
+    return config;
+  },
+
   // Security headers for all routes
   async headers() {
     return [
