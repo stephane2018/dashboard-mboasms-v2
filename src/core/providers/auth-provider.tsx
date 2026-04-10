@@ -4,6 +4,8 @@ import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo
 import { httpClient } from "../lib/http-client";
 import { tokenManager } from "../lib/token-manager/token-manager";
 import { useUserStore } from "../stores";
+import { useEnterpriseStore } from "../stores/enterpriseStore";
+import { useLanguageStore } from "../stores/languageStore";
 import { getProfile } from "../services/auth.service";
 import type { Role } from "../config/enum";
 
@@ -84,6 +86,8 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     console.log('[AUTH] Hydratation du token depuis les cookies...')
     Promise.all([
       useUserStore.persist.rehydrate(),
+      useEnterpriseStore.persist.rehydrate(),
+      useLanguageStore.persist.rehydrate(),
       tokenManager.hydrateFromServer(),
     ]).then(() => {
       const hasToken = tokenManager.hasToken()

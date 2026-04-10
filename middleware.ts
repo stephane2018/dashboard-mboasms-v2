@@ -43,7 +43,8 @@ function isTokenValid(token: string | undefined): boolean {
   if (!payload) return false
   const exp = payload.exp
   if (typeof exp !== 'number') return true // no expiry claim → treat as valid
-  return Date.now() < exp * 1000
+  const CLOCK_SKEW_MS = 30_000
+  return Date.now() < (exp * 1000) + CLOCK_SKEW_MS
 }
 
 export function middleware(request: NextRequest) {

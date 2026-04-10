@@ -75,7 +75,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem className={`${state === 'collapsed' ? 'mx-auto' : ''}  p-2`}>
             <SidebarMenuButton size="lg" asChild className="bg-transparent!">
               <Link href="/" className={`flex ${state === 'collapsed' ? 'justify-center' : 'justify-start'} `}>
-                <Image src={logoSrc} alt="MboaSMS" fill className="rounded-sm" />
+                <div className="relative h-8 w-28">
+                  <Image src={logoSrc} alt="MboaSMS" fill className="rounded-sm object-contain" />
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

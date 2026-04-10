@@ -40,6 +40,10 @@ export const useLanguageStore = create<LanguageState>()(
     }),
     {
       name: 'mboasms-language',
+      // Skip auto-hydration: Zustand v5 with synchronous storage fires set() during render,
+      // which can cause React concurrent-mode errors. Rehydration is triggered manually
+      // in AuthProvider's useEffect via useLanguageStore.persist.rehydrate().
+      skipHydration: true,
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;

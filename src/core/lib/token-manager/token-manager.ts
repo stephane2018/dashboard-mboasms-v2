@@ -14,10 +14,6 @@ export class TokenManager {
     return TokenManager.instance;
   }
 
-  /**
-   * Hydrate tokens from httpOnly cookies via API route.
-   * Deduplicates concurrent calls — multiple callers share the same fetch.
-   */
   public async hydrateFromServer(force = false): Promise<void> {
     if (this.initialized && !force) return;
     if (typeof window === 'undefined') {
@@ -25,10 +21,24 @@ export class TokenManager {
       return;
     }
 
-    // If already hydrating, return the existing promise (dedup)
     if (this.hydrationPromise) return this.hydrationPromise;
 
-    this.hydrationPromise = this.fetchTokensFromCookies();
+    // Add 5s timeout so the app never hangs indefinitely
+    const withTimeout = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        if (!this.initialized) {
+          this.initialized = true;
+          console.warn('[TokenManager] Hydration timed out after 5s');
+        }
+        resolve();
+      }, 5000);
+    });
+
+    this.hydrationPromise = Promise.race([
+      this.fetchTokensFromCookies(),
+      withTimeout,
+    ]);
+
     try {
       await this.hydrationPromise;
     } finally {
@@ -58,9 +68,12 @@ export class TokenManager {
     return this.refreshToken;
   }
 
-  /**
-   * Store tokens in memory + persist to httpOnly cookies via API route
-   */
+  public async setTokens(token: string, refreshToken: string): Promise<void> {
+    this.token = token;
+    this.refreshToken = refreshToken;
+    await this.persistToServer(token, refreshToken);
+  }
+
   public setToken(token: string): void {
     this.token = token;
     if (this.refreshToken) this.persistToServer(token, this.refreshToken);
@@ -69,12 +82,6 @@ export class TokenManager {
   public setRefreshToken(refreshToken: string): void {
     this.refreshToken = refreshToken;
     if (this.token) this.persistToServer(this.token, refreshToken);
-  }
-
-  public async setTokens(token: string, refreshToken: string): Promise<void> {
-    this.token = token;
-    this.refreshToken = refreshToken;
-    await this.persistToServer(token, refreshToken);
   }
 
   public clearToken(): void {
@@ -103,14 +110,17 @@ export class TokenManager {
   private async persistToServer(token: string, refreshToken: string): Promise<void> {
     if (typeof window === 'undefined') return;
     try {
-      await fetch('/api/auth/session', {
+      const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({ token, refreshToken }),
       });
-    } catch {
-      // Silent fail -- tokens still in memory for current session
+      if (!res.ok) {
+        console.warn('[TokenManager] Failed to persist tokens to cookie:', res.status);
+      }
+    } catch (err) {
+      console.warn('[TokenManager] Failed to persist tokens to cookie (network error):', err);
     }
   }
 

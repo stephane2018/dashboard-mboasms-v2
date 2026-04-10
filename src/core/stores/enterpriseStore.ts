@@ -30,6 +30,9 @@ export const useEnterpriseStore = create<EnterpriseStore>()(
     }),
     {
       name: 'enterprise-storage',
+      // Skip auto-hydration: Zustand v5 with synchronous storage fires set() during render,
+      // which can cause React errors. Hydration is handled manually in AuthProvider's useEffect.
+      skipHydration: true,
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
@@ -47,7 +50,7 @@ export const useEnterpriseStore = create<EnterpriseStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.isHydrated = true;
+          state.setHydrated(true);
         }
       },
     }

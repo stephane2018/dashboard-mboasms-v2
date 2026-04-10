@@ -90,6 +90,13 @@ export default function LoginPage() {
         hasRefreshToken: !!data.refreshToken,
       })
 
+      if (!data.token || !data.refreshToken) {
+        const msg = 'Tokens manquants dans la réponse du serveur'
+        setError({ message: msg })
+        toast.error(msg)
+        return
+      }
+
       console.log('[LOGIN] Sauvegarde des tokens en cookie...')
       await tokenManager.setTokens(data.token, data.refreshToken)
       console.log('[LOGIN] Tokens sauvegardés ✅')
@@ -105,9 +112,6 @@ export default function LoginPage() {
 
       toast.success(t('auth.loginSuccess'))
       setError(null)
-
-      // Petite pause pour laisser le cookie s'installer avant la redirection
-      await new Promise(resolve => setTimeout(resolve, 100))
 
       const dashboardUrl = getDefaultDashboardUrl()
       console.log('[LOGIN] Redirection vers:', dashboardUrl)
