@@ -74,10 +74,18 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
   const [isTokenHydrated, setIsTokenHydrated] = useState(false);
 
-  // Hydrate tokens from httpOnly cookies on mount -- must complete before any API call
+  // Hydrate both Zustand store (sessionStorage) and tokens (httpOnly cookies) after mount.
+  // Both are done here in a single useEffect to avoid React Error #300:
+  // Zustand v5 with synchronous storage fires onRehydrateStorage synchronously during the
+  // first useUserStore() call (during render), which calls set() and notifies subscribers
+  // while a component is rendering. By using skipHydration:true in the store and calling
+  // rehydrate() here, we ensure all state updates happen safely after render.
   useEffect(() => {
     console.log('[AUTH] Hydratation du token depuis les cookies...')
-    tokenManager.hydrateFromServer().then(() => {
+    Promise.all([
+      useUserStore.persist.rehydrate(),
+      tokenManager.hydrateFromServer(),
+    ]).then(() => {
       const hasToken = tokenManager.hasToken()
       console.log('[AUTH] Token hydraté ✅', { hasToken })
       setIsTokenHydrated(true);

@@ -109,6 +109,12 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'user-storage',
+      // Skip auto-hydration at store creation time — Zustand v5 fires onRehydrateStorage
+      // synchronously during render with synchronous storage (sessionStorage), which calls
+      // set({ isHydrated: true }) and notifies subscribers while a component is rendering,
+      // causing React Error #300. Instead, AuthProvider manually calls
+      // useUserStore.persist.rehydrate() inside a useEffect (after render).
+      skipHydration: true,
       // Exclude runtime-only flags from sessionStorage — they must always start false
       // isHydrated: set by onRehydrateStorage callback after rehydration completes
       // isTokenHydrated: set by AuthProvider after hydrateFromServer() async call
