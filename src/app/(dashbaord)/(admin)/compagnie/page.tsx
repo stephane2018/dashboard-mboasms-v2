@@ -20,6 +20,7 @@ import { useT } from "@/core/hooks"
 import type { EnterpriseType } from "@/core/models/company"
 
 import { getColumns } from "./_components/companies-table-columns"
+
 import { CompanyFormModal } from "./_components/company-form-modal"
 import { AddUserModal } from "./_components/add-user-modal"
 import { CreditModal } from "./_components/credit-modal"
@@ -118,11 +119,11 @@ export default function CompagniePage() {
 
   const columns = useMemo(
     () =>
-      getColumns({
-        onAddUser: handleAddUser,
-        onCredit: handleCredit,
-        onDelete: handleDeleteCompany,
-      }),
+      getColumns(
+        { onAddUser: handleAddUser, onCredit: handleCredit, onDelete: handleDeleteCompany },
+        t
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

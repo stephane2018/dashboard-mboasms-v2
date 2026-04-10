@@ -16,6 +16,7 @@ import { useUserStore } from "@/core/stores/userStore"
 import { useLoginAs } from "@/core/hooks/useLogin"
 import { useT } from "@/core/hooks"
 
+
 // Component for actions cell to use hooks
 function ActionsCell({ company, onAddUser, onCredit, onDelete }: { 
   company: EnterpriseType
@@ -86,9 +87,8 @@ interface CompaniesTableColumnsProps {
   onDelete: (company: EnterpriseType) => void
 }
 
-export function getColumnsWithRouter(
+export function getColumns(
   { onAddUser, onCredit, onDelete }: CompaniesTableColumnsProps,
-  router: ReturnType<typeof useRouter>,
   t: (key: string) => string
 ): ColumnDef<EnterpriseType>[] {
   return [
@@ -162,8 +162,3 @@ export function getColumnsWithRouter(
   ]
 }
 
-export function getColumns(props: CompaniesTableColumnsProps): ColumnDef<EnterpriseType>[] {
-  const router = useRouter()
-  const { t } = useT()
-  return getColumnsWithRouter(props, router, t)
-}
