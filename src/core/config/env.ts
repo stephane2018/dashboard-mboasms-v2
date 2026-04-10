@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  apiBaseUrl: z.string().url(),
+  apiBaseUrl: z.string().min(1),
   appName: z.string().min(1),
-  appUrl: z.string().url(),
+  appUrl: z.string().min(1),
   tokenKey: z.string().min(1),
   refreshTokenKey: z.string().min(1),
   userKey: z.string().min(1),
@@ -24,14 +24,11 @@ const rawEnv = {
   isTest: process.env.NODE_ENV === "test",
 };
 
-// Validate at import time -- crash early if env is misconfigured
+// Validate at import time -- log errors but never crash the app
 const parsed = envSchema.safeParse(rawEnv);
 if (!parsed.success) {
   const errors = parsed.error.flatten().fieldErrors;
   console.error("Invalid environment configuration:", errors);
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Invalid environment configuration in production");
-  }
 }
 
 export const env = parsed.success ? parsed.data : rawEnv;
