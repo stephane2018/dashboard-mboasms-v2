@@ -4,6 +4,7 @@
 // Must include its own <html>, <head>, and <body> tags with inline styles only.
 
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string }
@@ -78,12 +79,44 @@ export default function GlobalError({
             <p
               style={{
                 color: "#6b7280",
-                marginBottom: "2rem",
+                marginBottom: "1rem",
                 lineHeight: 1.6,
               }}
             >
               {"Une erreur inattendue s'est produite. Veuillez r\u00e9essayer ou retourner \u00e0 l'accueil."}
             </p>
+
+            {/* DEBUG — retirer avant la mise en prod finale */}
+            <details
+              style={{
+                marginBottom: "1.5rem",
+                textAlign: "left",
+                background: "#1f2937",
+                borderRadius: "0.5rem",
+                padding: "0.75rem 1rem",
+                cursor: "pointer",
+              }}
+            >
+              <summary style={{ color: "#f87171", fontWeight: 600, fontSize: "0.875rem" }}>
+                Détails de l&apos;erreur (debug)
+              </summary>
+              <pre
+                style={{
+                  marginTop: "0.5rem",
+                  color: "#fca5a5",
+                  fontSize: "0.75rem",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-all",
+                  overflowY: "auto",
+                  maxHeight: "200px",
+                }}
+              >
+                {error?.message}
+                {"\n\n"}
+                {error?.stack}
+                {error?.digest ? `\n\nDigest: ${error.digest}` : ""}
+              </pre>
+            </details>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <button
