@@ -36,6 +36,15 @@ interface ProfileApiResponse {
 }
 
 // Map API response to User format
+/** Returns true only if the profile has the minimum required string fields. */
+function isValidProfile(profile: ProfileApiResponse): boolean {
+  return (
+    typeof profile.id === 'string' && profile.id.length > 0 &&
+    typeof profile.email === 'string' && profile.email.length > 0 &&
+    typeof profile.role === 'string' && profile.role.length > 0
+  );
+}
+
 function mapProfileToUser(profile: ProfileApiResponse): User {
   // Build name from firstName + lastName if name is not provided
   const name = profile.name ||
@@ -142,10 +151,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       setIsLoadingProfile(true);
       try {
         const profileData = await getProfile() as ProfileApiResponse | null;
-        if (profileData && profileData.id && profileData.email) {
+        if (profileData && isValidProfile(profileData)) {
           const mappedUser = mapProfileToUser(profileData);
           setUser(mappedUser);
         } else {
+          // Response present but fields corrupted (null/object) → don't store invalid user
           clearUser();
         }
       } catch (error: any) {

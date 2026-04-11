@@ -30,14 +30,18 @@ export const ProtectedRoute = ({
     if (!isHydrated || !isTokenHydrated) return
     if (hasToken && !user) return
 
-    if (!isAuthenticated || !user) {
+    const userValid =
+      user &&
+      typeof user.id === 'string' && user.id.length > 0 &&
+      typeof user.email === 'string' && user.email.length > 0 &&
+      typeof user.role === 'string' && user.role.length > 0
+
+    if (!isAuthenticated || !userValid) {
       router.push(redirectTo)
       return
     }
 
-    if (!user.role) return
-
-    const normalizedRole = normalizeRole(user.role)
+    const normalizedRole = normalizeRole(user!.role)
     const allowedUserRoles = allowedRoles.map(role => normalizeRole(role))
 
     if (!allowedUserRoles.includes(normalizedRole)) {
@@ -59,11 +63,18 @@ export const ProtectedRoute = ({
     )
   }
 
-  if (!isAuthenticated || !user || !user.role) {
+  // Reject user if critical fields are missing or not valid strings (corrupted API response)
+  const isUserValid =
+    user &&
+    typeof user.id === 'string' && user.id.length > 0 &&
+    typeof user.email === 'string' && user.email.length > 0 &&
+    typeof user.role === 'string' && user.role.length > 0
+
+  if (!isAuthenticated || !isUserValid) {
     return null
   }
 
-  const normalizedRole = normalizeRole(user.role)
+  const normalizedRole = normalizeRole(user!.role)
   const allowedUserRoles = allowedRoles.map(role => normalizeRole(role))
 
   if (!allowedUserRoles.includes(normalizedRole)) {

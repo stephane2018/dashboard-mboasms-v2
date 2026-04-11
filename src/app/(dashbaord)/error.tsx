@@ -11,11 +11,14 @@ export default function DashboardError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('[DASHBOARD ERROR]', {
-      message: error.message,
-      digest: error.digest,
-      stack: error.stack,
-    })
+    // Log full error details in dev to help identify the crashing component
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[DASHBOARD ERROR]', {
+        message: error.message,
+        digest: error.digest,
+        stack: error.stack,
+      })
+    }
   }, [error])
 
   return (
