@@ -17,4 +17,33 @@ Sentry.init({
   sendDefaultPii: true,
 });
 
+// Forward console.log / warn / error to Sentry Logs so they appear in the Sentry dashboard
+function serializeArgs(args: unknown[]): string {
+  return args
+    .map((a) => {
+      if (typeof a === 'string') return a;
+      try { return JSON.stringify(a); } catch { return String(a); }
+    })
+    .join(' ');
+}
+
+const _log = console.log.bind(console);
+const _warn = console.warn.bind(console);
+const _error = console.error.bind(console);
+
+console.log = (...args: unknown[]) => {
+  _log(...args);
+  Sentry.logger.info(serializeArgs(args));
+};
+
+console.warn = (...args: unknown[]) => {
+  _warn(...args);
+  Sentry.logger.warn(serializeArgs(args));
+};
+
+console.error = (...args: unknown[]) => {
+  _error(...args);
+  Sentry.logger.error(serializeArgs(args));
+};
+
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
