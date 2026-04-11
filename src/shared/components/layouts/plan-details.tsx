@@ -29,12 +29,12 @@ export function PlanDetails() {
   const mostRecentRecharge = recharges?.filter(r => r.status === 'VALIDE')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
 
-  const smsBalance = enterprise?.smsCredit ?? 0
-  const smsQuota = mostRecentRecharge?.qteMessage ?? 0
-  const planName = user.planName ?? 'Plan Business'
+  const smsBalance = typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : 0
+  const smsQuota = typeof mostRecentRecharge?.qteMessage === 'number' ? mostRecentRecharge.qteMessage : 0
+  const planName = typeof user.planName === 'string' ? user.planName : 'Plan Business'
   const usagePercent = smsQuota > 0 ? Math.max(0, Math.min(100, 100 - (smsBalance / smsQuota) * 100)) : 100
 
-  const internationalBalance = enterprise?.internationalCredit ?? 0
+  const internationalBalance = typeof enterprise?.internationalCredit === 'number' ? enterprise.internationalCredit : 0
 
   const handleRecharge = async (data: RechargeFormData) => {
     if (!user?.companyId) {
