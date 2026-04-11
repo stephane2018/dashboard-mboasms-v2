@@ -34,11 +34,9 @@ export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean }
   }, [enterpriseId])
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      effectCount.current++
-      console.log(`[useGroups] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId })
-      if (effectCount.current > 15) console.error('[useGroups] POSSIBLE LOOP - useEffect fires too many times')
-    }
+    effectCount.current++
+    console.log(`[useGroups] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId })
+    if (effectCount.current > 15) console.error('[useGroups] POSSIBLE LOOP - useEffect fires too many times')
     if (autoLoad && enterpriseId) {
       loadGroups()
     }

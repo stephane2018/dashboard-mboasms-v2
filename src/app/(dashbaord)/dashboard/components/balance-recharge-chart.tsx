@@ -91,11 +91,9 @@ export function BalanceRechargeChart() {
   });
 
   React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      chartEffectCount.current++
-      console.log(`[BalanceRechargeChart] useEffect fires #${chartEffectCount.current}`, { period, status, startDateISO, endDateISO })
-      if (chartEffectCount.current > 15) console.error('[BalanceRechargeChart] POSSIBLE LOOP - useEffect fires too many times')
-    }
+    chartEffectCount.current++
+    console.log(`[BalanceRechargeChart] useEffect fires #${chartEffectCount.current}`, { period, status, startDateISO, endDateISO })
+    if (chartEffectCount.current > 15) console.error('[BalanceRechargeChart] POSSIBLE LOOP - useEffect fires too many times')
     loadRechargeTimeline();
   }, [period, status, startDateISO, endDateISO, loadRechargeTimeline]);
 

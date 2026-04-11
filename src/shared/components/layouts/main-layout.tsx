@@ -92,11 +92,9 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
 
   // Hydrate acting company from sessionStorage (e.g., after impersonation)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      actingCompanyEffectCount.current++
-      console.log(`[MainLayout] actingCompany useEffect fires #${actingCompanyEffectCount.current}`)
-      if (actingCompanyEffectCount.current > 3) console.error('[MainLayout] POSSIBLE LOOP - actingCompany useEffect fires too many times (setActingCompany ref unstable?)')
-    }
+    actingCompanyEffectCount.current++
+    console.log(`[MainLayout] actingCompany useEffect fires #${actingCompanyEffectCount.current}`)
+    if (actingCompanyEffectCount.current > 3) console.error('[MainLayout] POSSIBLE LOOP - actingCompany useEffect fires too many times (setActingCompany ref unstable?)')
     const storedId = sessionStorage.getItem("actingCompanyId")
     const storedName = sessionStorage.getItem("actingCompanyName")
     if (storedId) {

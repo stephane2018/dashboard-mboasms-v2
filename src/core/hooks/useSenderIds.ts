@@ -59,11 +59,9 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
   }, [enterpriseId, loadAll, options.status, options.page, options.size])
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      effectCount.current++
-      console.log(`[useSenderIds] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId, loadAll, status: options.status, page: options.page, size: options.size })
-      if (effectCount.current > 15) console.error('[useSenderIds] POSSIBLE LOOP - useEffect fires too many times')
-    }
+    effectCount.current++
+    console.log(`[useSenderIds] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId, loadAll, status: options.status, page: options.page, size: options.size })
+    if (effectCount.current > 15) console.error('[useSenderIds] POSSIBLE LOOP - useEffect fires too many times')
     if (autoLoad && (enterpriseId || loadAll)) {
       loadSenderIds()
     }
