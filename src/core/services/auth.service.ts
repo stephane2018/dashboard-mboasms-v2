@@ -99,12 +99,33 @@ export async function login(credentials: LoginCredentials) {
   return validated;
 }
 
+/** Decode the email from a JWT payload without verifying the signature. */
+function getEmailFromToken(token: string): string | null {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    const email = decoded?.email || decoded?.sub || null;
+    return typeof email === 'string' && email.includes('@') ? email : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getProfile(): Promise<ProfileResponse> {
-  const response = await httpClient.get<unknown>('/api/v1/auth/profile');
+  const token = tokenManager.getToken();
+  const email = token ? getEmailFromToken(token) : null;
+
+  if (!email) {
+    console.error('[getProfile] Cannot extract email from token — aborting profile fetch');
+    throw new Error('Email introuvable dans le token');
+  }
+
+  const encodedEmail = encodeURIComponent(email);
+  const response = await httpClient.get<unknown>(`/api/v1/auth/${encodedEmail}`);
 
   const parsed = ProfileSchema.safeParse(response);
   if (!parsed.success) {
-    // Log exact fields that failed so we can diagnose schema mismatches
     console.error('[getProfile] Zod validation failed:', parsed.error.issues);
     console.error('[getProfile] Raw API response:', JSON.stringify(response));
     throw new Error('Réponse profil invalide');
