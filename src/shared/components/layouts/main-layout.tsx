@@ -70,7 +70,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
     setMounted(true)
   }, [])
 
-  const userDisplayName = user?.name || user?.email || t('layout.user')
+  const userDisplayName = (typeof user?.name === 'string' ? user.name : null) || (typeof user?.email === 'string' ? user.email : null) || t('layout.user')
   const userInitials = userDisplayName
     .split(" ")
     .map((part) => part[0])

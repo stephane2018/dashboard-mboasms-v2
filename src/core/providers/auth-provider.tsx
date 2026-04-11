@@ -46,18 +46,23 @@ function isValidProfile(profile: ProfileApiResponse): boolean {
 }
 
 function mapProfileToUser(profile: ProfileApiResponse): User {
-  // Build name from firstName + lastName if name is not provided
-  const name = profile.name ||
-    [profile.firstName, profile.lastName].filter(Boolean).join(' ') ||
-    'Utilisateur';
+  // Ensure each field is a plain string — API may return objects or null in prod
+  const rawName = typeof profile.name === 'string' ? profile.name : null;
+  const rawFirst = typeof profile.firstName === 'string' ? profile.firstName : null;
+  const rawLast = typeof profile.lastName === 'string' ? profile.lastName : null;
+  const name = rawName || [rawFirst, rawLast].filter(Boolean).join(' ') || 'Utilisateur';
+
+  if (!rawName && !rawFirst && !rawLast) {
+    console.error('[AuthProvider] mapProfileToUser: name fields missing or not strings. profile.name:', typeof profile.name, '| firstName:', typeof profile.firstName, '| lastName:', typeof profile.lastName);
+  }
 
   return {
     id: profile.id,
     email: profile.email,
     name,
     role: profile.role,
-    avatar: profile.avatar,
-    phone: profile.phone,
+    avatar: typeof profile.avatar === 'string' ? profile.avatar : undefined,
+    phone: typeof profile.phone === 'string' ? profile.phone : undefined,
     companyId: profile.companyId || profile.userEnterprise?.id,
   };
 }

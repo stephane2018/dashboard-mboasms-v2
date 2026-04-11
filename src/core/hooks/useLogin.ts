@@ -56,24 +56,29 @@ function mapLoginResponseToUser(response: LoginApiResponse) {
   // Check if user data is nested or at root level
   const userData = response.user || response
 
-  // Build name from firstName + lastName if name is not provided
-  const name = userData.name ||
-    [userData.firstName, userData.lastName].filter(Boolean).join(' ') ||
-    'Utilisateur'
+  // Ensure each field is a plain string — API may return objects or null in prod
+  const rawName = typeof userData.name === 'string' ? userData.name : null;
+  const rawFirst = typeof userData.firstName === 'string' ? userData.firstName : null;
+  const rawLast = typeof userData.lastName === 'string' ? userData.lastName : null;
+  const name = rawName || [rawFirst, rawLast].filter(Boolean).join(' ') || 'Utilisateur';
+
+  if (!rawName && !rawFirst && !rawLast) {
+    console.error('[useLogin] mapLoginResponseToUser: name fields missing or not strings. name:', typeof userData.name, '| firstName:', typeof userData.firstName, '| lastName:', typeof userData.lastName);
+  }
 
   return {
-    id: userData.id || '',
-    email: userData.email || '',
+    id: typeof userData.id === 'string' ? userData.id : '',
+    email: typeof userData.email === 'string' ? userData.email : '',
     name,
     role: userData.role as Role,
-    avatar: userData.avatar,
-    phone: userData.phone,
+    avatar: typeof userData.avatar === 'string' ? userData.avatar : undefined,
+    phone: typeof userData.phone === 'string' ? userData.phone : undefined,
     companyId: userData.companyId || response.userEnterprise?.id,
-    smsSenderId: userData.smsSenderId,
+    smsSenderId: typeof userData.smsSenderId === 'string' ? userData.smsSenderId : undefined,
     isSenderIdVerified: userData.isSenderIdVerified,
     smsBalance: userData.smsBalance,
     smsQuota: userData.smsQuota,
-    planName: userData.planName,
+    planName: typeof userData.planName === 'string' ? userData.planName : undefined,
   }
 }
 

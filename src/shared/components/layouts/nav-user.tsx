@@ -40,8 +40,8 @@ export function NavUser() {
     return null
   }
 
-  const userEmail = user.email
-  const userName = user.name
+  const userEmail = typeof user.email === 'string' ? user.email : ''
+  const userName = typeof user.name === 'string' ? user.name : userEmail || 'Utilisateur'
   const userAvatar = enterprise?.urlImage
 
   const onLogout = () => {
