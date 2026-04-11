@@ -154,6 +154,14 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     if (hasFetchedProfile) return;
 
     const syncUserProfile = async () => {
+      // If the user just logged in, data is already fresh — skip the sync and clear the flag
+      if (sessionStorage.getItem('profile-fresh') === '1') {
+        sessionStorage.removeItem('profile-fresh')
+        console.log('[AuthProvider] profile-fresh flag detected — skipping sync (just logged in)')
+        setHasFetchedProfile(true)
+        return
+      }
+
       const token = tokenManager.getToken();
 
       // No token → not authenticated, nothing to do

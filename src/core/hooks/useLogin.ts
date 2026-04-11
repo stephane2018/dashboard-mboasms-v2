@@ -97,6 +97,8 @@ export function useLogin() {
       // Save user data to store only if the three required fields are valid strings
       if (mappedUser.id && mappedUser.email && mappedUser.role) {
         setUser(mappedUser)
+        // Mark data as fresh so AuthProvider skips the profile sync on next render
+        sessionStorage.setItem('profile-fresh', '1')
         console.log('[useLogin] user stored in store')
       } else {
         console.error('[useLogin] user NOT stored - missing fields. id:', mappedUser.id, '| email:', mappedUser.email, '| role:', mappedUser.role)
