@@ -144,11 +144,17 @@ export const useUserStore = create<UserStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Do NOT validate token here — tokenManager stores tokens in memory
-          // and hydrateFromServer() (which loads them from httpOnly cookies)
-          // runs later in AuthProvider. Checking here would always find null
-          // tokens and incorrectly clear the user.
-          // Token validation is handled by AuthProvider after hydration.
+          // Discard corrupted user data loaded from sessionStorage (e.g. fields are null
+          // or wrong type from a previous broken session / API response).
+          // Token validation is handled separately by AuthProvider after hydration.
+          const u = state.user;
+          if (u && (
+            typeof u.id !== 'string' || !u.id ||
+            typeof u.email !== 'string' || !u.email ||
+            typeof u.role !== 'string' || !u.role
+          )) {
+            state.clearUser();
+          }
           state.setHydrated(true);
         }
       },
