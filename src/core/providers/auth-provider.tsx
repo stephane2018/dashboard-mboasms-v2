@@ -153,14 +153,17 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
         const profileData = await getProfile() as ProfileApiResponse | null;
         if (profileData && isValidProfile(profileData)) {
           const mappedUser = mapProfileToUser(profileData);
+          console.log('[AuthProvider] profile valid, user stored:', { id: mappedUser.id, email: mappedUser.email, role: mappedUser.role });
           setUser(mappedUser);
         } else {
           // Response present but fields corrupted (null/object) → don't store invalid user
+          console.error('[AuthProvider] profile invalid or null - clearing user. profileData:', JSON.stringify(profileData));
           clearUser();
         }
       } catch (error: any) {
         // Only clear user on auth errors (401/403) - not on transient network issues
         const status = error?.response?.status;
+        console.error('[AuthProvider] profile fetch error - status:', status, '| message:', error?.message);
         if (status === 401 || status === 403) {
           clearUser();
         } else if (!user) {

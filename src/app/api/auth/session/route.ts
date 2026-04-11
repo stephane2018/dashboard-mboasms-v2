@@ -36,6 +36,7 @@ function isAllowedOrigin(request: NextRequest): boolean {
 // POST: Store tokens in httpOnly cookies
 export async function POST(request: NextRequest) {
   if (!isAllowedOrigin(request)) {
+    console.error('[api/auth/session POST] 403 Forbidden - origin not allowed:', request.headers.get('origin'), '| host:', request.headers.get('host'));
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -44,12 +45,14 @@ export async function POST(request: NextRequest) {
     const { token, refreshToken } = body;
 
     if (!token || !refreshToken || typeof token !== 'string' || typeof refreshToken !== 'string') {
+      console.error('[api/auth/session POST] 400 - missing/invalid tokens. token type:', typeof token, '| refreshToken type:', typeof refreshToken);
       return NextResponse.json({ error: 'Missing or invalid tokens' }, { status: 400 });
     }
 
     // Validate JWT format (3 base64url segments separated by dots)
     const jwtRegex = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
     if (!jwtRegex.test(token) || !jwtRegex.test(refreshToken)) {
+      console.error('[api/auth/session POST] 400 - invalid JWT format');
       return NextResponse.json({ error: 'Invalid token format' }, { status: 400 });
     }
 
@@ -65,8 +68,10 @@ export async function POST(request: NextRequest) {
       maxAge: 7 * 24 * 60 * 60, // 7 days for refresh token
     });
 
+    console.log('[api/auth/session POST] tokens stored in httpOnly cookies');
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error('[api/auth/session POST] unexpected error:', err);
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 }
@@ -74,6 +79,7 @@ export async function POST(request: NextRequest) {
 // DELETE: Clear token cookies
 export async function DELETE(request: NextRequest) {
   if (!isAllowedOrigin(request)) {
+    console.error('[api/auth/session DELETE] 403 Forbidden - origin not allowed:', request.headers.get('origin'));
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -81,5 +87,6 @@ export async function DELETE(request: NextRequest) {
   cookieStore.set(TOKEN_COOKIE, '', { ...COOKIE_OPTIONS, maxAge: 0 });
   cookieStore.set(REFRESH_COOKIE, '', { ...COOKIE_OPTIONS, maxAge: 0 });
 
+  console.log('[api/auth/session DELETE] tokens cleared');
   return NextResponse.json({ success: true });
 }

@@ -37,6 +37,7 @@ function isAllowedOrigin(request: NextRequest): boolean {
 // Protected by origin check to prevent cross-origin token theft
 export async function GET(request: NextRequest) {
   if (!isAllowedOrigin(request)) {
+    console.error('[api/auth/token GET] 403 Forbidden - origin not allowed:', request.headers.get('origin'), '| referer:', request.headers.get('referer'), '| host:', request.headers.get('host'));
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -44,5 +45,6 @@ export async function GET(request: NextRequest) {
   const token = cookieStore.get(TOKEN_COOKIE)?.value || null;
   const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value || null;
 
+  console.log('[api/auth/token GET] token found:', !!token, '| refreshToken found:', !!refreshToken);
   return NextResponse.json({ token, refreshToken });
 }

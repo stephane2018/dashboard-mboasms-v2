@@ -87,10 +87,14 @@ export function useLogin() {
     onSuccess: async (response) => {
       // Map API response to user format
       const mappedUser = mapLoginResponseToUser(response)
+      console.log('[useLogin] login response mapped:', { id: mappedUser.id, email: mappedUser.email, role: mappedUser.role, companyId: mappedUser.companyId })
 
       // Save user data to store only if the three required fields are valid strings
       if (mappedUser.id && mappedUser.email && mappedUser.role) {
         setUser(mappedUser)
+        console.log('[useLogin] user stored in store')
+      } else {
+        console.error('[useLogin] user NOT stored - missing fields. id:', mappedUser.id, '| email:', mappedUser.email, '| role:', mappedUser.role)
       }
 
       // Fetch and save enterprise data if user has a company
@@ -98,7 +102,9 @@ export function useLogin() {
         try {
           const enterpriseData = await getCompagnieConnectedDetails(mappedUser.companyId)
           setEnterprise(enterpriseData)
+          console.log('[useLogin] enterprise stored:', mappedUser.companyId)
         } catch (error) {
+          console.error('[useLogin] enterprise fetch failed:', error)
         }
       }
 
