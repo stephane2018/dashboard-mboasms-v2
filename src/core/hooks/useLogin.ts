@@ -88,8 +88,8 @@ export function useLogin() {
       // Map API response to user format
       const mappedUser = mapLoginResponseToUser(response)
 
-      // Save user data to store
-      if (mappedUser.id && mappedUser.email) {
+      // Save user data to store only if the three required fields are valid strings
+      if (mappedUser.id && mappedUser.email && mappedUser.role) {
         setUser(mappedUser)
       }
 
