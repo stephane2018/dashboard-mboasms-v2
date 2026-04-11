@@ -99,8 +99,8 @@ export async function login(credentials: LoginCredentials) {
   return validated;
 }
 
-/** Decode the email from a JWT payload without verifying the signature. */
-function getEmailFromToken(token: string): string | null {
+/** Decode the email from a JWT payload without verifying the signature (fallback only). */
+export function getEmailFromToken(token: string): string | null {
   try {
     const payload = token.split('.')[1];
     if (!payload) return null;
@@ -112,15 +112,7 @@ function getEmailFromToken(token: string): string | null {
   }
 }
 
-export async function getProfile(): Promise<ProfileResponse> {
-  const token = tokenManager.getToken();
-  const email = token ? getEmailFromToken(token) : null;
-
-  if (!email) {
-    console.error('[getProfile] Cannot extract email from token — aborting profile fetch');
-    throw new Error('Email introuvable dans le token');
-  }
-
+export async function getProfile(email: string): Promise<ProfileResponse> {
   const encodedEmail = encodeURIComponent(email);
   const response = await httpClient.get<unknown>(`/api/v1/auth/${encodedEmail}`);
 

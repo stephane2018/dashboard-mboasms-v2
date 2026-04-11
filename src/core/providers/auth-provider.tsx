@@ -6,7 +6,7 @@ import { tokenManager } from "../lib/token-manager/token-manager";
 import { useUserStore } from "../stores";
 import { useEnterpriseStore } from "../stores/enterpriseStore";
 import { useLanguageStore } from "../stores/languageStore";
-import { getProfile } from "../services/auth.service";
+import { getProfile, getEmailFromToken } from "../services/auth.service";
 import type { Role } from "../config/enum";
 
 interface User {
@@ -141,64 +141,87 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
   }, [clearUser]);
 
-  // Fetch profile if token exists but user is not in store
+  // Sync profile from API after hydration:
+  // - If user is in sessionStorage: use their email to fetch & compare (handles profile updates)
+  // - If no user but token exists: decode email from JWT to fetch & store
+  // - Only update the store if the fetched data differs from what's cached
   useEffect(() => {
     profileEffectCount.current++
     console.log(`[AuthProvider] profile useEffect fires #${profileEffectCount.current}`, { isHydrated, isTokenHydrated, hasUser: !!user, hasFetchedProfile })
     if (profileEffectCount.current > 10) console.error('[AuthProvider] POSSIBLE LOOP - profile useEffect fires too many times')
-    // Wait for both store and token hydration before making decisions
-    if (!isHydrated || !isTokenHydrated) {
-      return;
-    }
 
-    const fetchUserProfile = async () => {
+    if (!isHydrated || !isTokenHydrated) return;
+    if (hasFetchedProfile) return;
+
+    const syncUserProfile = async () => {
       const token = tokenManager.getToken();
 
-      // Skip if we already have a user or already attempted fetch
-      if (user || hasFetchedProfile) {
+      // No token → not authenticated, nothing to do
+      if (!token) {
+        setHasFetchedProfile(true);
         return;
       }
 
-      // No token = no fetch needed
-      if (!token) {
+      // Resolve email: prefer sessionStorage user, fallback to JWT payload
+      const email = user?.email || getEmailFromToken(token);
+      if (!email) {
+        console.error('[AuthProvider] No email available (no user in session, no email in JWT)');
         setHasFetchedProfile(true);
         return;
       }
 
       setIsLoadingProfile(true);
       try {
-        const profileData = await getProfile() as ProfileApiResponse | null;
-        if (profileData && isValidProfile(profileData)) {
-          const mappedUser = mapProfileToUser(profileData);
-          console.log('[AuthProvider] profile valid, user stored:', { id: mappedUser.id, email: mappedUser.email, role: mappedUser.role });
-          setUser(mappedUser);
+        const profileData = await getProfile(email) as ProfileApiResponse | null;
+
+        if (!profileData || !isValidProfile(profileData)) {
+          console.error('[AuthProvider] profile invalid or null:', JSON.stringify(profileData));
+          // If we have a cached user, keep it — bad response doesn't mean session is invalid
+          if (!user) clearUser();
+          return;
+        }
+
+        const fetched = mapProfileToUser(profileData);
+
+        // If no cached user, store directly
+        if (!user) {
+          console.log('[AuthProvider] no cached user — storing fetched profile:', { id: fetched.id, email: fetched.email, role: fetched.role });
+          setUser(fetched);
+          return;
+        }
+
+        // Compare fetched data with cached — update only if something changed
+        const hasChanged =
+          fetched.id !== user.id ||
+          fetched.email !== user.email ||
+          fetched.name !== user.name ||
+          fetched.role !== user.role ||
+          fetched.avatar !== user.avatar ||
+          fetched.phone !== user.phone ||
+          fetched.companyId !== user.companyId;
+
+        if (hasChanged) {
+          console.log('[AuthProvider] profile changed — updating store', { before: { name: user.name, role: user.role }, after: { name: fetched.name, role: fetched.role } });
+          setUser(fetched);
         } else {
-          // Response present but fields corrupted (null/object) → don't store invalid user
-          console.error('[AuthProvider] profile invalid or null - clearing user. profileData:', JSON.stringify(profileData));
-          clearUser();
+          console.log('[AuthProvider] profile unchanged — keeping cached user');
         }
       } catch (error: any) {
-        // Only clear user on auth errors (401/403) - not on transient network issues
         const status = error?.response?.status;
         console.error('[AuthProvider] profile fetch error - status:', status, '| message:', error?.message);
         if (status === 401 || status === 403) {
           clearUser();
-        } else if (!user) {
-          // Profile fetch failed with a non-HTTP error (e.g. Zod schema mismatch) and
-          // there's no cached user in the store. We can't show the dashboard without a user,
-          // so clear everything to let ProtectedRoute redirect to login instead of blank page.
-          clearUser();
         }
-        // For other errors (network, 500, etc.) when a cached user exists, keep it —
-        // they'll get a proper error on their next API call
+        // For other errors (500, network, etc.): keep the cached user if any
+        if (!user) clearUser();
       } finally {
         setIsLoadingProfile(false);
         setHasFetchedProfile(true);
       }
     };
 
-    fetchUserProfile();
-  }, [isHydrated, isTokenHydrated, user, hasFetchedProfile, setUser, clearUser]);
+    syncUserProfile();
+  }, [isHydrated, isTokenHydrated, hasFetchedProfile, setUser, clearUser]);
 
   const providerValue = useMemo(
     () => ({
