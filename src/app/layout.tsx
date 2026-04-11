@@ -5,7 +5,8 @@ import { QueryProvider } from "@/core/providers/query-provider";
 import { AuthProvider } from "@/core/providers/auth-provider";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/shared/components/theme-provider";
-import { SuppressScriptWarning } from "@/shared/components/suppress-script-warning";
+import { SuppressScriptWarning } from "@/shared/components/suppress-script-warning"
+import { ClientErrorReporter } from "@/shared/components/client-error-reporter";
 import '@/core/lib/i18n';
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SuppressScriptWarning />
+        <ClientErrorReporter />
         <QueryProvider>
           <AuthProvider>
             <ThemeProvider
