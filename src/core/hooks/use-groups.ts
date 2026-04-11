@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { i18next } from "@/core/lib/i18n"
 import { useAuthContext } from "@/core/providers"
 import { groupsService } from "@/core/services/groups.service"
@@ -14,6 +14,8 @@ export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean }
   const [groups, setGroups] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const effectCount = useRef(0)
 
   const loadGroups = useCallback(async () => {
     if (!enterpriseId) return
@@ -32,6 +34,11 @@ export function useGroups(options: { enterpriseId?: string; autoLoad?: boolean }
   }, [enterpriseId])
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      effectCount.current++
+      console.log(`[useGroups] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId })
+      if (effectCount.current > 15) console.error('[useGroups] POSSIBLE LOOP - useEffect fires too many times')
+    }
     if (autoLoad && enterpriseId) {
       loadGroups()
     }

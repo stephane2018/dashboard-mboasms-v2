@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useState } from "react";
+import { createContext, type ReactNode, type FC, useCallback, useEffect, useMemo, useContext, useRef, useState } from "react";
 import { httpClient } from "../lib/http-client";
 import { tokenManager } from "../lib/token-manager/token-manager";
 import { useUserStore } from "../stores";
@@ -89,6 +89,9 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
   const [isTokenHydrated, setIsTokenHydrated] = useState(false);
+  const hydrateEffectCount = useRef(0);
+  const interceptorEffectCount = useRef(0);
+  const profileEffectCount = useRef(0);
 
   // Hydrate both Zustand store (sessionStorage) and tokens (httpOnly cookies) after mount.
   // Both are done here in a single useEffect to avoid React Error #300:
@@ -97,6 +100,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   // while a component is rendering. By using skipHydration:true in the store and calling
   // rehydrate() here, we ensure all state updates happen safely after render.
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      hydrateEffectCount.current++
+      console.log(`[AuthProvider] hydrate useEffect fires #${hydrateEffectCount.current}`)
+      if (hydrateEffectCount.current > 3) console.error('[AuthProvider] POSSIBLE LOOP - hydrate useEffect fires too many times')
+    }
     Promise.all([
       useUserStore.persist.rehydrate(),
       useEnterpriseStore.persist.rehydrate(),
@@ -123,6 +131,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   // Register interceptor for unauthorized responses
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      interceptorEffectCount.current++
+      console.log(`[AuthProvider] interceptor useEffect fires #${interceptorEffectCount.current} (clearUser ref changed)`)
+      if (interceptorEffectCount.current > 5) console.error('[AuthProvider] POSSIBLE LOOP - interceptor useEffect fires too many times')
+    }
     const interceptorId = httpClient.catchUnauthorizedResponse(clearUser);
 
     return () => {
@@ -134,6 +147,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   // Fetch profile if token exists but user is not in store
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      profileEffectCount.current++
+      console.log(`[AuthProvider] profile useEffect fires #${profileEffectCount.current}`, { isHydrated, isTokenHydrated, hasUser: !!user, hasFetchedProfile })
+      if (profileEffectCount.current > 10) console.error('[AuthProvider] POSSIBLE LOOP - profile useEffect fires too many times')
+    }
     // Wait for both store and token hydration before making decisions
     if (!isHydrated || !isTokenHydrated) {
       return;

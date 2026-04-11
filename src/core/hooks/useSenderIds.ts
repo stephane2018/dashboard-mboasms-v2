@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useAuthContext } from "@/core/providers"
 import { senderIdService } from "@/core/services/sender-id.service"
 import type { SenderId, PaginatedSenderIds, SenderIdQueryParams } from "@/modules/sender-id/types"
@@ -23,6 +23,8 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
   const [arrayData, setArrayData] = useState<SenderId[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const effectCount = useRef(0)
 
   const loadSenderIds = useCallback(async (params?: SenderIdQueryParams) => {
     setIsLoading(true)
@@ -57,6 +59,11 @@ export function useSenderIds(options: UseSenderIdsOptions = {}) {
   }, [enterpriseId, loadAll, options.status, options.page, options.size])
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      effectCount.current++
+      console.log(`[useSenderIds] useEffect fires #${effectCount.current}`, { autoLoad, enterpriseId, loadAll, status: options.status, page: options.page, size: options.size })
+      if (effectCount.current > 15) console.error('[useSenderIds] POSSIBLE LOOP - useEffect fires too many times')
+    }
     if (autoLoad && (enterpriseId || loadAll)) {
       loadSenderIds()
     }

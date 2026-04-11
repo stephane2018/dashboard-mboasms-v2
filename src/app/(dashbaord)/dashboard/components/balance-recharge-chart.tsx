@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Calendar } from '@/shared/ui/calendar';
@@ -73,6 +73,7 @@ export function BalanceRechargeChart() {
   const [status, setStatus] = useState<RechargeStatus | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const chartEffectCount = useRef(0);
 
   const startDateISO = React.useMemo(() =>
     startDate ? startDate.toISOString() : '', [startDate]
@@ -90,6 +91,11 @@ export function BalanceRechargeChart() {
   });
 
   React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      chartEffectCount.current++
+      console.log(`[BalanceRechargeChart] useEffect fires #${chartEffectCount.current}`, { period, status, startDateISO, endDateISO })
+      if (chartEffectCount.current > 15) console.error('[BalanceRechargeChart] POSSIBLE LOOP - useEffect fires too many times')
+    }
     loadRechargeTimeline();
   }, [period, status, startDateISO, endDateISO, loadRechargeTimeline]);
 

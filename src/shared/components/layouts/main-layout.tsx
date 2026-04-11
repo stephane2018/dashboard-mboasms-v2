@@ -34,7 +34,7 @@ import {
 } from "@/shared/ui/avatar"
 import { useUserStore } from "@/core/stores/userStore"
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { Info } from "lucide-react"
 import { ImpersonationBanner } from "@/shared/components/impersonation-banner"
 import {
@@ -65,6 +65,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const { resolvedTheme, setTheme } = useTheme()
   const { t } = useT()
   const [mounted, setMounted] = React.useState(false)
+  const actingCompanyEffectCount = useRef(0)
 
   React.useEffect(() => {
     setMounted(true)
@@ -91,6 +92,11 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
 
   // Hydrate acting company from sessionStorage (e.g., after impersonation)
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      actingCompanyEffectCount.current++
+      console.log(`[MainLayout] actingCompany useEffect fires #${actingCompanyEffectCount.current}`)
+      if (actingCompanyEffectCount.current > 3) console.error('[MainLayout] POSSIBLE LOOP - actingCompany useEffect fires too many times (setActingCompany ref unstable?)')
+    }
     const storedId = sessionStorage.getItem("actingCompanyId")
     const storedName = sessionStorage.getItem("actingCompanyName")
     if (storedId) {
