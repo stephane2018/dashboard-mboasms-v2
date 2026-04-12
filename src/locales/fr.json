@@ -853,6 +853,8 @@
     "lastName": "Nom",
     "name": "Nom",
     "phone": "Téléphone",
+    "phoneNumber": "Numéro de téléphone",
+    "enterprise": "Entreprise",
     "location": "Pays/Ville",
     "archived": "Archivé",
     "status": "Statut",
@@ -994,7 +996,24 @@
     "statusPending": "En attente",
     "statusFailed": "Échec",
     "userLabel": "Utilisateur {{index}}",
-    "noUsersFound": "Aucun utilisateur trouvé"
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "senderId": "Sender ID"
+  },
+  "companyDetails": {
+    "loadError": "Impossible de charger les données de l'entreprise",
+    "rechargeCredit": "Recharger le crédit",
+    "loginAs": "Se connecter en tant que",
+    "messagesThisMonth": "Messages ce mois",
+    "basedOnHistory": "Basé sur l'historique",
+    "totalGroups": "Groupes au total",
+    "users": "Utilisateurs",
+    "totalUsers": "Membres de l'équipe",
+    "smsCredit": "Crédit SMS",
+    "remainingSms": "SMS restants",
+    "tabDetails": "Détails",
+    "tabHistory": "Historique",
+    "smsSentChartLabel": "SMS envoyés",
+    "creditChartLabel": "Crédit"
   },
   "apiKeys": {
     "title": "Clés API",
@@ -1367,6 +1386,23 @@
     "cancelled": "Annulé",
     "pending": "En attente",
     "demanded": "Demandé"
+  },
+  "contactSelection": {
+    "title": "Ajouter des contacts",
+    "total": "Total",
+    "searchPlaceholder": "Rechercher un contact...",
+    "invalidContacts": "{{count}} contact(s) invalide(s) masqué(s)",
+    "selectedCount": "{{count}} sélectionné(s)",
+    "loadedCount": "{{count}} chargé(s)",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "noContactFound": "Aucun contact trouvé",
+    "noContactAvailable": "Aucun contact disponible",
+    "invalid": "Invalide",
+    "alreadyInGroup": "Déjà dans le groupe",
+    "noNumber": "Aucun numéro",
+    "loadMore": "Charger plus",
+    "addContacts": "Ajouter {{count}} contact(s)"
   },
   "scheduleCall": {
     "title": "Planifier un appel",

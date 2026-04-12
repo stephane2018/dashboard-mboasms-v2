@@ -7,13 +7,6 @@ import { useT } from "@/core/hooks"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
 import { ChartContainer, type ChartConfig } from "@/shared/ui/chart"
 
-const chartConfig = {
-  credit: {
-    label: "Crédit",
-    color: "var(--chart-2)",
-  },
-} satisfies ChartConfig
-
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n))
 }
@@ -22,6 +15,13 @@ export function CreditRadialChart({ credit }: { credit: number }) {
   const { t } = useT()
   const max = 1000
   const value = clamp(Number(credit) || 0, 0, max)
+
+  const chartConfig = React.useMemo(() => ({
+    credit: {
+      label: t("companyDetails.creditChartLabel"),
+      color: "var(--chart-2)",
+    },
+  }) satisfies ChartConfig, [t])
 
   const chartData = React.useMemo(
     () => [{ name: "credit", credit: value, fill: "var(--color-credit)" }],

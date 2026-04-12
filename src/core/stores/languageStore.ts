@@ -5,11 +5,7 @@ export type Lang = "fr" | "en";
 
 const SUPPORTED_LANGS: Lang[] = ["fr", "en"];
 
-/**
- * Detect browser language on first visit.
- * Returns "en" if browser is English, "fr" otherwise (default).
- */
-function detectBrowserLang(): Lang {
+export function detectBrowserLang(): Lang {
   if (typeof window === 'undefined') return 'fr';
   const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
   if (browserLang && SUPPORTED_LANGS.includes(browserLang as Lang)) {
@@ -18,32 +14,33 @@ function detectBrowserLang(): Lang {
   return 'fr';
 }
 
-/**
- * Check if the user has already saved a language preference.
- */
-function hasPersistedLang(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem('mboasms-language') !== null;
-}
-
 interface LanguageState {
   lang: Lang;
+  /** true only when the user has explicitly picked a language via the switcher */
+  userHasChosen: boolean;
   setLang: (lang: Lang) => void;
+  /** Internal: set language without marking as user-chosen (used after rehydration) */
+  _syncBrowserLang: () => void;
 }
 
 export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
-      // First visit: detect browser language. Subsequent visits: Zustand hydrates from localStorage.
-      lang: hasPersistedLang() ? "fr" : detectBrowserLang(),
-      setLang: (lang: Lang) => set({ lang }),
+      lang: 'fr', // placeholder — overwritten by rehydration or _syncBrowserLang
+      userHasChosen: false,
+      setLang: (lang: Lang) => set({ lang, userHasChosen: true }),
+      _syncBrowserLang: () => {
+        const browserLang = detectBrowserLang();
+        set({ lang: browserLang });
+      },
     }),
     {
       name: 'mboasms-language',
-      // Skip auto-hydration: Zustand v5 with synchronous storage fires set() during render,
-      // which can cause React concurrent-mode errors. Rehydration is triggered manually
-      // in AuthProvider's useEffect via useLanguageStore.persist.rehydrate().
       skipHydration: true,
+      partialize: (state) => ({
+        lang: state.lang,
+        userHasChosen: state.userHasChosen,
+      }),
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;

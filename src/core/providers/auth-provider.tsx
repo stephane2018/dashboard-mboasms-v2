@@ -109,6 +109,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       useLanguageStore.persist.rehydrate(),
       tokenManager.hydrateFromServer(),
     ]).then(() => {
+      // If the user never explicitly chose a language, use the browser's language
+      const { userHasChosen, _syncBrowserLang } = useLanguageStore.getState();
+      if (!userHasChosen) {
+        _syncBrowserLang();
+      }
       setIsTokenHydrated(true);
       setTokenHydrated(true);
     });

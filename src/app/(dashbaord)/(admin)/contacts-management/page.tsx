@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { DataTable } from "@/shared/common/data-table"
 import { useContacts, useContactsByEnterprise } from "@/core/hooks/useContact";
 import { useUserStore } from "@/core/stores/userStore";
@@ -9,16 +9,16 @@ import { People } from 'iconsax-react';
 import { ContactStats } from "./contact-stats"
 import { ImportContacts } from "./import-contacts";
 import { ExportContacts } from './export-contacts';
-import { columns } from "./columns"
+import { createContactColumns } from "./columns"
 import { toast } from "sonner"
 import type { PaginationState } from "@tanstack/react-table"
-import { i18next } from "@/core/lib/i18n"
 
 export default function ContactsPage() {
   const { user } = useUserStore()
   const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
+  const columns = useMemo(() => createContactColumns(t), [t])
 
   // Use different hooks based on user role
   const { data: allContactsData, isLoading: isLoadingAll, isError: isErrorAll } = useContacts(pagination.pageIndex, pagination.pageSize)
@@ -38,9 +38,9 @@ export default function ContactsPage() {
 
   useEffect(() => {
     if (isError) {
-      toast.error(i18next.t("contacts.loadError"))
+      toast.error(t("contacts.loadError"))
     }
-  }, [isError])
+  }, [isError, t])
 
   return (
       <div className="container mx-auto py-6 space-y-6">

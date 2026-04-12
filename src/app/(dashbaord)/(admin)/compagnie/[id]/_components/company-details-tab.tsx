@@ -132,7 +132,7 @@ export function CompanyDetailsTab({ enterprise, isLoading }: CompanyDetailsTabPr
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Sender ID</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t("companies.senderId")}</label>
                   <p className="mt-2 text-base font-medium">{(enterprise as any)?.smsESenderId || "—"}</p>
                 </div>
 

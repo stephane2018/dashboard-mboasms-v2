@@ -710,6 +710,8 @@
     "lastName": "Last name",
     "name": "Name",
     "phone": "Phone",
+    "phoneNumber": "Phone number",
+    "enterprise": "Enterprise",
     "location": "Country/City",
     "archived": "Archived",
     "status": "Status",
@@ -851,7 +853,24 @@
     "statusPending": "Pending",
     "statusFailed": "Failed",
     "userLabel": "User {{index}}",
-    "noUsersFound": "No users found"
+    "noUsersFound": "No users found",
+    "senderId": "Sender ID"
+  },
+  "companyDetails": {
+    "loadError": "Unable to load company data",
+    "rechargeCredit": "Recharge credit",
+    "loginAs": "Log in as",
+    "messagesThisMonth": "Messages this month",
+    "basedOnHistory": "Based on history",
+    "totalGroups": "Total groups",
+    "users": "Users",
+    "totalUsers": "Team members",
+    "smsCredit": "SMS Credit",
+    "remainingSms": "Remaining SMS",
+    "tabDetails": "Details",
+    "tabHistory": "History",
+    "smsSentChartLabel": "SMS sent",
+    "creditChartLabel": "Credit"
   },
   "apiKeys": {
     "title": "API Keys",
@@ -1230,6 +1249,23 @@
     "cancelled": "Cancelled",
     "pending": "Pending",
     "demanded": "Requested"
+  },
+  "contactSelection": {
+    "title": "Add contacts",
+    "total": "Total",
+    "searchPlaceholder": "Search a contact...",
+    "invalidContacts": "{{count}} invalid contact(s) hidden",
+    "selectedCount": "{{count}} selected",
+    "loadedCount": "{{count}} loaded",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "noContactFound": "No contact found",
+    "noContactAvailable": "No contact available",
+    "invalid": "Invalid",
+    "alreadyInGroup": "Already in group",
+    "noNumber": "No number",
+    "loadMore": "Load more",
+    "addContacts": "Add {{count}} contact(s)"
   },
   "scheduleCall": {
     "title": "Schedule a call",

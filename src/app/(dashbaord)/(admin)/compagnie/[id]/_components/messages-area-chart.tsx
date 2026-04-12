@@ -31,13 +31,6 @@ type HistoryItem = {
   createdAt?: string
 }
 
-const chartConfig = {
-  sms_sent: {
-    label: "SMS envoyés",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig
-
 function groupHistoryByDay(history: HistoryItem[]) {
   const byDay = new Map<string, number>()
 
@@ -57,6 +50,13 @@ function groupHistoryByDay(history: HistoryItem[]) {
 export function MessagesAreaChart({ history }: { history: HistoryItem[] }) {
   const { t } = useT()
   const [timeRange, setTimeRange] = React.useState("30d")
+
+  const chartConfig = React.useMemo(() => ({
+    sms_sent: {
+      label: t("companyDetails.smsSentChartLabel"),
+      color: "var(--chart-1)",
+    },
+  }) satisfies ChartConfig, [t])
 
   const aggregated = React.useMemo(() => groupHistoryByDay(history), [history])
 
