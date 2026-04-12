@@ -37,6 +37,7 @@ import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { useEffect, useRef } from "react"
 import { Info } from "lucide-react"
 import { ImpersonationBanner } from "@/shared/components/impersonation-banner"
+import { SmsBalancePopover } from "@/shared/components/layouts/sms-balance-popover"
 import {
   Home2,
   Logout,
@@ -163,6 +164,8 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
             </Button>
 
             <LanguageSwitcher variant="icon" />
+
+            <SmsBalancePopover />
 
             <Button
               variant="outline"
