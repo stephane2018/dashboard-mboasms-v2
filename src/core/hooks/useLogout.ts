@@ -18,25 +18,19 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      await logout();
-      // Must await cookie deletion before redirecting — otherwise the middleware
-      // still sees the valid httpOnly cookie and redirects back to /dashboard
+      // Clear client state immediately — don't wait for backend
       await deleteSessionCookie();
+      clearUser();
+      // Fire-and-forget backend logout (session already invalidated client-side)
+      logout().catch(() => {});
     },
     onSuccess: () => {
-      clearUser()
       toast.success("Déconnexion réussie", {
         description: "À bientôt sur MboaSMS",
       })
       router.push("/auth/login")
     },
-    onError: async () => {
-      // Even if the backend call fails, force-delete the cookie and clear local state
-      await deleteSessionCookie();
-      clearUser()
-      toast.error("Erreur de déconnexion", {
-        description: "Une erreur est survenue mais vous avez été déconnecté",
-      })
+    onError: () => {
       router.push("/auth/login")
     },
   })

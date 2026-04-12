@@ -13,6 +13,7 @@ import { LanguageSwitcher } from '@/shared/common/language-switcher';
 import { useT } from '@/core/hooks';
 import { useUserStore } from '@/core/stores/userStore';
 import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
+import { useAuthContext } from '@/core/providers/auth-provider';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
 import {
   Avatar,
@@ -30,7 +31,8 @@ import {
 
 const Header = () => {
   const pathname = usePathname();
-  const { user, clearUser } = useUserStore();
+  const { user } = useUserStore();
+  const { clearUser } = useAuthContext();
   const { enterprise } = useEnterpriseStore();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -115,11 +117,15 @@ const Header = () => {
     window.location.href = "/auth/login";
   };
 
-  const handleLogout = () => {
-    clearUser();
-    if (mobileMenuOpen) {
-      setMobileMenuOpen(false);
+  const handleLogout = async () => {
+    if (mobileMenuOpen) setMobileMenuOpen(false);
+    try {
+      await fetch('/api/auth/session', { method: 'DELETE', credentials: 'same-origin' });
+    } catch {
+      // ignore — cookie may still expire naturally
     }
+    clearUser();
+    window.location.href = '/auth/login';
   };
 
   const userDisplayName = user?.name || user?.email || '';
