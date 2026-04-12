@@ -552,7 +552,19 @@
     "tempSenderIdActivatedSuccess": "Sender ID temporaire \"{{name}}\" activé",
     "enterValidSenderId": "Veuillez entrer un Sender ID valide",
     "senderIdSaved": "Sender ID enregistré. En attente de validation.",
-    "senderIdSaveError": "Erreur lors de l'enregistrement du Sender ID"
+    "senderIdSaveError": "Erreur lors de l'enregistrement du Sender ID",
+    "valid": "Valide",
+    "invalid": "Invalide",
+    "smsPerRecipient": "SMS/destinataire",
+    "afterSending": "Après envoi",
+    "messagePlaceholder": "Écrivez votre message ici...",
+    "specialCharsWarning": "{{count}} caractère(s) spécial(aux) détecté(s) — limite réduite à 153 car./SMS",
+    "recipientsShort": "dest.",
+    "balanceLabel": "Solde",
+    "missingSmsBefore": "Il vous manque",
+    "missingSmsAfter": "pour effectuer cet envoi.",
+    "rechargeBalance": "Recharger mon solde",
+    "clearAll": "Tout effacer"
   },
   "recharge": {
     "title": "Gestion des recharges",

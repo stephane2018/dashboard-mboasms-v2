@@ -451,7 +451,19 @@
     "senderIdWhatIs": "What is a Sender ID?",
     "senderIdHelp": "Learn how Sender ID works",
     "senderIdRules": "Rules",
-    "senderIdContactUs": "Question? Contact us at"
+    "senderIdContactUs": "Question? Contact us at",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "smsPerRecipient": "SMS/recipient",
+    "afterSending": "After sending",
+    "messagePlaceholder": "Write your message here...",
+    "specialCharsWarning": "{{count}} special character(s) detected — limit reduced to 153 chars/SMS",
+    "recipientsShort": "recip.",
+    "balanceLabel": "Balance",
+    "missingSmsBefore": "You need",
+    "missingSmsAfter": "more SMS to complete this send.",
+    "rechargeBalance": "Top up my balance",
+    "clearAll": "Clear all"
   },
   "recharge": {
     "title": "Recharge Management",
