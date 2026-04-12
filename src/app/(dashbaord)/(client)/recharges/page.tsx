@@ -7,11 +7,13 @@ import { Button } from "@/shared/ui/button"
 import { WalletMoney, Add } from "iconsax-react"
 import { useAuthContext } from "@/core/providers"
 import { useEnterpriseRecharges } from "@/core/hooks/useRecharge"
+import { useT } from "@/core/hooks"
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
-import { clientRechargeColumns } from "./_components/client-recharge-columns"
+import { createClientRechargeColumns } from "./_components/client-recharge-columns"
 
 export default function RechargesPage() {
   const { user } = useAuthContext()
+  const { t } = useT()
   const enterpriseId = user?.companyId || ""
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -24,8 +26,8 @@ export default function RechargesPage() {
 
   const handleCreateRecharge = async (data: RechargeFormData) => {
     if (!enterpriseId) {
-      toast.error("Erreur", {
-        description: "Impossible de créer la recharge. ID entreprise manquant.",
+      toast.error(t('rechargesPage.errorTitle'), {
+        description: t('rechargesPage.errorNoCompanyId'),
       })
       return
     }
@@ -43,32 +45,34 @@ export default function RechargesPage() {
   const recharges = (query.data || [])
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
+  const columns = createClientRechargeColumns(t)
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <WalletMoney size="32" variant="Bulk" color="currentColor" className="text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Mes recharges</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('rechargesPage.title')}</h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            Suivez vos demandes de recharge et rechargez votre compte SMS.
+            {t('rechargesPage.subtitle')}
           </p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)} size="sm" className="h-9">
           <Add size={16} variant="Bulk" color="currentColor" className="mr-2" />
-          Faire une recharge
+          {t('rechargesPage.makeRecharge')}
         </Button>
       </div>
 
       <DataTable
         data={recharges}
-        columns={clientRechargeColumns}
+        columns={columns}
         rowCount={recharges.length}
         isLoading={query.isLoading}
         enablePagination
         autoPagination
-        emptyMessage="Aucune recharge trouvée."
+        emptyMessage={t('rechargesPage.noRechargesFound')}
       />
 
       <CreateRechargeModal

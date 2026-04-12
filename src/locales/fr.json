@@ -1299,6 +1299,63 @@
       }
     }
   },
+  "charts": {
+    "periodDay": "Jour",
+    "periodWeek": "Semaine",
+    "periodMonth": "Mois",
+    "periodYear": "Année",
+    "retry": "Réessayer",
+    "start": "Début",
+    "end": "Fin",
+    "reset": "Réinitialiser",
+    "refresh": "Actualiser",
+    "clearDates": "Effacer les dates",
+    "allStatuses": "Tous statuts",
+    "smsTotal": "SMS total",
+    "rechargesTotal": "recharges",
+    "max": "Max",
+    "min": "Min",
+    "noData": "Aucune donnée disponible pour cette période",
+    "smsChartLabel": "SMS envoyés",
+    "rechargesChartLabel": "Recharges"
+  },
+  "rechargesPage": {
+    "title": "Mes recharges",
+    "subtitle": "Suivez vos demandes de recharge et rechargez votre compte SMS.",
+    "makeRecharge": "Faire une recharge",
+    "errorTitle": "Erreur",
+    "errorNoCompanyId": "Impossible de créer la recharge. ID entreprise manquant.",
+    "noRechargesFound": "Aucune recharge trouvée."
+  },
+  "paymentMethods": {
+    "cash": "Espèces",
+    "orangeMoney": "Orange Money",
+    "mtnMoney": "MTN Money",
+    "bankAccount": "Compte bancaire",
+    "paypal": "PayPal"
+  },
+  "rechargeStatus": {
+    "pending": "En attente",
+    "validated": "Validée",
+    "refused": "Refusée"
+  },
+  "rechargeColumns": {
+    "smsQuantity": "Quantité SMS",
+    "unitPrice": "Prix unitaire",
+    "amount": "Montant",
+    "coupon": "Coupon",
+    "paymentMethod": "Méthode de paiement",
+    "phone": "Téléphone",
+    "status": "Statut",
+    "date": "Date"
+  },
+  "rechargeChartStatuses": {
+    "validated": "Validé",
+    "refused": "Refusé",
+    "cancelled": "Annulé",
+    "pending": "En attente",
+    "demanded": "Demandé"
+  },
   "scheduleCall": {
     "title": "Planifier un appel",
     "step1Subtitle": "Choisissez une date et une heure",

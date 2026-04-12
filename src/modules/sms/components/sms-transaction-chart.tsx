@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { useMessageTimeline } from '@/core/hooks';
+import { useMessageTimeline, useT } from '@/core/hooks';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Button } from '@/shared/ui/button';
 import { Calendar } from '@/shared/ui/calendar';
@@ -19,47 +19,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { Period } from '@/modules/statistics/types';
 
-const chartConfig = {
-  count: {
-    label: 'SMS envoyés',
-    color: 'var(--chart-1)',
-  },
-} satisfies ChartConfig;
-
-const periods: { value: Period; label: string }[] = [
-  { value: 'DAY', label: 'Jour' },
-  { value: 'WEEK', label: 'Semaine' },
-  { value: 'MONTH', label: 'Mois' },
-  { value: 'YEAR', label: 'Année' },
-];
-
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    payload: {
-      label: string;
-      originalLabel?: string;
-      count: number;
-    };
-  }>;
-}
-
-const CustomTooltip = ({ active, payload }: TooltipProps) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
-        <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
-          <div className="text-sm font-bold">{data.count.toLocaleString()} SMS</div>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
 function SmsTransactionChartSkeleton() {
   return (
     <div className="space-y-4">
@@ -74,6 +33,49 @@ function SmsTransactionChartSkeleton() {
 }
 
 export function SmsTransactionChart() {
+  const { t } = useT();
+
+  const chartConfig = {
+    count: {
+      label: t('charts.smsChartLabel'),
+      color: 'var(--chart-1)',
+    },
+  } satisfies ChartConfig;
+
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      payload: {
+        label: string;
+        originalLabel?: string;
+        count: number;
+      };
+    }>;
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
+          <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
+            <div className="text-sm font-bold">{data.count.toLocaleString()} SMS</div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const periods: { value: Period; label: string }[] = [
+    { value: 'DAY', label: t('charts.periodDay') },
+    { value: 'WEEK', label: t('charts.periodWeek') },
+    { value: 'MONTH', label: t('charts.periodMonth') },
+    { value: 'YEAR', label: t('charts.periodYear') },
+  ];
+
   const now = useMemo(() => new Date(), []);
   const defaultStartDate = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1), [now]);
   const defaultEndDate = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999), [now]);
@@ -121,7 +123,7 @@ export function SmsTransactionChart() {
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">{error}</p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Réessayer
+            {t('charts.retry')}
           </Button>
         </div>
       </div>
@@ -163,7 +165,7 @@ export function SmsTransactionChart() {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                {startDate ? format(startDate, "dd MMM", { locale: fr }) : "Début"}
+                {startDate ? format(startDate, "dd MMM", { locale: fr }) : t('charts.start')}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -189,7 +191,7 @@ export function SmsTransactionChart() {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                {endDate ? format(endDate, "dd MMM", { locale: fr }) : "Fin"}
+                {endDate ? format(endDate, "dd MMM", { locale: fr }) : t('charts.end')}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -207,7 +209,7 @@ export function SmsTransactionChart() {
           <button
             onClick={handleClearDates}
             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            title="Réinitialiser"
+            title={t('charts.reset')}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -217,7 +219,7 @@ export function SmsTransactionChart() {
           onClick={() => refetch()}
           disabled={isFetching}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors ml-auto"
-          title="Actualiser"
+          title={t('charts.refresh')}
         >
           <RefreshCcw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
         </button>
@@ -226,16 +228,16 @@ export function SmsTransactionChart() {
       {/* Mini stats row */}
       <div className="flex items-center gap-3 text-xs flex-wrap">
         <span className="font-semibold text-foreground text-lg tabular-nums">{totalSms.toLocaleString()}</span>
-        <span className="text-muted-foreground">SMS total</span>
+        <span className="text-muted-foreground">{t('charts.smsTotal')}</span>
         <div className="h-4 w-px bg-border/60" />
         <div className="flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-muted-foreground">Max</span>
+          <span className="text-muted-foreground">{t('charts.max')}</span>
           <span className="font-medium text-foreground tabular-nums">{maxCount.toLocaleString()}</span>
         </div>
         <div className="flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-          <span className="text-muted-foreground">Min</span>
+          <span className="text-muted-foreground">{t('charts.min')}</span>
           <span className="font-medium text-foreground tabular-nums">{minCount.toLocaleString()}</span>
         </div>
       </div>
@@ -248,7 +250,7 @@ export function SmsTransactionChart() {
 
       {data.length === 0 && !isLoading && !error ? (
         <div className="flex h-[240px] w-full items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20">
-          <p className="text-sm text-muted-foreground">Aucune donnée disponible pour cette période</p>
+          <p className="text-sm text-muted-foreground">{t('charts.noData')}</p>
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">

@@ -16,18 +16,22 @@ import { PaymentMethod, RechargeStatus } from "@/core/models/recharges"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 
-const getPaymentMethodConfig = (method: string) => {
-  const configs: Record<string, {
-    label: string
-    icon: any
-    bgColor: string
-    textColor: string
-    iconColor: string
-    borderColor: string
-    borderStyle: string
-  }> = {
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string
+
+type BadgeConfig = {
+  label: string
+  icon: React.ElementType
+  bgColor: string
+  textColor: string
+  iconColor: string
+  borderColor: string
+  borderStyle: string
+}
+
+const getPaymentMethodConfig = (method: string, t: TranslateFn): BadgeConfig => {
+  const configs: Record<string, BadgeConfig> = {
     [PaymentMethod.CASH]: {
-      label: "Espèces",
+      label: t('paymentMethods.cash'),
       icon: MoneyRecive,
       bgColor: "bg-green-50 dark:bg-green-900/20",
       textColor: "text-green-700 dark:text-green-400",
@@ -36,7 +40,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-solid",
     },
     [PaymentMethod.ORANGE_MONEY]: {
-      label: "Orange Money",
+      label: t('paymentMethods.orangeMoney'),
       icon: Mobile,
       bgColor: "bg-orange-50 dark:bg-orange-900/20",
       textColor: "text-orange-700 dark:text-orange-400",
@@ -45,7 +49,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-dashed",
     },
     [PaymentMethod.MTN_MONEY]: {
-      label: "MTN Money",
+      label: t('paymentMethods.mtnMoney'),
       icon: Mobile,
       bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
       textColor: "text-yellow-700 dark:text-yellow-400",
@@ -54,7 +58,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-dotted",
     },
     [PaymentMethod.BANK_ACCOUNT]: {
-      label: "Compte bancaire",
+      label: t('paymentMethods.bankAccount'),
       icon: Bank,
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
       textColor: "text-blue-700 dark:text-blue-400",
@@ -63,7 +67,7 @@ const getPaymentMethodConfig = (method: string) => {
       borderStyle: "border-double",
     },
     [PaymentMethod.PAYPAL]: {
-      label: "PayPal",
+      label: t('paymentMethods.paypal'),
       icon: Wallet,
       bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
       textColor: "text-indigo-700 dark:text-indigo-400",
@@ -73,7 +77,7 @@ const getPaymentMethodConfig = (method: string) => {
     },
   }
 
-  return configs[method] || {
+  return configs[method] ?? {
     label: method,
     icon: Wallet,
     bgColor: "bg-gray-50 dark:bg-gray-900/20",
@@ -84,18 +88,10 @@ const getPaymentMethodConfig = (method: string) => {
   }
 }
 
-const getStatusConfig = (status: string) => {
-  const configs: Record<string, {
-    label: string
-    icon: any
-    bgColor: string
-    textColor: string
-    iconColor: string
-    borderColor: string
-    borderStyle: string
-  }> = {
+const getStatusConfig = (status: string, t: TranslateFn): BadgeConfig => {
+  const configs: Record<string, BadgeConfig> = {
     [RechargeStatus.PENDING]: {
-      label: "En attente",
+      label: t('rechargeStatus.pending'),
       icon: Clock,
       bgColor: "bg-amber-50 dark:bg-amber-900/20",
       textColor: "text-amber-700 dark:text-amber-400",
@@ -104,7 +100,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-dashed",
     },
     [RechargeStatus.VALIDATED]: {
-      label: "Validée",
+      label: t('rechargeStatus.validated'),
       icon: TickCircle,
       bgColor: "bg-green-50 dark:bg-green-900/20",
       textColor: "text-green-700 dark:text-green-400",
@@ -113,7 +109,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-solid",
     },
     [RechargeStatus.REFUSED]: {
-      label: "Refusée",
+      label: t('rechargeStatus.refused'),
       icon: CloseCircle,
       bgColor: "bg-red-50 dark:bg-red-900/20",
       textColor: "text-red-700 dark:text-red-400",
@@ -122,7 +118,7 @@ const getStatusConfig = (status: string) => {
       borderStyle: "border-solid",
     },
     [RechargeStatus.REFUSE]: {
-      label: "Refusée",
+      label: t('rechargeStatus.refused'),
       icon: CloseCircle,
       bgColor: "bg-red-50 dark:bg-red-900/20",
       textColor: "text-red-700 dark:text-red-400",
@@ -132,7 +128,7 @@ const getStatusConfig = (status: string) => {
     },
   }
 
-  return configs[status] || {
+  return configs[status] ?? {
     label: status,
     icon: Clock,
     bgColor: "bg-gray-50 dark:bg-gray-900/20",
@@ -143,134 +139,136 @@ const getStatusConfig = (status: string) => {
   }
 }
 
-export const clientRechargeColumns: ColumnDef<RechargeListContentType>[] = [
-  {
-    accessorKey: "qteMessage",
-    header: "Quantité SMS",
-    cell: ({ row }) => (
-      <span className="font-mono font-semibold">
-        {row.original.qteMessage.toLocaleString()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "messagePriceUnit",
-    header: "Prix unitaire",
-    cell: ({ row }) => (
-      <span className="font-mono text-sm">
-        {row.original.messagePriceUnit} FCFA
-      </span>
-    ),
-  },
-  {
-    accessorKey: "paymentAmount",
-    header: "Montant",
-    cell: ({ row }) => {
-      const amount = row.original.paymentAmount
-      const baseTotal = row.original.qteMessage * row.original.messagePriceUnit
-      const hasCoupon = row.original.coupon && amount < baseTotal
+export function createClientRechargeColumns(t: TranslateFn): ColumnDef<RechargeListContentType>[] {
+  return [
+    {
+      accessorKey: "qteMessage",
+      header: t('rechargeColumns.smsQuantity'),
+      cell: ({ row }) => (
+        <span className="font-mono font-semibold">
+          {row.original.qteMessage.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "messagePriceUnit",
+      header: t('rechargeColumns.unitPrice'),
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">
+          {row.original.messagePriceUnit} FCFA
+        </span>
+      ),
+    },
+    {
+      accessorKey: "paymentAmount",
+      header: t('rechargeColumns.amount'),
+      cell: ({ row }) => {
+        const amount = row.original.paymentAmount
+        const baseTotal = row.original.qteMessage * row.original.messagePriceUnit
+        const hasCoupon = row.original.coupon && amount < baseTotal
 
-      return (
-        <div className="flex flex-col">
-          <span className="font-mono font-semibold text-primary">
-            {amount.toLocaleString()} FCFA
-          </span>
-          {hasCoupon && (
-            <span className="font-mono text-xs text-muted-foreground line-through">
-              {baseTotal.toLocaleString()} FCFA
+        return (
+          <div className="flex flex-col">
+            <span className="font-mono font-semibold text-primary">
+              {amount.toLocaleString()} FCFA
             </span>
-          )}
-        </div>
-      )
+            {hasCoupon && (
+              <span className="font-mono text-xs text-muted-foreground line-through">
+                {baseTotal.toLocaleString()} FCFA
+              </span>
+            )}
+          </div>
+        )
+      },
     },
-  },
-  {
-    id: "coupon",
-    header: "Coupon",
-    cell: ({ row }) => {
-      const coupon = row.original.coupon
-      if (!coupon) return <span className="text-muted-foreground text-xs">-</span>
+    {
+      id: "coupon",
+      header: t('rechargeColumns.coupon'),
+      cell: ({ row }) => {
+        const coupon = row.original.coupon
+        if (!coupon) return <span className="text-muted-foreground text-xs">-</span>
 
-      return (
-        <div className="flex flex-col">
-          <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-            {coupon.code}
-          </code>
-          <span className="text-xs text-green-600">-{coupon.percentage}%</span>
-        </div>
-      )
+        return (
+          <div className="flex flex-col">
+            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+              {coupon.code}
+            </code>
+            <span className="text-xs text-green-600">-{coupon.percentage}%</span>
+          </div>
+        )
+      },
     },
-  },
-  {
-    accessorKey: "paymentMethod",
-    header: "Méthode de paiement",
-    cell: ({ row }) => {
-      const method = row.original.paymentMethod
-      const config = getPaymentMethodConfig(method)
-      const Icon = config.icon
+    {
+      accessorKey: "paymentMethod",
+      header: t('rechargeColumns.paymentMethod'),
+      cell: ({ row }) => {
+        const method = row.original.paymentMethod
+        const config = getPaymentMethodConfig(method, t)
+        const Icon = config.icon
 
-      return (
-        <div className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
-          config.borderStyle,
-          config.borderColor,
-          config.bgColor
-        )}>
-          <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
-          <span className={cn("text-xs font-medium", config.textColor)}>
-            {config.label}
-          </span>
-        </div>
-      )
+        return (
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
+            config.borderStyle,
+            config.borderColor,
+            config.bgColor
+          )}>
+            <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
+            <span className={cn("text-xs font-medium", config.textColor)}>
+              {config.label}
+            </span>
+          </div>
+        )
+      },
     },
-  },
-  {
-    accessorKey: "debitPhoneNumber",
-    header: "Téléphone",
-    cell: ({ row }) => (
-      <span className="font-mono text-sm">
-        {row.original.debitPhoneNumber || "N/A"}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Statut",
-    cell: ({ row }) => {
-      const status = row.original.status
-      const config = getStatusConfig(status)
-      const Icon = config.icon
+    {
+      accessorKey: "debitPhoneNumber",
+      header: t('rechargeColumns.phone'),
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">
+          {row.original.debitPhoneNumber || "N/A"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: t('rechargeColumns.status'),
+      cell: ({ row }) => {
+        const status = row.original.status
+        const config = getStatusConfig(status, t)
+        const Icon = config.icon
 
-      return (
-        <div className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
-          config.borderStyle,
-          config.borderColor,
-          config.bgColor
-        )}>
-          <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
-          <span className={cn("text-xs font-medium", config.textColor)}>
-            {config.label}
-          </span>
-        </div>
-      )
+        return (
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border",
+            config.borderStyle,
+            config.borderColor,
+            config.bgColor
+          )}>
+            <Icon size={14} variant="Bulk" color="currentColor" className={config.iconColor} />
+            <span className={cn("text-xs font-medium", config.textColor)}>
+              {config.label}
+            </span>
+          </div>
+        )
+      },
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Date",
-    cell: ({ row }) => {
-      const date = new Date(row.original.createdAt)
-      return (
-        <div className="flex flex-col">
-          <span className="text-sm">
-            {format(date, "dd MMM yyyy", { locale: fr })}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {format(date, "HH:mm", { locale: fr })}
-          </span>
-        </div>
-      )
+    {
+      accessorKey: "createdAt",
+      header: t('rechargeColumns.date'),
+      cell: ({ row }) => {
+        const date = new Date(row.original.createdAt)
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm">
+              {format(date, "dd MMM yyyy", { locale: fr })}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {format(date, "HH:mm", { locale: fr })}
+            </span>
+          </div>
+        )
+      },
     },
-  },
-]
+  ]
+}

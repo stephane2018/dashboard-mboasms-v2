@@ -18,57 +18,59 @@ import { CartesianGrid, ComposedChart, Line, XAxis, YAxis } from 'recharts';
 import type { Period, RechargeStatus } from '@/modules/statistics/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useRechargeTimeline } from '@/core/hooks';
-
-const chartConfig = {
-  count: {
-    label: 'Recharges',
-    color: 'var(--chart-3)',
-  },
-} satisfies ChartConfig;
-
-const periods: { value: Period; label: string }[] = [
-  { value: 'DAY', label: 'Jour' },
-  { value: 'WEEK', label: 'Semaine' },
-  { value: 'MONTH', label: 'Mois' },
-  { value: 'YEAR', label: 'Année' },
-];
-
-const statuses: { value: RechargeStatus; label: string }[] = [
-  { value: 'VALIDE', label: 'Validé' },
-  { value: 'REFUSE', label: 'Refusé' },
-  { value: 'ANNULE', label: 'Annulé' },
-  { value: 'PENDING', label: 'En attente' },
-  { value: 'DEMAND', label: 'Demandé' },
-];
-
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    payload: {
-      label: string;
-      count: number;
-    };
-  }>;
-}
-
-const CustomTooltip = ({ active, payload }: TooltipProps) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
-        <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
-          <div className="text-sm font-bold">{data.count} recharges</div>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
+import { useRechargeTimeline, useT } from '@/core/hooks';
 
 export function BalanceRechargeChart() {
+  const { t } = useT();
+
+  const chartConfig = {
+    count: {
+      label: t('charts.rechargesChartLabel'),
+      color: 'var(--chart-3)',
+    },
+  } satisfies ChartConfig;
+
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      payload: {
+        label: string;
+        count: number;
+      };
+    }>;
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-popover border border-border/60 rounded-xl p-3 shadow-xl">
+          <div className="text-xs text-muted-foreground mb-1">{data.label}</div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: chartConfig.count.color }} />
+            <div className="text-sm font-bold">{data.count} {t('charts.rechargesTotal')}</div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const periods: { value: Period; label: string }[] = [
+    { value: 'DAY', label: t('charts.periodDay') },
+    { value: 'WEEK', label: t('charts.periodWeek') },
+    { value: 'MONTH', label: t('charts.periodMonth') },
+    { value: 'YEAR', label: t('charts.periodYear') },
+  ];
+
+  const statuses: { value: RechargeStatus; label: string }[] = [
+    { value: 'VALIDE', label: t('rechargeChartStatuses.validated') },
+    { value: 'REFUSE', label: t('rechargeChartStatuses.refused') },
+    { value: 'ANNULE', label: t('rechargeChartStatuses.cancelled') },
+    { value: 'PENDING', label: t('rechargeChartStatuses.pending') },
+    { value: 'DEMAND', label: t('rechargeChartStatuses.demanded') },
+  ];
+
   const [period, setPeriod] = useState<Period>('MONTH');
   const [status, setStatus] = useState<RechargeStatus | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -142,7 +144,7 @@ export function BalanceRechargeChart() {
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous statuts</SelectItem>
+            <SelectItem value="all">{t('charts.allStatuses')}</SelectItem>
             {statuses.map((s) => (
               <SelectItem key={s.value} value={s.value}>
                 {s.label}
@@ -164,7 +166,7 @@ export function BalanceRechargeChart() {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                {startDate ? format(startDate, "dd MMM", { locale: fr }) : "Début"}
+                {startDate ? format(startDate, "dd MMM", { locale: fr }) : t('charts.start')}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -190,7 +192,7 @@ export function BalanceRechargeChart() {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                {endDate ? format(endDate, "dd MMM", { locale: fr }) : "Fin"}
+                {endDate ? format(endDate, "dd MMM", { locale: fr }) : t('charts.end')}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -209,7 +211,7 @@ export function BalanceRechargeChart() {
             <button
               onClick={handleClearDates}
               className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              title="Effacer les dates"
+              title={t('charts.clearDates')}
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -220,7 +222,7 @@ export function BalanceRechargeChart() {
           onClick={() => loadRechargeTimeline()}
           disabled={isLoading}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors ml-auto"
-          title="Actualiser"
+          title={t('charts.refresh')}
         >
           <RefreshCcw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
         </button>
@@ -229,16 +231,16 @@ export function BalanceRechargeChart() {
       {/* Mini stats row */}
       <div className="flex items-center gap-3 text-xs flex-wrap">
         <span className="font-semibold text-foreground text-lg tabular-nums">{totalRecharges.toLocaleString()}</span>
-        <span className="text-muted-foreground">recharges</span>
+        <span className="text-muted-foreground">{t('charts.rechargesTotal')}</span>
         <div className="h-4 w-px bg-border/60" />
         <div className="flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-          <span className="text-muted-foreground">Max</span>
+          <span className="text-muted-foreground">{t('charts.max')}</span>
           <span className="font-medium text-foreground tabular-nums">{maxCount}</span>
         </div>
         <div className="flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-          <span className="text-muted-foreground">Min</span>
+          <span className="text-muted-foreground">{t('charts.min')}</span>
           <span className="font-medium text-foreground tabular-nums">{minCount}</span>
         </div>
         {status && (

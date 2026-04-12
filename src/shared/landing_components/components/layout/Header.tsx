@@ -141,7 +141,7 @@ const Header = () => {
     typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : null;
 
   const handleProfile = () => {
-    window.open(`${API_URL}/profile`, '_blank', 'noopener,noreferrer');
+    window.open(`${API_URL_DASHBOARD}/profile`, '_blank', 'noopener,noreferrer');
   };
 
   const handleGoToAdmin = () => {
