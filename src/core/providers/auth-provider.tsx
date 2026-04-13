@@ -86,6 +86,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const { user, isAuthenticated, setUser, clearUser: clearUserStore, isHydrated, setTokenHydrated } = useUserStore();
+  const clearEnterprise = useEnterpriseStore((s) => s.clearEnterprise);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
   const [isTokenHydrated, setIsTokenHydrated] = useState(false);
@@ -159,14 +160,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     if (hasFetchedProfile) return;
 
     const syncUserProfile = async () => {
-      // If the user just logged in, data is already fresh — skip the sync and clear the flag
-      if (sessionStorage.getItem('profile-fresh') === '1') {
-        sessionStorage.removeItem('profile-fresh')
-        console.log('[AuthProvider] profile-fresh flag detected — skipping sync (just logged in)')
-        setHasFetchedProfile(true)
-        return
-      }
-
       const token = tokenManager.getToken();
 
       // No token → not authenticated, nothing to do
@@ -214,7 +207,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
           fetched.companyId !== user.companyId;
 
         if (hasChanged) {
-          console.log('[AuthProvider] profile changed — updating store', { before: { name: user.name, role: user.role }, after: { name: fetched.name, role: fetched.role } });
+          console.log('[AuthProvider] profile changed — updating store', { before: { name: user.name, role: user.role, companyId: user.companyId }, after: { name: fetched.name, role: fetched.role, companyId: fetched.companyId } });
+          // If companyId changed, clear enterprise store to force a fresh enterprise fetch
+          if (fetched.companyId !== user.companyId) {
+            clearEnterprise();
+          }
           setUser(fetched);
         } else {
           console.log('[AuthProvider] profile unchanged — keeping cached user');
@@ -234,7 +231,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     };
 
     syncUserProfile();
-  }, [isHydrated, isTokenHydrated, hasFetchedProfile, setUser, clearUser]);
+  }, [isHydrated, isTokenHydrated, hasFetchedProfile, setUser, clearUser, clearEnterprise]);
 
   const providerValue = useMemo(
     () => ({

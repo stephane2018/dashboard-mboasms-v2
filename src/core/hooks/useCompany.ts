@@ -32,10 +32,11 @@ export function useCompanies() {
   })
 }
 
-export function UseGetConnectedCompagnieData(enterpriseId: string){
-   return useQuery<EnterpriseType, Error>({
+export function UseGetConnectedCompagnieData(enterpriseId: string, userId: string){
+  return useQuery<EnterpriseType, Error>({
     queryKey: companyKeys.detail(enterpriseId),
-    queryFn: () => getCompagnieConnectedDetails(enterpriseId),
+    queryFn: () => getCompagnieConnectedDetails(enterpriseId, userId),
+    enabled: !!enterpriseId && !!userId,
   })
 }
 

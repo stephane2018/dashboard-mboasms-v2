@@ -1,55 +1,16 @@
 import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { login, loginAsUser } from "@/core/services/auth.service"
+import { login, loginAsUser, type LoginApiResponse } from "@/core/services/auth.service"
 import { toast } from "sonner"
 import { i18next } from "@/core/lib/i18n"
 import { getDefaultDashboardUrl } from "@/core/utils/role.utils"
 import { LoginCredentials } from "@/core/types/auth.types"
 import { useUserStore } from "@/core/stores/userStore"
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
-import { getCompagnieConnectedDetails } from "@/core/services/CompanyService"
 import { Role } from "@/core/config/enum"
+import type { EnterpriseType } from "@/core/models/company"
 import { tokenManager } from "@/core/lib/token-manager/token-manager"
-
-// API login response - may have firstName/lastName or nested user object
-interface LoginApiResponse {
-  token: string
-  refreshToken: string
-  id?: string
-  email?: string
-  firstName?: string
-  lastName?: string
-  name?: string
-  role?: Role
-  avatar?: string
-  phone?: string
-  companyId?: string
-  userEnterprise?: {
-    id: string
-  }
-  smsSenderId?: string
-  isSenderIdVerified?: boolean
-  smsBalance?: number
-  smsQuota?: number
-  planName?: string
-  // Alternative: nested user object
-  user?: {
-    id: string
-    email: string
-    name?: string
-    firstName?: string
-    lastName?: string
-    role: Role
-    avatar?: string
-    phone?: string
-    companyId?: string
-    smsSenderId?: string
-    isSenderIdVerified?: boolean
-    smsBalance?: number
-    smsQuota?: number
-    planName?: string
-  }
-}
+import { getCompagnieConnectedDetails } from "@/core/services/CompanyService"
 
 // Map login response to User format
 function mapLoginResponseToUser(response: LoginApiResponse) {
@@ -83,13 +44,16 @@ function mapLoginResponseToUser(response: LoginApiResponse) {
 }
 
 export function useLogin() {
-  const router = useRouter()
   const { setUser } = useUserStore()
-  const { setEnterprise } = useEnterpriseStore()
+  const { setEnterprise, clearEnterprise } = useEnterpriseStore()
 
   return useMutation<LoginApiResponse, Error, LoginCredentials>({
     mutationFn: (credentials: LoginCredentials) => login(credentials) as Promise<LoginApiResponse>,
     onSuccess: async (response) => {
+      // Wipe sessionStorage before writing new session data — prevents stale data
+      // from a previous account from persisting if the user didn't explicitly log out.
+      try { window.sessionStorage.clear() } catch {}
+
       // Map API response to user format
       const mappedUser = mapLoginResponseToUser(response)
       console.log('[useLogin] login response mapped:', { id: mappedUser.id, email: mappedUser.email, role: mappedUser.role, companyId: mappedUser.companyId })
@@ -97,22 +61,19 @@ export function useLogin() {
       // Save user data to store only if the three required fields are valid strings
       if (mappedUser.id && mappedUser.email && mappedUser.role) {
         setUser(mappedUser)
-        // Mark data as fresh so AuthProvider skips the profile sync on next render
-        sessionStorage.setItem('profile-fresh', '1')
         console.log('[useLogin] user stored in store')
       } else {
         console.error('[useLogin] user NOT stored - missing fields. id:', mappedUser.id, '| email:', mappedUser.email, '| role:', mappedUser.role)
       }
 
-      // Fetch and save enterprise data if user has a company
-      if (mappedUser.companyId) {
-        try {
-          const enterpriseData = await getCompagnieConnectedDetails(mappedUser.companyId)
-          setEnterprise(enterpriseData)
-          console.log('[useLogin] enterprise stored:', mappedUser.companyId)
-        } catch (error) {
-          console.error('[useLogin] enterprise fetch failed:', error)
-        }
+      // Always clear enterprise first — prevents stale data from a previous session
+      // if the new account has no enterprise (userEnterprise null), the old one would
+      // otherwise persist in sessionStorage and show up on first render.
+      clearEnterprise()
+
+      if (response.userEnterprise?.id) {
+        setEnterprise(response.userEnterprise as unknown as EnterpriseType)
+        console.log('[useLogin] enterprise stored from login response:', response.userEnterprise.id)
       }
 
       // Email storage removed for security (PII leak via localStorage)
@@ -121,9 +82,9 @@ export function useLogin() {
         description: i18next.t('auth.loginWelcome'),
       })
 
-      // Redirect based on user role
+      // Hard reload — démarre la nouvelle session sur une ardoise vierge
       const dashboardUrl = getDefaultDashboardUrl()
-      router.replace(dashboardUrl)
+      window.location.href = dashboardUrl
     },
     onError: (error: Error) => {
       toast.error(i18next.t('auth.loginError'), {
@@ -147,9 +108,8 @@ interface LoginAsResponse {
 }
 
 export function useLoginAs() {
-  const router = useRouter()
   const { user: currentUser, setUser, setImpersonating } = useUserStore()
-  const { setEnterprise } = useEnterpriseStore()
+  const { setEnterprise, clearEnterprise } = useEnterpriseStore()
 
   return useMutation<LoginAsResponse, Error, string>({
     mutationFn: (userEmail: string) => loginAsUser(userEmail) as Promise<LoginAsResponse>,
@@ -177,10 +137,10 @@ export function useLoginAs() {
       
       setUser(userData)
 
-      // Fetch and save enterprise data if user has a company
-      if (data.userEnterprise?.id) {
+      clearEnterprise()
+      if (data.userEnterprise?.id && data.id) {
         try {
-          const enterpriseData = await getCompagnieConnectedDetails(data.userEnterprise.id)
+          const enterpriseData = await getCompagnieConnectedDetails(data.userEnterprise.id, data.id)
           setEnterprise(enterpriseData)
         } catch (error) {
         }
@@ -190,8 +150,7 @@ export function useLoginAs() {
         description: `${i18next.t('toasts.impersonationStart')} ${data.email}`,
       })
 
-      // Redirect to dashboard
-      router.replace('/dashboard')
+      window.location.href = '/dashboard'
     },
     onError: (error: Error) => {
       toast.error(i18next.t('auth.loginError'), {

@@ -59,7 +59,7 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 export default function ProfilePage() {
   const { isLoadingProfile } = useAuthContext()
   const user = useUserStore((s) => s.user)
-  const { data: enterprise, isLoading: isLoadingEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
+  const { data: enterprise, isLoading: isLoadingEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
 
   if (isLoadingProfile) return <ProfileSkeleton />
   if (!user) return null

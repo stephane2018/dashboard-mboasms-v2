@@ -34,18 +34,13 @@ export const getRechargesByEnterprise = async (enterpriseId: string, page: numbe
     }
 };
 
-export const getRecharges = async (enterpriseId: string): Promise<RechargeListContentType[]> => {
+export const getAllRecharges = async (page = 0, size = 500): Promise<RechargeListContentType[]> => {
     try {
-        const response = await httpClient.get(`/api/v1/recharge/${enterpriseId}/all`);
-        return extractContent<RechargeListContentType>(response);
-    } catch (error) {
-        return Promise.reject(refractHttpError(error));
-    }
-};
+        const queryParams = new URLSearchParams()
+        queryParams.append("page", page.toString())
+        queryParams.append("size", size.toString())
 
-export const getAllRecharges = async (): Promise<RechargeListContentType[]> => {
-    try {
-        const response = await httpClient.get(`/api/v1/recharge/all`);
+        const response = await httpClient.get(`/api/v1/recharge/all/paginate?${queryParams.toString()}`);
         return extractContent<RechargeListContentType>(response);
     } catch (error) {
         return Promise.reject(refractHttpError(error));

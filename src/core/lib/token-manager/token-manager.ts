@@ -96,7 +96,15 @@ export class TokenManager {
     this.token = null;
     this.refreshToken = null;
     this.initialized = false;
+    // Fire-and-forget intentional here — caller doesn't need to wait for cookie deletion
     this.clearFromServer();
+  }
+
+  public async clearTokensAsync(): Promise<void> {
+    this.token = null;
+    this.refreshToken = null;
+    this.initialized = false;
+    await this.clearFromServer();
   }
 
   public hasToken(): boolean {

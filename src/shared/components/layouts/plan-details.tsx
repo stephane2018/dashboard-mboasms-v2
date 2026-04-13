@@ -18,7 +18,7 @@ export function PlanDetails() {
   const { user } = useUserStore()
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
 
-  const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.id || "")
+  const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
   const { rechargesQuery } = useRecharge()
 
   if (!user || state === 'collapsed') {

@@ -34,7 +34,7 @@ export function NavUser() {
   const { mutate: handleLogout, isPending } = useLogout()
   const { user } = useAuthContext()
   const { t } = useT()
-  const { data: enterprise } = UseGetConnectedCompagnieData(user?.id || "")
+  const { data: enterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
 
   if (!user) {
     return null

@@ -1,8 +1,17 @@
-import { useMutation } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { logout } from "@/core/services/auth.service"
-import { useAuthContext } from "@/core/providers"
 import { toast } from "sonner"
+
+function clearAllClientData() {
+  try { window.sessionStorage.clear() } catch {}
+  try { window.localStorage.clear() } catch {}
+  try {
+    document.cookie.split(';').forEach((cookie) => {
+      const name = cookie.split('=')[0].trim()
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+    })
+  } catch {}
+}
 
 async function deleteSessionCookie() {
   try {
@@ -13,25 +22,27 @@ async function deleteSessionCookie() {
 }
 
 export function useLogout() {
-  const router = useRouter()
-  const { clearUser } = useAuthContext()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      // Clear client state immediately — don't wait for backend
-      await deleteSessionCookie();
-      clearUser();
-      // Fire-and-forget backend logout (session already invalidated client-side)
       logout().catch(() => {});
+      await deleteSessionCookie();
+      clearAllClientData();
+      // Vider le cache React Query pour éviter que les données de l'ancien compte
+      // s'affichent lors de la prochaine connexion
+      queryClient.clear()
     },
     onSuccess: () => {
       toast.success("Déconnexion réussie", {
         description: "À bientôt sur MboaSMS",
       })
-      router.push("/auth/login")
+      window.location.href = "/auth/login"
     },
     onError: () => {
-      router.push("/auth/login")
+      clearAllClientData();
+      queryClient.clear()
+      window.location.href = "/auth/login"
     },
   })
 }

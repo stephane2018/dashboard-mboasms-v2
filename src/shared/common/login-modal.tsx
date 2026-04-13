@@ -16,12 +16,12 @@ import { Lock, Sms, Eye, EyeSlash } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useT } from "@/core/hooks"
-import { login } from "@/core/services/auth.service"
+import { login, type LoginApiResponse } from "@/core/services/auth.service"
 import { useUserStore } from "@/core/stores/userStore"
 import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
-import { getCompagnieConnectedDetails } from "@/core/services/CompanyService"
 import { toast } from "sonner"
 import type { Role } from "@/core/config/enum"
+import type { EnterpriseType } from "@/core/models/company"
 
 interface LoginModalProps {
     isOpen: boolean
@@ -29,31 +29,6 @@ interface LoginModalProps {
     onSuccess?: () => void
 }
 
-interface LoginApiResponse {
-    token: string
-    refreshToken: string
-    id?: string
-    email?: string
-    firstName?: string
-    lastName?: string
-    name?: string
-    role?: Role
-    avatar?: string
-    phone?: string
-    companyId?: string
-    userEnterprise?: { id: string }
-    user?: {
-        id: string
-        email: string
-        name?: string
-        firstName?: string
-        lastName?: string
-        role: Role
-        avatar?: string
-        phone?: string
-        companyId?: string
-    }
-}
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const { t } = useT()
@@ -64,7 +39,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const { setUser } = useUserStore()
-    const { setEnterprise } = useEnterpriseStore()
+    const { setEnterprise, clearEnterprise } = useEnterpriseStore()
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {}
@@ -88,6 +63,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
         setIsLoading(true)
         try {
+            try { window.sessionStorage.clear() } catch {}
             const response = await login({ email, password }) as LoginApiResponse
             const userData = response.user || response
             const name = userData.name ||
@@ -99,8 +75,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 email: userData.email || "",
                 name,
                 role: userData.role as Role,
-                avatar: userData.avatar,
-                phone: userData.phone,
+                avatar: userData.avatar ?? undefined,
+                phone: userData.phone ?? undefined,
                 companyId: userData.companyId || response.userEnterprise?.id,
             }
 
@@ -108,11 +84,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 setUser(mappedUser)
             }
 
-            if (mappedUser.companyId) {
-                try {
-                    const enterpriseData = await getCompagnieConnectedDetails(mappedUser.companyId)
-                    setEnterprise(enterpriseData)
-                } catch { }
+            clearEnterprise()
+            if (response.userEnterprise?.id) {
+                setEnterprise(response.userEnterprise as unknown as EnterpriseType)
             }
 
             toast.success(t("auth.loginSuccess"), {

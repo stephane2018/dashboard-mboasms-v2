@@ -38,7 +38,25 @@ const LoginApiResponseSchema = z.object({
   avatar: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   companyId: z.string().optional().nullable(),
-  userEnterprise: z.object({ id: z.string() }).optional().nullable(),
+  userEnterprise: z.object({
+    id: z.string(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+    version: z.number().optional(),
+    socialRaison: z.string().optional().nullable(),
+    numeroCommerce: z.string().optional().nullable(),
+    urlImage: z.string().optional().nullable(),
+    urlSiteweb: z.string().optional().nullable(),
+    telephoneEnterprise: z.string().optional().nullable(),
+    emailEnterprise: z.string().optional().nullable(),
+    villeEnterprise: z.string().optional().nullable(),
+    adresseEnterprise: z.string().optional().nullable(),
+    smsESenderId: z.string().optional().nullable(),
+    smsCredit: z.number().optional().nullable(),
+    internationalCredit: z.number().optional().nullable(),
+    activityDomain: z.string().optional().nullable(),
+    contribuableNumber: z.string().optional().nullable(),
+  }).passthrough().optional().nullable(),
   smsSenderId: z.string().optional().nullable(),
   isSenderIdVerified: z.boolean().optional(),
   smsBalance: z.number().optional(),
@@ -77,7 +95,8 @@ export const authService = {
 };
 
 export async function login(credentials: LoginCredentials) {
-  tokenManager.clearTokens();
+  // Await token clear so old cookie is gone before new one is set (prevents race)
+  await tokenManager.clearTokensAsync();
 
   const response = await httpClient.post<LoginApiResponse>(
     '/api/v1/auth/login',
@@ -93,7 +112,8 @@ export async function login(credentials: LoginCredentials) {
 
   const validated = parsed.data;
   if (validated.token && validated.refreshToken) {
-    tokenManager.setTokens(validated.token, validated.refreshToken);
+    // MUST await — ensures tokens are persisted to httpOnly cookie before the caller redirects
+    await tokenManager.setTokens(validated.token, validated.refreshToken);
   }
 
   return validated;

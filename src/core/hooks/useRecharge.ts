@@ -9,7 +9,6 @@ import {
   refuseRecharge,
   creditAccount,
   getAllRecharges,
-  getRecharges,
   getRechargesByEnterprise,
 } from "@/core/services/recharge.service"
 import type { CreateRechargeRequestType, RechargeListContentType } from "@/core/models/recharges"
@@ -79,9 +78,9 @@ export function useRecharge(options: UseRechargeOptions = {}) {
     queryKey,
     queryFn: async (): Promise<RechargeListContentType[]> => {
       if (_isSuperAdmin) {
-        return (await getAllRecharges()) ?? []
+        return (await getAllRecharges(0, 500)) ?? []
       }
-      return (await getRecharges(enterpriseId!)) ?? []
+      return (await getRechargesByEnterprise(enterpriseId!, 0, 500)) ?? []
     },
     enabled: !!user && (_isAdmin || !!enterpriseId),
     ...(options.queryOptions ?? {}),

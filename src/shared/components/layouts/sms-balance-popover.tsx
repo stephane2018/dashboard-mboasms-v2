@@ -16,7 +16,7 @@ function formatCompact(n: number): string {
 export function SmsBalancePopover() {
   const { t } = useT()
   const user = useUserStore((s) => s.user)
-  const { data: enterprise } = UseGetConnectedCompagnieData(user?.id || '')
+  const { data: enterprise } = UseGetConnectedCompagnieData(user?.companyId || '', user?.id || '')
   const { rechargesQuery } = useRecharge()
 
   if (!user) return null

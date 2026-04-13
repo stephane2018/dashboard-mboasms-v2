@@ -4,19 +4,11 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 import { Eye, EyeSlash, ArrowRight2 } from "iconsax-react"
 import { ThemeToggle } from "@/shared/landing_components/components/ui/theme-toggle"
 import { AlertCircle } from "lucide-react"
-import { toast } from "sonner"
-import { useMutation } from "@tanstack/react-query"
-import { httpClient } from "@/core/lib/http-client"
-import { tokenManager } from "@/core/lib/token-manager/token-manager"
-import { useUserStore } from "@/core/stores"
-import { Role } from "@/core/config/enum"
-import { getDefaultDashboardUrl } from "@/core/utils/role.utils"
 import { loginSchema, type LoginFormData } from "@/shared/validation"
 import { Button } from "@/shared/ui/button"
 import {
@@ -29,30 +21,15 @@ import {
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { useT } from "@/core/hooks"
-
-interface LoginResponse {
-  token: string
-  refreshToken: string
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-  role: string
-  userEnterprise?: {
-    id: string
-    name: string
-  }
-}
+import { useLogin } from "@/core/hooks/useLogin"
 
 export default function LoginPage() {
-  const router = useRouter()
   const { resolvedTheme } = useTheme()
   const { t } = useT()
   const [mounted, setMounted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<{ message: string } | null>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
-  const { setUser } = useUserStore()
+  const loginMutation = useLogin()
 
   const slides = [
     { title: t('auth.loginSlideTitle1'), description: t('auth.loginSlideDesc1') },
@@ -74,63 +51,7 @@ export default function LoginPage() {
     },
   })
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormData) => {
-      console.log('[LOGIN] Envoi de la requête de connexion...')
-      return await httpClient.post<LoginResponse>('/api/v1/auth/login', data, {
-        useToken: false
-      })
-    },
-    onSuccess: async (data) => {
-      console.log('[LOGIN] Réponse reçue ✅', {
-        id: data.id,
-        email: data.email,
-        role: data.role,
-        hasToken: !!data.token,
-        hasRefreshToken: !!data.refreshToken,
-      })
-
-      if (!data.token || !data.refreshToken) {
-        const msg = 'Tokens manquants dans la réponse du serveur'
-        setError({ message: msg })
-        toast.error(msg)
-        return
-      }
-
-      console.log('[LOGIN] Sauvegarde des tokens en cookie...')
-      await tokenManager.setTokens(data.token, data.refreshToken)
-      console.log('[LOGIN] Tokens sauvegardés ✅')
-
-      setUser({
-        id: data.id,
-        email: data.email,
-        name: `${data.firstName} ${data.lastName}`,
-        role: data.role as Role,
-        companyId: data.userEnterprise?.id,
-      })
-      console.log('[LOGIN] User store mis à jour ✅', { role: data.role })
-
-      toast.success(t('auth.loginSuccess'))
-      setError(null)
-
-      const dashboardUrl = getDefaultDashboardUrl()
-      console.log('[LOGIN] Redirection vers:', dashboardUrl)
-      router.push(dashboardUrl)
-    },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || t('auth.loginFailed')
-      console.error('[LOGIN] Erreur ❌', {
-        status: error?.response?.status,
-        message: errorMessage,
-        raw: error,
-      })
-      setError({ message: errorMessage })
-      toast.error(errorMessage)
-    },
-  })
-
   const handleLogin = (data: LoginFormData) => {
-    setError(null)
     loginMutation.mutate(data)
   }
 
@@ -283,11 +204,11 @@ export default function LoginPage() {
             className="w-32 lg:hidden"
           />
 
-          {error && (
+          {loginMutation.isError && (
             <div className="relative overflow-hidden rounded-xl bg-destructive/10 backdrop-blur-sm border border-destructive/20 p-3.5 flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
               <AlertCircle className="relative w-5 h-5 text-destructive shrink-0" />
               <div className="relative">
-                <p className="text-sm text-destructive">{error.message}</p>
+                <p className="text-sm text-destructive">{loginMutation.error?.message || t('auth.loginFailed')}</p>
               </div>
             </div>
           )}
