@@ -58,7 +58,9 @@ export default function SMSPage() {
 
     const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
     const { user, updateUser } = useUserStore()
-    const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+    const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
+    const { data: enterpriseFromApi, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+    const enterprise = enterpriseFromApi ?? enterpriseFromStore
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
         user?.companyId || "");

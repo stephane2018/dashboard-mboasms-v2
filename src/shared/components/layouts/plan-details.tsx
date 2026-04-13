@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useSidebar } from '@/shared/ui/sidebar'
 import { useUserStore } from '@/core/stores/userStore'
+import { useEnterpriseStore } from '@/core/stores/enterpriseStore'
 import { UseGetConnectedCompagnieData, useRecharge, useT } from '@/core/hooks'
 import { useState } from 'react'
 import { CreateRechargeModal, type RechargeFormData } from '@/shared/common/create-recharge-modal'
@@ -18,12 +19,16 @@ export function PlanDetails() {
   const { user } = useUserStore()
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
 
-  const { data: enterprise, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+  const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
+  const { data: enterpriseFromApi, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
   const { rechargesQuery } = useRecharge()
 
   if (!user || state === 'collapsed') {
     return null
   }
+
+  // Prefer API data (fresh) but fall back to store (set at login) for credit fields
+  const enterprise = enterpriseFromApi ?? enterpriseFromStore
 
   const recharges = rechargesQuery?.data ?? []
   const mostRecentRecharge = recharges?.filter(r => r.status === 'VALIDE')

@@ -2,6 +2,7 @@
 
 import { useAuthContext } from "@/core/providers/auth-provider"
 import { useUserStore } from "@/core/stores/userStore"
+import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
 import { UseGetConnectedCompagnieData } from "@/core/hooks"
 import { Badge } from "@/shared/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
@@ -59,7 +60,9 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 export default function ProfilePage() {
   const { isLoadingProfile } = useAuthContext()
   const user = useUserStore((s) => s.user)
-  const { data: enterprise, isLoading: isLoadingEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+  const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
+  const { data: enterpriseFromApi, isLoading: isLoadingEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+  const enterprise = enterpriseFromApi ?? enterpriseFromStore
 
   if (isLoadingProfile) return <ProfileSkeleton />
   if (!user) return null
