@@ -33,7 +33,7 @@ const Header = () => {
   const pathname = usePathname();
   const { user } = useUserStore();
   const { clearUser } = useAuthContext();
-  const { enterprise } = useEnterpriseStore();
+  const { enterprise, clearEnterprise } = useEnterpriseStore();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -56,10 +56,6 @@ const Header = () => {
     }
   }, []);
 
-  const handleDismissBanner = () => {
-    setBannerDismissed(true);
-    localStorage.setItem('mboasms_v2_banner_dismissed', 'true');
-  };
 
   const logoSrc = mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg';
 
@@ -125,6 +121,7 @@ const Header = () => {
       // ignore — cookie may still expire naturally
     }
     clearUser();
+    clearEnterprise();
     window.location.href = '/auth/login';
   };
 
@@ -152,7 +149,7 @@ const Header = () => {
     <>
       {/* Version announcement banner */}
       <AnimatePresence>
-        {!bannerDismissed && (
+       
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -176,17 +173,10 @@ const Header = () => {
                     {t('nav.clickHere')}
                   </a>
                 </p>
-                <button
-                  onClick={handleDismissBanner}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/20 transition-colors"
-                  aria-label="Fermer la bannière"
-                >
-                  <CloseSquare size="18" variant="Bold" color="currentColor" />
-                </button>
               </div>
             </div>
           </motion.div>
-        )}
+        
       </AnimatePresence>
 
       <header className={`py-4 px-6 md:px-12 lg:px-24 fixed left-0 right-0 z-50 transition-all duration-300 ${!bannerDismissed ? 'top-[36px]' : 'top-0'} ${mobileMenuOpen ? 'bg-background shadow-md' : scrolled ? 'bg-background/80 backdrop-blur-md shadow-md dark:bg-background/90' : 'bg-transparent'}`}>
@@ -234,6 +224,10 @@ const Header = () => {
               {t('nav.contactUs')}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
             </a>
+            <Link href="/dashboard" className={`${pathname === '/dashboard' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
+              {t('nav.adminPanel')}
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/dashboard' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+            </Link>
 
           </motion.nav>
 
@@ -449,9 +443,7 @@ const Header = () => {
                     </motion.div>
                   </a>
                   <a
-                    href="https://dashboard.mboasms.com/login"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/dashboard"
                     className="text-foreground hover:text-primary transition-colors text-xl font-medium flex items-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
