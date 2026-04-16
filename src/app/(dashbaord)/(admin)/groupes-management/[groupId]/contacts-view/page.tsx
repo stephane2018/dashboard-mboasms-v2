@@ -23,6 +23,7 @@ import { useDeleteContactFromGroup } from "@/core/hooks/use-groups"
 import { groupsService } from "@/core/services/groups.service"
 import { useAuthContext } from "@/core/providers"
 import { useT } from "@/core/hooks"
+import { useSMSStore } from "@/core/stores/smsStore"
 import { Skeleton } from "@/shared/ui/skeleton"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import { ContactsDataTable } from "./components/contacts-data-table"
@@ -53,6 +54,8 @@ export default function GroupContactsViewPage() {
   const { sendToGroup, isLoading: isSending } = useSendToGroup()
   const { deleteContactFromGroup, isDeleting } = useDeleteContactFromGroup()
   const { user } = useAuthContext()
+  const setPrefilledContacts = useSMSStore((s) => s.setPrefilledContacts)
+  const setPrefilledGroup = useSMSStore((s) => s.setPrefilledGroup)
 
   const [contacts, setContacts] = useState<EnterpriseContactResponseType[]>([])
   const [groupInfo, setGroupInfo] = useState<any>(null)
@@ -133,6 +136,35 @@ export default function GroupContactsViewPage() {
   const handleSendMessageToContact = (contact: EnterpriseContactResponseType) => {
     setSelectedContactForMessage(contact)
     setIsSMSModalOpen(true)
+  }
+
+  const handleSendMessageFromGroup = () => {
+    const validContacts = contacts.filter(
+      (c) => c.phoneNumber && getPhoneValidationStatus(c.phoneNumber) === "CORRECT"
+    )
+
+    if (validContacts.length === 0) {
+      toast.error(i18next.t("groupContacts.noValidContactsToSend") || "Aucun contact valide à envoyer")
+      return
+    }
+
+    setPrefilledContacts(
+      validContacts.map((c) => ({
+        id: c.id,
+        name: `${c.firstname || ""} ${c.lastname || ""}`.trim(),
+        phoneNumber: c.phoneNumber || "",
+        email: c.email || undefined,
+      }))
+    )
+
+    setPrefilledGroup({
+      id: groupId,
+      name: groupInfo?.name || `${i18next.t("groups.title")} ${groupId}`,
+      contactCount: validContacts.length,
+      sourceUrl: `/groupes-management/${groupId}/contacts-view`,
+    })
+
+    router.push("/sms")
   }
 
   const handleAddContacts = async (selectedContacts: EnterpriseContactResponseType[]) => {
@@ -381,7 +413,7 @@ export default function GroupContactsViewPage() {
             {isExporting ? t('groupContacts.exporting') : t('common.export')}
           </Button>
           <Button
-            onClick={() => setIsMessageModalOpen(true)}
+            onClick={handleSendMessageFromGroup}
             disabled={filteredContacts.length === 0}
             className="bg-pink-600 hover:bg-pink-700"
           >

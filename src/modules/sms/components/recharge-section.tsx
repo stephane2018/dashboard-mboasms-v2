@@ -5,7 +5,7 @@ import { Wallet, AddCircle, Warning2 } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
 import { useRecharge } from "@/core/hooks/useRecharge"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { toast } from "sonner"
 import { useT } from "@/core/hooks"
 
@@ -25,7 +25,7 @@ export function RechargeSection({
     const { t } = useT()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const { createRechargeMutation } = useRecharge()
-    const user = useUserStore((state) => state.user)
+    const { user } = useAuth()
 
     if (!hasInsufficientBalance) return null
 

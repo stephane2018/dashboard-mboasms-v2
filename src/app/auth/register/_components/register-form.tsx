@@ -1,13 +1,12 @@
 "use client"
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterFormData } from '@/modules/auth/validations';
 import { Button } from '@/shared/ui/button';
 import { Form } from '@/shared/ui/form';
 import { ArrowRight2 } from 'iconsax-react';
-import { Step1AccountType } from './step-1-account-type';
 import { Step2Personal } from './step-2-personal';
 import { Step3Security } from './step-3-security';
 import { Step4Enterprise } from './step-4-enterprise';
@@ -26,7 +25,6 @@ export function RegisterForm() {
     mode: 'onChange',
     shouldUnregister: false,
     defaultValues: {
-      accountType: 'personal',
       firstName: '',
       lastName: '',
       email: '',
@@ -50,56 +48,32 @@ export function RegisterForm() {
     },
   });
 
-  const accountType = form.watch('accountType');
-
-  const allSteps = useMemo(() => [
+  const steps = useMemo(() => [
     {
       id: 'Step 1',
-      name: t('auth.accountType'),
-      component: Step1AccountType,
-      fields: ['accountType'],
-      showFor: ['personal', 'business']
-    },
-    {
-      id: 'Step 2',
       name: t('auth.personalInfo'),
       component: Step2Personal,
       fields: ['firstName', 'lastName', 'email', 'phoneNumber'],
-      showFor: ['personal', 'business']
     },
     {
-      id: 'Step 3',
+      id: 'Step 2',
       name: t('auth.security'),
       component: Step3Security,
       fields: ['password', 'confirmPassword', 'country', 'city', 'address'],
-      showFor: ['personal', 'business']
     },
     {
-      id: 'Step 4',
+      id: 'Step 3',
       name: t('auth.enterpriseStepName'),
       component: Step4Enterprise,
       fields: ['socialRaison', 'activityDomain', 'contribuableNumber', 'smsESenderId'],
-      showFor: ['business']
     },
     {
-      id: 'Step 5',
+      id: 'Step 4',
       name: t('auth.enterpriseDetailsStepName'),
       component: Step5SmsConfig,
       fields: ['emailEnterprise', 'telephoneEntreprise', 'numeroCommerce', 'adresseEnterprise', 'villeEntreprise', 'urlSiteweb', 'enterpriseCountryId'],
-      showFor: ['business']
     },
   ], [t]);
-
-  const steps = useMemo(() =>
-    allSteps.filter(s => s.showFor.includes(accountType)),
-    [allSteps, accountType]
-  );
-
-  useEffect(() => {
-    if (step >= steps.length) {
-      setStep(steps.length - 1);
-    }
-  }, [step, steps.length]);
 
   const nextStep = async () => {
     const currentStepFields = steps[step]?.fields;
@@ -117,19 +91,6 @@ export function RegisterForm() {
   const prevStep = () => setStep(prev => prev - 1);
 
   const onSubmit = (data: FormData) => {
-    if (data.accountType !== 'business') {
-      data.socialRaison = data.socialRaison?.trim() || 'RAS';
-      data.adresseEnterprise = data.adresseEnterprise?.trim() || 'RAS';
-      data.contribuableNumber = data.contribuableNumber?.trim() || 'RAS';
-      data.emailEnterprise = data.emailEnterprise?.trim() || 'RAS';
-      data.enterpriseCountryId = data.enterpriseCountryId?.trim() || 'RAS';
-      data.numeroCommerce = data.numeroCommerce?.trim() || 'RAS';
-      data.smsESenderId = data.smsESenderId?.trim() || 'RAS';
-      data.telephoneEntreprise = data.telephoneEntreprise?.trim() || 'RAS';
-      data.urlSiteweb = data.urlSiteweb?.trim() || 'RAS';
-      data.villeEntreprise = data.villeEntreprise?.trim() || 'RAS';
-      data.activityDomain = data.activityDomain?.trim() || 'RAS';
-    }
     registerMutation.mutate(data);
   };
 

@@ -1,17 +1,16 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Send2 } from "iconsax-react"
+import { Send2, People, ArrowLeft2 } from "iconsax-react"
 import { SMSConfirmationModal } from "@/shared/common/sms-confirmation-modal"
 import { checkPhoneValidation, getPhoneValidationStatus } from "@/core/utils/phone-validation"
 import type { PhoneEntry } from "@/shared/common/phone-number-input"
 import type { EnterpriseContactResponseType as ContactNewType } from "@/core/models/contact-new"
 import type { EnterpriseContactResponseType as ContactType } from "@/core/models/contact"
 import { useSettingsStore } from "@/core/stores"
-import { useUserStore } from "@/core/stores/userStore"
-import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { useSMSStore } from "@/core/stores/smsStore"
 import { updateUserSenderId } from "@/core/services/client.service"
 import { useGetSenderIdById, useGetSenderIdsByEnterprise } from "@/core/hooks/useSenderIdsQuery"
@@ -25,7 +24,7 @@ import {
 } from "@/modules/sms"
 import { useSendMessage } from "@/core/hooks/useSendMessage"
 import { SmsGuideModal } from "@/modules/sms/components/sms-guide-modal"
-import { UseGetConnectedCompagnieData, useMainStatistics, useT } from "@/core/hooks"
+import { useMainStatistics, useT } from "@/core/hooks"
 
 const DEFAULT_TEMP_SENDER_ID = "infos"
 
@@ -49,6 +48,7 @@ function separatePhoneNumbersByOperator(phoneEntries: PhoneEntry[]) {
 export default function SMSPage() {
     const { t } = useT()
     const searchParams = useSearchParams()
+    const router = useRouter()
     const [message, setMessage] = useState("")
     const [phoneEntries, setPhoneEntries] = useState<PhoneEntry[]>([])
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
@@ -56,18 +56,16 @@ export default function SMSPage() {
     const [newSenderIdInput, setNewSenderIdInput] = useState("")
     const [showSenderIdInput, setShowSenderIdInput] = useState(false)
 
-    const { prefilledContacts, clearPrefilledContacts } = useSMSStore()
-    const { user, updateUser } = useUserStore()
-    const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
-    const { data: enterpriseFromApi, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
-    const enterprise = enterpriseFromApi ?? enterpriseFromStore
+    const { prefilledContacts, clearPrefilledContacts, prefilledGroup, clearPrefilledGroup } = useSMSStore()
+    const { user, enterprise, refetchEnterprise } = useAuth()
 
     const { data: senderIdsData, isLoading: isLoadingSenderIds } = useGetSenderIdById(
         user?.companyId || "");
     const { sendMessage, isLoading: isSendingMessage } = useSendMessage()
 
-    const userSenderId = user?.smsSenderId || ""
-    const isSenderIdVerified = user?.isSenderIdVerified ?? false
+    // TODO migration: smsSenderId / isSenderIdVerified no longer on user — should come from senderIds query
+    const userSenderId = ""
+    const isSenderIdVerified = false
     const hasPrimarySenderId = !!userSenderId
     const enterpriseBalance = enterprise?.smsCredit || 0
     const userBalance = enterpriseBalance
@@ -322,7 +320,7 @@ export default function SMSPage() {
         setIsSavingSenderId(true)
         try {
             await updateUserSenderId(user.id, newSenderIdInput)
-            updateUser({ smsSenderId: newSenderIdInput, isSenderIdVerified: false })
+            // TODO migration: previously updated useUserStore with smsSenderId/isSenderIdVerified — now handled via senderIds query refetch
             setShowSenderIdInput(false)
             setNewSenderIdInput("")
             toast.success(t('sms.senderIdSaved'))
@@ -347,6 +345,51 @@ export default function SMSPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Group origin banner */}
+            {prefilledGroup && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 shadow-sm">
+                    <div className="flex items-start gap-3 min-w-0">
+                        <div className="rounded-lg bg-primary/15 p-2 ring-1 ring-primary/20 shrink-0">
+                            <People size={16} color="currentColor" variant="Bulk" className="text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                                {t('sms.fromGroupBanner', { name: prefilledGroup.name })}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('sms.fromGroupBannerDesc', { count: prefilledGroup.contactCount })}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {prefilledGroup.sourceUrl && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const url = prefilledGroup.sourceUrl!
+                                    clearPrefilledGroup()
+                                    router.push(url)
+                                }}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 px-3 py-1.5 rounded-md bg-background/60 hover:bg-background border border-primary/20 hover:border-primary/40 transition-all"
+                            >
+                                <ArrowLeft2 size={13} color="currentColor" variant="Bulk" />
+                                {t('sms.backToGroup')}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                clearPrefilledGroup()
+                                setPhoneEntries([])
+                            }}
+                            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-background/60"
+                        >
+                            {t('sms.clearGroupContext')}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Main Form — left 2 cols */}

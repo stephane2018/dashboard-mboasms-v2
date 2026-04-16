@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { toast } from "sonner"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { getActivePlans } from "@/core/services/pricing.service"
 import type { RechargeListContentType } from "@/core/models/recharges"
 import type { PricingPlanType } from "@/core/models/pricing"
@@ -21,7 +21,7 @@ import { useActivePlans, useT } from "@/core/hooks"
 import { RechargeGuideModal, RechargeSupportBanner } from "./_components/recharge-guide-modal"
 
 export default function RechargePage() {
-  const { user, isSuperAdmin } = useUserStore()
+  const { user, isSuperAdmin } = useAuth()
   const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const _isAdminUser = user?.role === "ADMIN_USER"
@@ -219,7 +219,7 @@ export default function RechargePage() {
         onValidate: handleValidateRecharge,
         onRefuse: handleRefuseRecharge,
         onCredit: handleCreditAccount,
-        isSuperAdmin: isSuperAdmin(),
+        isSuperAdmin: isSuperAdmin,
         t,
       }),
     [isSuperAdmin, t]

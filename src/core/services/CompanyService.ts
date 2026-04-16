@@ -34,6 +34,15 @@ export const getCompaniesPaginated = async (page: number = 0, size: number = 10)
   }
 };
 
+export const getEnterpriseByUserId = async (userId: string): Promise<EnterpriseType> => {
+  try {
+    const response = await httpClient.get<EnterpriseType>(`/api/v1/enterprise/${userId}`);
+    return response;
+  } catch (error) {
+    return Promise.reject(refractHttpError(error));
+  }
+};
+
 export const getCompagnieConnectedDetails = async (enterpriseId: string, userId: string): Promise<EnterpriseType> => {
   try {
     const response = await httpClient.get<EnterpriseType>(`/api/v1/enterprise/${enterpriseId}?userId=${userId}`);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { DataTable } from "@/shared/common/data-table"
 import { useAllMessageHistory, useMessageHistory, useSearchMessagesByPhoneNumber } from "@/core/hooks/useMessage"
 import { useEnterprises } from "@/core/hooks/useEnterprise"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { Input } from "@/shared/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { DateRangePicker, type DateRange } from "@/shared/common/date-range-picker"
@@ -28,7 +28,7 @@ function toISO(date: Date | undefined, end?: boolean): string {
 }
 
 export default function HistoriquePage() {
-  const { user } = useUserStore()
+  const { user } = useAuth()
   const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const enterpriseId = user?.companyId || ""

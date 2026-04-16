@@ -5,7 +5,7 @@
 
 import type { QueryClient } from "@tanstack/react-query"
 import { Role } from "@/core/config/enum"
-import { useUserStore } from "@/core/stores"
+import { useAuthStore } from "@/core/stores/authStore"
 
 /**
  * Query keys for different entities
@@ -39,7 +39,7 @@ export const queryKeys = {
  */
 function getCurrentUserRole(): Role | null {
   if (typeof window === "undefined") return null
-  const { user } = useUserStore.getState()
+  const { user } = useAuthStore.getState()
   return user?.role || null
 }
 

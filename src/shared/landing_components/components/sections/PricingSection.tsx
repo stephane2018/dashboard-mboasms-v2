@@ -6,8 +6,7 @@ import Link from "next/link";
 import { ArrowRight2, Global, MessageText1, Chart2, Clock, ShieldTick, Wallet } from "iconsax-react";
 import { usePricing } from "@/core/hooks/usePricing";
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices";
-import { useAuthContext } from "@/core/providers/auth-provider";
-import { useUserStore } from "@/core/stores/userStore";
+import { useAuth } from "@/core/hooks/useAuth";
 import { createRecharge, createInternationalRecharge } from "@/core/services/recharge.service";
 import { LoginModal } from "@/shared/common/login-modal";
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal";
@@ -30,8 +29,7 @@ const POPULAR_AFRICA = ["SN", "CI", "GA", "CD", "ML", "BF", "TG", "BJ", "GN"];
 const POPULAR_INTERNATIONAL = ["FR", "BE", "CH", "CA", "US", "GB", "LU", "MC", "DE", "MA"];
 
 export function PricingSection({ t, lang, onContactSales }: { t: typeof landingContent.fr; lang: Lang; onContactSales: () => void }) {
-  const { isConnected } = useAuthContext();
-  const user = useUserStore((state) => state.user);
+  const { isConnected, user } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRechargeOpen, setIsRechargeOpen] = useState(false);
   const [isIntlRechargeOpen, setIsIntlRechargeOpen] = useState(false);

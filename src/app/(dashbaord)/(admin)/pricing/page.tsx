@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { toast } from "sonner"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { usePricing } from "@/core/hooks/usePricing"
 import type { PricingPlanType } from "@/core/models/pricing"
 import { DataTable } from "@/shared/common/data-table/table"
@@ -27,7 +27,7 @@ import { useT } from "@/core/hooks"
 
 export default function PricingPage() {
   const { t } = useT()
-  const { user, isSuperAdmin } = useUserStore()
+  const { user, isSuperAdmin } = useAuth()
   const {
     plansQuery,
     createPlanMutation,
@@ -37,7 +37,7 @@ export default function PricingPage() {
     disablePlanMutation,
   } = usePricing({
     queryOptions: {
-      enabled: isSuperAdmin(),
+      enabled: isSuperAdmin,
     },
   })
 
@@ -114,14 +114,14 @@ export default function PricingPage() {
         onEdit: handleEditPlan,
         onDelete: handleDeletePlan,
         onToggleStatus: handleTogglePlanStatus,
-        isSuperAdmin: isSuperAdmin(),
+        isSuperAdmin: isSuperAdmin,
         t,
       }),
     [isSuperAdmin]
   )
 
   // Redirect if not super admin
-  if (!isSuperAdmin()) {
+  if (!isSuperAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
         <h1 className="text-2xl font-bold text-muted-foreground">{t('pricing.accessDenied')}</h1>

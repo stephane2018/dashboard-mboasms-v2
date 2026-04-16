@@ -3,6 +3,7 @@
 import {
   Bell,
   LogOut,
+  User,
 } from "lucide-react"
 import Image from "next/image"
 
@@ -25,16 +26,20 @@ import {
   useSidebar,
 } from "@/shared/ui/sidebar"
 import { CaretSortIcon } from "@radix-ui/react-icons"
+import { useState } from "react"
 import { useLogout } from "@/core/hooks/useLogout"
-import { useAuthContext } from "@/core/providers/auth-provider"
-import { UseGetConnectedCompagnieData, useT } from "@/core/hooks"
+import { useAuth } from "@/core/hooks/useAuth"
+import { useT } from "@/core/hooks"
+import { useRouter } from "next/navigation"
+import { LogoutConfirmDialog } from "@/shared/common/logout-confirm-dialog"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { mutate: handleLogout, isPending } = useLogout()
-  const { user } = useAuthContext()
+  const { user, enterprise } = useAuth()
   const { t } = useT()
-  const { data: enterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
+  const router = useRouter()
+  const [logoutOpen, setLogoutOpen] = useState(false)
 
   if (!user) {
     return null
@@ -44,9 +49,8 @@ export function NavUser() {
   const userName = typeof user.name === 'string' ? user.name : userEmail || 'Utilisateur'
   const userAvatar = enterprise?.urlImage
 
-  const onLogout = () => {
-    handleLogout()
-  }
+  const requestLogout = () => setLogoutOpen(true)
+  const confirmLogout = () => handleLogout()
 
   return (
     <SidebarMenu>
@@ -93,13 +97,17 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push("/profile")}>
+              <User />
+              {t('layout.myProfile')}
+            </DropdownMenuItem>
             <DropdownMenuItem>
               <Bell />
               {t('layout.notifications')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={onLogout}
+              onClick={requestLogout}
               disabled={isPending}
               className="text-red-600 focus:text-red-600 focus:bg-red-50"
             >
@@ -109,6 +117,13 @@ export function NavUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      <LogoutConfirmDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        onConfirm={confirmLogout}
+        isPending={isPending}
+      />
     </SidebarMenu>
   )
 }

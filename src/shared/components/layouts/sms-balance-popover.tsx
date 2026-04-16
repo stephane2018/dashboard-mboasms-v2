@@ -3,9 +3,8 @@
 import { Sms, Global, ArrowRight2 } from 'iconsax-react'
 import { Button } from '@/shared/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
-import { useUserStore } from '@/core/stores/userStore'
-import { useEnterpriseStore } from '@/core/stores/enterpriseStore'
-import { UseGetConnectedCompagnieData, useRecharge, useT } from '@/core/hooks'
+import { useAuth } from '@/core/hooks/useAuth'
+import { useRecharge, useT } from '@/core/hooks'
 import Link from 'next/link'
 
 function formatCompact(n: number): string {
@@ -16,18 +15,15 @@ function formatCompact(n: number): string {
 
 export function SmsBalancePopover() {
   const { t } = useT()
-  const user = useUserStore((s) => s.user)
-  const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
-  const { data: enterpriseFromApi } = UseGetConnectedCompagnieData(user?.companyId || '', user?.id || '')
+  const { user, enterprise } = useAuth()
   const { rechargesQuery } = useRecharge()
 
   if (!user) return null
 
-  // Prefer API data (fresh) but fall back to store (set at login) for credit fields
-  const enterprise = enterpriseFromApi ?? enterpriseFromStore
   const smsBalance = typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : 0
   const intlBalance = typeof enterprise?.internationalCredit === 'number' ? enterprise.internationalCredit : 0
-  const planName = typeof user.planName === 'string' ? user.planName : null
+  // TODO migration: planName no longer on user — needs mapping from enterprise/plan source
+  const planName: string | null = null
 
   const recharges = rechargesQuery?.data ?? []
   const mostRecentRecharge = recharges

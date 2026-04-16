@@ -15,13 +15,8 @@ import { Label } from "@/shared/ui/label"
 import { Lock, Sms, Eye, EyeSlash } from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useT } from "@/core/hooks"
-import { login, type LoginApiResponse } from "@/core/services/auth.service"
-import { useUserStore } from "@/core/stores/userStore"
-import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
+import { useT, useLogin } from "@/core/hooks"
 import { toast } from "sonner"
-import type { Role } from "@/core/config/enum"
-import type { EnterpriseType } from "@/core/models/company"
 
 interface LoginModalProps {
     isOpen: boolean
@@ -38,8 +33,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
 
-    const { setUser } = useUserStore()
-    const { setEnterprise, clearEnterprise } = useEnterpriseStore()
+    const loginMutation = useLogin()
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {}
@@ -63,36 +57,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
         setIsLoading(true)
         try {
-            try { window.sessionStorage.clear() } catch {}
-            const response = await login({ email, password }) as LoginApiResponse
-            const userData = response.user || response
-            const name = userData.name ||
-                [userData.firstName, userData.lastName].filter(Boolean).join(" ") ||
-                t("loginModal.defaultUser")
-
-            const mappedUser = {
-                id: userData.id || "",
-                email: userData.email || "",
-                name,
-                role: userData.role as Role,
-                avatar: userData.avatar ?? undefined,
-                phone: userData.phone ?? undefined,
-                companyId: userData.companyId || response.userEnterprise?.id,
-            }
-
-            if (mappedUser.id && mappedUser.email) {
-                setUser(mappedUser)
-            }
-
-            clearEnterprise()
-            if (response.userEnterprise?.id) {
-                setEnterprise(response.userEnterprise as unknown as EnterpriseType)
-            }
-
-            toast.success(t("auth.loginSuccess"), {
-                description: `${t("loginModal.welcome")} ${name}`,
-            })
-
+            await loginMutation.mutateAsync({ email, password })
             handleClose()
             onSuccess?.()
         } catch (error: any) {

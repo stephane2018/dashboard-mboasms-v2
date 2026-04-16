@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback } from "react"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
 import type { SmsCountryPriceType } from "@/core/models/sms-country-price"
 import { DataTable } from "@/shared/common/data-table/table"
@@ -27,7 +27,7 @@ const PAGE_SIZE = 10
 
 export default function CountryPricesPage() {
   const { t } = useT()
-  const { isSuperAdmin } = useUserStore()
+  const { isSuperAdmin } = useAuth()
 
   const [page, setPage] = useState(0)
   const [searchTerm, setSearchTerm] = useState("")
@@ -91,13 +91,13 @@ export default function CountryPricesPage() {
       getColumns({
         onEdit: handleEditPrice,
         onDelete: handleDeletePrice,
-        isSuperAdmin: isSuperAdmin(),
+        isSuperAdmin: isSuperAdmin,
         t,
       }),
     [isSuperAdmin]
   )
 
-  if (!isSuperAdmin()) {
+  if (!isSuperAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] gap-4">
         <h1 className="text-2xl font-bold text-muted-foreground">{t('countryPrices.accessDenied')}</h1>

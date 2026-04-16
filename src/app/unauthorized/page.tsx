@@ -1,14 +1,14 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useUserStore } from "@/core/stores"
+import { useAuth } from "@/core/hooks/useAuth"
 import { useT } from "@/core/hooks"
 import { Role } from "@/core/config/enum"
 import { Shield } from "iconsax-react"
 
 export default function UnauthorizedPage() {
   const router = useRouter()
-  const { user } = useUserStore()
+  const { user } = useAuth()
   const { t } = useT()
 
   const handleGoToDashboard = () => {

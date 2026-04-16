@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -11,6 +11,7 @@ import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from "@/shared/ui/dialog"
@@ -19,6 +20,7 @@ import {
     FormControl,
     FormField,
     FormItem,
+    FormLabel,
     FormMessage,
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
@@ -30,9 +32,20 @@ import {
     SelectValue,
 } from "@/shared/ui/select"
 import { Button } from "@/shared/ui/button"
-import { ProfileAdd, UserEdit, User, Sms, Call, Location } from "iconsax-react"
+import { Separator } from "@/shared/ui/separator"
+import {
+    ProfileAdd,
+    UserEdit,
+    User as UserIcon,
+    Sms as SmsIcon,
+    Call,
+    Location,
+    Personalcard,
+    Global,
+} from "iconsax-react"
 import { Loader2 } from "lucide-react"
 import { CountryCodeWarning } from "@/shared/common/country-code-warning"
+import { cn } from "@/lib/utils"
 
 const contactSchema = z.object({
     firstName: z.string(),
@@ -54,6 +67,26 @@ interface ContactFormModalProps {
     contact?: EnterpriseContactResponseType | null
     enterpriseId: string
     onSuccess?: () => void
+}
+
+function SectionLabel({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+    return (
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="text-primary">{icon}</span>
+            {children}
+        </div>
+    )
+}
+
+function IconInput({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+    return (
+        <div className="relative">
+            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                {icon}
+            </div>
+            {children}
+        </div>
+    )
 }
 
 export function ContactFormModal({
@@ -168,35 +201,51 @@ export function ContactFormModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px] p-0 rounded-2xl overflow-hidden">
-                <DialogHeader className="px-5 pt-5 pb-0">
-                    <DialogTitle className="text-lg flex items-center gap-2">
-                        <div className="rounded-lg bg-primary/10 p-1.5">
-                            <HeaderIcon size={18} variant="Bulk" color="currentColor" className="text-primary" />
+            <DialogContent className="sm:max-w-[560px] p-0 gap-0 overflow-hidden">
+                {/* Hero header */}
+                <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60 px-5 py-5">
+                    <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_top_right,theme(colors.primary/15),transparent_60%)]" />
+                    <DialogHeader className="relative">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-xl bg-primary/15 p-2.5 ring-1 ring-primary/20">
+                                <HeaderIcon size={20} color="currentColor" variant="Bulk" className="text-primary" />
+                            </div>
+                            <div className="flex-1 text-left">
+                                <DialogTitle className="text-base font-semibold text-foreground">
+                                    {isEditMode ? t('contacts.editContactTitle') : t('contacts.newContact')}
+                                </DialogTitle>
+                                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                                    {isEditMode
+                                        ? t('contacts.editContactSubtitle')
+                                        : t('contacts.newContactSubtitle')}
+                                </DialogDescription>
+                            </div>
                         </div>
-                        {isEditMode ? t('contacts.editContactTitle') : t('contacts.newContact')}
-                    </DialogTitle>
-                </DialogHeader>
+                    </DialogHeader>
+                </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="px-5 py-4 space-y-4">
+                        {/* Scrollable body */}
+                        <div className="max-h-[60vh] overflow-y-auto px-5 py-5 space-y-5">
                             <CountryCodeWarning />
 
-                            {/* Name section */}
-                            <div className="space-y-2.5">
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <User size={13} color="currentColor" variant="Bulk" />
+                            {/* Identité */}
+                            <section className="space-y-3">
+                                <SectionLabel icon={<Personalcard size={12} color="currentColor" variant="Bulk" />}>
                                     {t('contacts.identity')}
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                </SectionLabel>
+                                <div className="grid gap-3 sm:grid-cols-2">
                                     <FormField
                                         control={form.control}
                                         name="firstName"
                                         render={({ field }) => (
                                             <FormItem>
+                                                <FormLabel className="text-xs font-medium">{t('contacts.firstnamePlaceholder')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('contacts.firstnamePlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
+                                                    <IconInput icon={<UserIcon size={16} color="currentColor" />}>
+                                                        <Input className="pl-10 h-10 rounded-lg" {...field} />
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -207,38 +256,42 @@ export function ContactFormModal({
                                         name="lastName"
                                         render={({ field }) => (
                                             <FormItem>
+                                                <FormLabel className="text-xs font-medium">{t('contacts.lastnamePlaceholder')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('contacts.lastnamePlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
+                                                    <IconInput icon={<UserIcon size={16} color="currentColor" />}>
+                                                        <Input className="pl-10 h-10 rounded-lg" {...field} />
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
-                            {/* Contact section */}
-                            <div className="space-y-2.5">
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Call size={13} color="currentColor" variant="Bulk" />
+                            <Separator />
+
+                            {/* Coordonnées */}
+                            <section className="space-y-3">
+                                <SectionLabel icon={<Call size={12} color="currentColor" variant="Bulk" />}>
                                     {t('contacts.contactInfo')}
-                                </div>
-                                <div className="space-y-3">
+                                </SectionLabel>
+                                <div className="grid gap-3 sm:grid-cols-2">
                                     <FormField
                                         control={form.control}
                                         name="email"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="sm:col-span-2">
+                                                <FormLabel className="text-xs font-medium">{t('common.email')}</FormLabel>
                                                 <FormControl>
-                                                    <div className="relative">
-                                                        <Sms size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                    <IconInput icon={<SmsIcon size={16} color="currentColor" />}>
                                                         <Input
                                                             type="email"
-                                                            placeholder={t('common.email')}
-                                                            className="h-9 pl-9 rounded-xl text-sm"
+                                                            placeholder="exemple@domaine.com"
+                                                            className="pl-10 h-10 rounded-lg"
                                                             {...field}
                                                         />
-                                                    </div>
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -248,38 +301,45 @@ export function ContactFormModal({
                                         control={form.control}
                                         name="phoneNumber"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="sm:col-span-2">
+                                                <FormLabel className="text-xs font-medium">
+                                                    {t('contacts.phonePlaceholder')}
+                                                    <span className="ml-1 text-red-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
-                                                    <div className="relative">
-                                                        <Call size={14} color="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                    <IconInput icon={<Call size={16} color="currentColor" />}>
                                                         <Input
-                                                            placeholder={t('contacts.phonePlaceholder')}
-                                                            className="h-9 pl-9 rounded-xl text-sm"
+                                                            placeholder="+237 6XX XX XX XX"
+                                                            className="pl-10 h-10 rounded-lg font-mono"
                                                             {...field}
                                                         />
-                                                    </div>
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
-                            {/* Location section */}
-                            <div className="space-y-2.5">
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Location size={13} color="currentColor" variant="Bulk" />
+                            <Separator />
+
+                            {/* Localisation */}
+                            <section className="space-y-3">
+                                <SectionLabel icon={<Location size={12} color="currentColor" variant="Bulk" />}>
                                     {t('contacts.location')}
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                </SectionLabel>
+                                <div className="grid gap-3 sm:grid-cols-2">
                                     <FormField
                                         control={form.control}
                                         name="country"
                                         render={({ field }) => (
                                             <FormItem>
+                                                <FormLabel className="text-xs font-medium">{t('contacts.countryPlaceholder')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('contacts.countryPlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
+                                                    <IconInput icon={<Global size={16} color="currentColor" />}>
+                                                        <Input className="pl-10 h-10 rounded-lg" {...field} />
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
@@ -290,61 +350,74 @@ export function ContactFormModal({
                                         name="city"
                                         render={({ field }) => (
                                             <FormItem>
+                                                <FormLabel className="text-xs font-medium">{t('contacts.cityPlaceholder')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder={t('contacts.cityPlaceholder')} className="h-9 rounded-xl text-sm" {...field} />
+                                                    <IconInput icon={<Location size={16} color="currentColor" />}>
+                                                        <Input className="pl-10 h-10 rounded-lg" {...field} />
+                                                    </IconInput>
                                                 </FormControl>
                                                 <FormMessage className="text-[11px]" />
                                             </FormItem>
                                         )}
                                     />
                                 </div>
-                            </div>
+                            </section>
 
-                            {/* Gender */}
-                            <FormField
-                                control={form.control}
-                                name="gender"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
-                                            <User size={13} color="currentColor" variant="Bulk" />
-                                            {t('contacts.gender')} <span className="text-[11px] text-muted-foreground/60">({t('contacts.optional')})</span>
-                                        </div>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger className="h-9 rounded-xl text-sm">
-                                                    <SelectValue placeholder={t('contacts.select')} />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value={Gender.MALE}>{t('contacts.male')}</SelectItem>
-                                                <SelectItem value={Gender.FEMALE}>{t('contacts.female')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage className="text-[11px]" />
-                                    </FormItem>
-                                )}
-                            />
+                            <Separator />
+
+                            {/* Optionnel */}
+                            <section className="space-y-3">
+                                <SectionLabel icon={<UserIcon size={12} color="currentColor" variant="Bulk" />}>
+                                    {t('contacts.gender')}{' '}
+                                    <span className="text-muted-foreground/60 normal-case font-normal tracking-normal">
+                                        ({t('contacts.optional')})
+                                    </span>
+                                </SectionLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="gender"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="h-10 rounded-lg">
+                                                        <SelectValue placeholder={t('contacts.select')} />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value={Gender.MALE}>{t('contacts.male')}</SelectItem>
+                                                    <SelectItem value={Gender.FEMALE}>{t('contacts.female')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage className="text-[11px]" />
+                                        </FormItem>
+                                    )}
+                                />
+                            </section>
                         </div>
 
-                        {/* Footer */}
-                        <div className="flex items-center gap-2 px-5 py-4 border-t border-border/50 bg-muted/20">
+                        {/* Sticky footer */}
+                        <div className={cn(
+                            "sticky bottom-0 z-10 flex items-center justify-end gap-2 px-5 py-3.5",
+                            "border-t border-border/60 bg-background/80 backdrop-blur-md"
+                        )}>
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={handleClose}
                                 disabled={isPending}
-                                className="flex-1 sm:flex-none rounded-xl"
+                                className="rounded-lg"
                             >
                                 {t('common.cancel')}
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={isPending}
-                                className="flex-1 sm:flex-none sm:min-w-[160px] rounded-xl gap-2"
+                                className={cn(
+                                    "rounded-lg gap-2 bg-primary text-white font-semibold",
+                                    "shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30",
+                                    "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                )}
                             >
                                 {isPending ? (
                                     <>
@@ -353,7 +426,7 @@ export function ContactFormModal({
                                     </>
                                 ) : (
                                     <>
-                                        <HeaderIcon size={16} color="currentColor" variant="Bulk" />
+                                        <HeaderIcon size={14} color="currentColor" variant="Bulk" />
                                         {isEditMode ? t('contacts.modify') : t('contacts.createContact')}
                                     </>
                                 )}

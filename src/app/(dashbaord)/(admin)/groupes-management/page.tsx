@@ -17,12 +17,20 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select"
+import { Separator } from "@/shared/ui/separator"
 import { Label } from "@/shared/ui/label"
 import { toast } from "sonner"
 import type { EnterpriseContactResponseType } from "@/core/models/contact-new"
@@ -32,7 +40,8 @@ import { useGroups } from "@/core/hooks/useGroups"
 import { useT } from "@/core/hooks"
 import type { GroupWithEnterprise } from "@/core/hooks/useGroups"
 import { ChevronLeft, ChevronRight, LayoutGrid, List, RefreshCw } from "lucide-react"
-import { People, Building, AddSquare, Trash, Add, SearchNormal1, FolderOpen, Refresh2 } from "iconsax-react"
+import { People, Building, AddSquare, Trash, Add, SearchNormal1, FolderOpen, Refresh2, FolderAdd, Hashtag, Warning2, UserMinus } from "iconsax-react"
+import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { i18next } from "@/core/lib/i18n"
 
@@ -575,72 +584,161 @@ export default function AdminGroupesPage() {
       </Card>
 
       {/* Create Group Dialog */}
-      <AlertDialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('adminGroups.newGroup')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('adminGroups.createGroupDesc')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="space-y-3">
-            {_isSuperAdmin && (
-              <div className="space-y-2">
-                <div className="text-sm font-medium">{t('adminGroups.enterprise')} *</div>
-                <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('adminGroups.selectEnterprise')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {enterprises.map((e) => (
-                      <SelectItem key={e.id} value={e.id}>
-                        {e.socialRaison}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden">
+          {/* Hero header */}
+          <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/60 px-5 py-5">
+            <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_top_right,theme(colors.primary/15),transparent_60%)]" />
+            <DialogHeader className="relative">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-primary/15 p-2.5 ring-1 ring-primary/20">
+                  <FolderAdd size={20} color="currentColor" variant="Bulk" className="text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <DialogTitle className="text-base font-semibold text-foreground">
+                    {t('adminGroups.newGroup')}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t('adminGroups.createGroupDesc')}
+                  </DialogDescription>
+                </div>
               </div>
-            )}
-            <div className="space-y-2">
-              <div className="text-sm font-medium">{t('adminGroups.nameLabel')} *</div>
-              <Input
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder={t('adminGroups.namePlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="text-sm font-medium">{t('adminGroups.codeLabel')}</div>
-              <Input
-                value={newGroupCode}
-                onChange={(e) => setNewGroupCode(e.target.value)}
-                placeholder={t('adminGroups.codePlaceholder')}
-              />
-            </div>
+            </DialogHeader>
           </div>
 
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCreateGroup} disabled={isMutating}>
-              {t('adminGroups.create')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Body */}
+          <div className="px-5 py-5 space-y-5">
+            {_isSuperAdmin && (
+              <>
+                <section className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Building size={12} color="currentColor" variant="Bulk" className="text-primary" />
+                    {t('adminGroups.enterprise')} <span className="text-red-500 normal-case">*</span>
+                  </div>
+                  <Select value={newGroupEnterpriseId} onValueChange={setNewGroupEnterpriseId}>
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder={t('adminGroups.selectEnterprise')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {enterprises.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.socialRaison}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </section>
+                <Separator />
+              </>
+            )}
+
+            <section className="space-y-2.5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <FolderOpen size={12} color="currentColor" variant="Bulk" className="text-primary" />
+                {t('adminGroups.nameLabel')} <span className="text-red-500 normal-case">*</span>
+              </div>
+              <div className="relative">
+                <FolderOpen size={16} color="currentColor" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder={t('adminGroups.namePlaceholder')}
+                  className="pl-10 h-10 rounded-lg"
+                />
+              </div>
+            </section>
+
+            <section className="space-y-2.5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <Hashtag size={12} color="currentColor" variant="Bulk" className="text-primary" />
+                {t('adminGroups.codeLabel')}
+                <span className="text-muted-foreground/60 normal-case font-normal tracking-normal">({t('contacts.optional')})</span>
+              </div>
+              <div className="relative">
+                <Hashtag size={16} color="currentColor" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={newGroupCode}
+                  onChange={(e) => setNewGroupCode(e.target.value)}
+                  placeholder={t('adminGroups.codePlaceholder')}
+                  className="pl-10 h-10 rounded-lg font-mono text-sm uppercase"
+                />
+              </div>
+            </section>
+          </div>
+
+          {/* Sticky footer */}
+          <div className="sticky bottom-0 z-10 flex items-center justify-end gap-2 px-5 py-3.5 border-t border-border/60 bg-background/80 backdrop-blur-md">
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateOpen(false)}
+              disabled={isMutating}
+              className="rounded-lg"
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={handleCreateGroup}
+              disabled={isMutating}
+              className={cn(
+                "rounded-lg gap-2 bg-primary text-white font-semibold",
+                "shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30",
+                "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              )}
+            >
+              {isMutating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('adminGroups.create')}...
+                </>
+              ) : (
+                <>
+                  <FolderAdd size={14} color="currentColor" variant="Bulk" />
+                  {t('adminGroups.create')}
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Group Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('adminGroups.deleteGroupConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('adminGroups.deleteGroupConfirmDesc')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteGroup} disabled={isMutating}>
+        <AlertDialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-red-500/10 via-red-500/5 to-transparent border-b border-border/60 px-5 py-5">
+            <AlertDialogHeader>
+              <div className="flex items-start gap-3 text-left">
+                <div className="rounded-xl bg-red-500/15 p-2.5 ring-1 ring-red-500/20">
+                  <Warning2 size={20} color="currentColor" variant="Bulk" className="text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <AlertDialogTitle className="text-base font-semibold text-foreground">
+                    {t('adminGroups.deleteGroupConfirmTitle')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t('adminGroups.deleteGroupConfirmDesc')}
+                  </AlertDialogDescription>
+                </div>
+              </div>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter className="px-5 py-3.5 border-t border-border/60 bg-background/80 backdrop-blur-md">
+            <AlertDialogCancel disabled={isMutating} className="rounded-lg mt-0">
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteGroup}
+              disabled={isMutating}
+              className={cn(
+                "rounded-lg gap-2 bg-red-600 text-white font-semibold hover:bg-red-700",
+                "shadow-md shadow-red-600/25 hover:shadow-lg hover:shadow-red-600/30",
+                "transition-all duration-200"
+              )}
+            >
+              {isMutating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash size={14} color="currentColor" variant="Bulk" />
+              )}
               {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -661,16 +759,42 @@ export default function AdminGroupesPage() {
 
       {/* Remove Contact Dialog */}
       <AlertDialog open={isRemoveContactOpen} onOpenChange={setIsRemoveContactOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('adminGroups.removeContactTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('adminGroups.removeContactDesc')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isMutating}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveContact} disabled={isMutating}>
+        <AlertDialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-b border-border/60 px-5 py-5">
+            <AlertDialogHeader>
+              <div className="flex items-start gap-3 text-left">
+                <div className="rounded-xl bg-amber-500/15 p-2.5 ring-1 ring-amber-500/20">
+                  <UserMinus size={20} color="currentColor" variant="Bulk" className="text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <AlertDialogTitle className="text-base font-semibold text-foreground">
+                    {t('adminGroups.removeContactTitle')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t('adminGroups.removeContactDesc')}
+                  </AlertDialogDescription>
+                </div>
+              </div>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter className="px-5 py-3.5 border-t border-border/60 bg-background/80 backdrop-blur-md">
+            <AlertDialogCancel disabled={isMutating} className="rounded-lg mt-0">
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveContact}
+              disabled={isMutating}
+              className={cn(
+                "rounded-lg gap-2 bg-amber-600 text-white font-semibold hover:bg-amber-700",
+                "shadow-md shadow-amber-600/25 hover:shadow-lg hover:shadow-amber-600/30",
+                "transition-all duration-200"
+              )}
+            >
+              {isMutating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserMinus size={14} color="currentColor" variant="Bulk" />
+              )}
               {t('groupContacts.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>

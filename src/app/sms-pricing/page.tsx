@@ -5,8 +5,7 @@ import Link from "next/link"
 import { ArrowLeft, SearchNormal1, Global, Wallet } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
-import { useAuthContext } from "@/core/providers/auth-provider"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { createInternationalRecharge } from "@/core/services/recharge.service"
 import { LoginModal } from "@/shared/common/login-modal"
 import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal"
@@ -33,8 +32,7 @@ export default function PricingPage() {
   const [selectedCountry, setSelectedCountry] = useState<{ countryName: string; countryCode: string; pricePerSms: number } | null>(null)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
-  const { isConnected } = useAuthContext()
-  const user = useUserStore((state) => state.user)
+  const { isConnected, user } = useAuth()
   const { pricesQuery } = useSmsCountryPrices({ page, size: PAGE_SIZE })
   const { data: rawData, isLoading } = pricesQuery
   const countries = Array.isArray(rawData) ? rawData : (rawData as any)?.content ?? []

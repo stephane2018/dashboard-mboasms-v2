@@ -12,7 +12,7 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import type { EnterpriseType } from "@/core/models/company"
 import { useRouter } from "next/navigation"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { useLoginAs } from "@/core/hooks/useLogin"
 import { useT } from "@/core/hooks"
 
@@ -26,8 +26,7 @@ function ActionsCell({ company, onAddUser, onCredit, onDelete }: {
 }) {
   const router = useRouter()
   const { t } = useT()
-  const setActingCompany = useUserStore((s) => s.setActingCompany)
-  const { user } = useUserStore()
+  const { user } = useAuth()
   const loginAsMutation = useLoginAs()
 
   const handleImpersonate = () => {

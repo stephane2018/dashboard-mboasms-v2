@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { useSidebar } from '@/shared/ui/sidebar'
-import { useUserStore } from '@/core/stores/userStore'
-import { useEnterpriseStore } from '@/core/stores/enterpriseStore'
-import { UseGetConnectedCompagnieData, useRecharge, useT } from '@/core/hooks'
+import { useAuth } from '@/core/hooks/useAuth'
+import { useRecharge, useT } from '@/core/hooks'
 import { useState } from 'react'
 import { CreateRechargeModal, type RechargeFormData } from '@/shared/common/create-recharge-modal'
 import { createRecharge } from '@/core/services/recharge.service'
@@ -16,19 +15,14 @@ import { Global, ArrowRight2 } from 'iconsax-react'
 export function PlanDetails() {
   const { t } = useT()
   const { state } = useSidebar()
-  const { user } = useUserStore()
+  const { user, enterprise, refetchEnterprise } = useAuth()
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
 
-  const enterpriseFromStore = useEnterpriseStore((s) => s.enterprise)
-  const { data: enterpriseFromApi, refetch: refetchEnterprise } = UseGetConnectedCompagnieData(user?.companyId || "", user?.id || "")
   const { rechargesQuery } = useRecharge()
 
   if (!user || state === 'collapsed') {
     return null
   }
-
-  // Prefer API data (fresh) but fall back to store (set at login) for credit fields
-  const enterprise = enterpriseFromApi ?? enterpriseFromStore
 
   const recharges = rechargesQuery?.data ?? []
   const mostRecentRecharge = recharges?.filter(r => r.status === 'VALIDE')
@@ -36,7 +30,8 @@ export function PlanDetails() {
 
   const smsBalance = typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : 0
   const smsQuota = typeof mostRecentRecharge?.qteMessage === 'number' ? mostRecentRecharge.qteMessage : 0
-  const planName = typeof user.planName === 'string' ? user.planName : 'Plan Business'
+  // TODO migration: planName no longer on user — needs mapping from enterprise/plan source
+  const planName = 'Plan Business'
   const usagePercent = smsQuota > 0 ? Math.max(0, Math.min(100, 100 - (smsBalance / smsQuota) * 100)) : 100
 
   const internationalBalance = typeof enterprise?.internationalCredit === 'number' ? enterprise.internationalCredit : 0

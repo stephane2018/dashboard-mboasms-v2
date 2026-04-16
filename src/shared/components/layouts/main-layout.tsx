@@ -32,8 +32,8 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/shared/ui/avatar"
-import { useUserStore } from "@/core/stores/userStore"
-import { useEnterpriseStore } from "@/core/stores/enterpriseStore"
+import { useAuth } from "@/core/hooks/useAuth"
+import { useAuthStore } from "@/core/stores/authStore"
 import { useEffect, useRef } from "react"
 import { Info } from "lucide-react"
 import { ImpersonationBanner } from "@/shared/components/impersonation-banner"
@@ -50,6 +50,8 @@ import {
 import { useTheme } from "next-themes"
 import { LanguageSwitcher } from "@/shared/common/language-switcher"
 import { useT } from "@/core/hooks"
+import { useLogout } from "@/core/hooks/useLogout"
+import { LogoutConfirmDialog } from "@/shared/common/logout-confirm-dialog"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -61,8 +63,10 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
   const router = useRouter()
-  const { user, clearUser, actingCompanyId, actingCompanyName, setActingCompany, clearActingCompany } = useUserStore()
-  const { enterprise } = useEnterpriseStore()
+  const { user, enterprise, actingCompanyId, actingCompanyName } = useAuth()
+  const setActingCompany = useAuthStore((s) => s.setActingCompany)
+  const clearActingCompany = useAuthStore((s) => s.clearActingCompany)
+  const logoutMutation = useLogout()
   const { resolvedTheme, setTheme } = useTheme()
   const { t } = useT()
   const [mounted, setMounted] = React.useState(false)
@@ -80,15 +84,14 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
     .slice(0, 2)
     .toUpperCase()
 
-  const smsQuota = user?.smsQuota ?? 100000
-  const smsBalance = typeof user?.smsBalance === "number" ? user.smsBalance : 0
-  const smsUsagePercent = smsQuota
-    ? Math.max(0, Math.min(100, 100 - Math.round((smsBalance / smsQuota) * 100)))
-    : 0
+  const [logoutOpen, setLogoutOpen] = React.useState(false)
 
-  const handleLogout = () => {
-    clearUser()
-    router.push("/auth/login")
+  const handleLogoutRequest = () => {
+    setLogoutOpen(true)
+  }
+
+  const handleLogoutConfirm = () => {
+    logoutMutation.mutate()
   }
 
   // Hydrate acting company from sessionStorage (e.g., after impersonation)
@@ -107,14 +110,6 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
     sessionStorage.removeItem("actingCompanyId")
     sessionStorage.removeItem("actingCompanyName")
     clearActingCompany()
-  }
-
-  // Dynamic progress bar color based on SMS usage
-  const getProgressBarColor = () => {
-    if (smsUsagePercent >= 90) return "bg-red-600"
-    if (smsUsagePercent >= 70) return "bg-orange-500"
-    if (smsUsagePercent >= 50) return "bg-yellow-500"
-    return "bg-primary"
   }
 
   return (
@@ -227,7 +222,7 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onClick={handleLogout}
+                  onClick={handleLogoutRequest}
                   className="flex items-center gap-2 text-red-500 focus:text-red-500 focus:bg-red-50 cursor-pointer"
                 >
                   <Logout size="16"variant="Bulk" color="currentColor" className="text-primary" />
@@ -255,6 +250,13 @@ export function MainLayout({ children, breadcrumbs = [] }: MainLayoutProps) {
           {children}
         </div>
       </SidebarInset>
+
+      <LogoutConfirmDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        onConfirm={handleLogoutConfirm}
+        isPending={logoutMutation.isPending}
+      />
     </SidebarProvider>
   )
 }

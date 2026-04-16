@@ -1,6 +1,7 @@
 'use client'
 
-import { useUserStore } from '@/core/stores/userStore'
+import { useAuth } from '@/core/hooks/useAuth'
+import { useAuthStore } from '@/core/stores/authStore'
 import { useSwitchBack } from '@/core/hooks/useLogin'
 import { Button } from '@/shared/ui/button'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
@@ -10,7 +11,8 @@ import { useT } from '@/core/hooks'
 
 export function ImpersonationBanner() {
   const { t } = useT()
-  const { isImpersonating, originalUser, user } = useUserStore()
+  const { isImpersonating, user } = useAuth()
+  const originalUser = useAuthStore((s) => s.originalAuth?.user)
   const { switchBack } = useSwitchBack()
 
   if (!isImpersonating || !originalUser || !user) {

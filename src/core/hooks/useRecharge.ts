@@ -13,7 +13,7 @@ import {
 } from "@/core/services/recharge.service"
 import type { CreateRechargeRequestType, RechargeListContentType } from "@/core/models/recharges"
 import type { UseQueryOptions } from "@tanstack/react-query"
-import { useUserStore } from "@/core/stores/userStore"
+import { useAuth } from "@/core/hooks/useAuth"
 import { Role } from "@/core/config/enum"
 
 type CreditAccountPayload = { enterpriseId: string; qteMessage: number }
@@ -61,7 +61,7 @@ interface UseRechargeOptions {
 
 export function useRecharge(options: UseRechargeOptions = {}) {
   const queryClient = useQueryClient()
-  const user = useUserStore((state) => state.user)
+  const { user } = useAuth()
   const _isSuperAdmin = user?.role === Role.SUPER_ADMIN
   const _isAdminUser = user?.role === Role.ADMIN_USER
   const _isAdmin = _isSuperAdmin || _isAdminUser
@@ -82,7 +82,7 @@ export function useRecharge(options: UseRechargeOptions = {}) {
       }
       return (await getRechargesByEnterprise(enterpriseId!, 0, 500)) ?? []
     },
-    enabled: !!user && (_isAdmin || !!enterpriseId),
+    enabled: !!user && (_isSuperAdmin || !!enterpriseId),
     ...(options.queryOptions ?? {}),
   })
 

@@ -1,5 +1,5 @@
 import { Role } from "@/core/config/enum"
-import { useUserStore } from "@/core/stores"
+import { useAuthStore } from "@/core/stores/authStore"
 
 export type UserRole = "ADMIN" | "ADMIN_USER" | "MANAGER" | "SELLER" | "SUPER_ADMIN" | "USER"
 
@@ -42,7 +42,7 @@ export const getRoleFromLocalStorage = (): UserRole | null => {
 // New function using Zustand store
 export const getUserRole = (): Role | null => {
   if (typeof window === 'undefined') return null
-  const { user } = useUserStore.getState()
+  const { user } = useAuthStore.getState()
   return user?.role || null
 }
 

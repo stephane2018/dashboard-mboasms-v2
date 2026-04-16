@@ -1,3 +1,3 @@
-export { useUserStore } from './userStore';
 export { useSettingsStore } from './settingsStore';
-export { useEnterpriseStore } from './enterpriseStore';
+export { useAuthStore, getAuthToken, authRoleHelpers } from './authStore';
+export type { AuthUser } from './authStore';

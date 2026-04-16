@@ -16,34 +16,34 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/shared/ui/sidebar'
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
 import {
   getDashboardConfig,
-  getNameOfDashboard,
   navigationConfig,
-  secondaryNavConfig,
   type RoleBasedNavItem,
 } from './sidebar-config'
 import Image from 'next/image'
 import { useTheme } from 'next-themes'
-import { useUserStore } from '@/core/stores/userStore'
+import { useAuth } from '@/core/hooks/useAuth'
 import { Role } from '@/core/config/enum'
 import { useT } from '@/core/hooks'
+import { cn } from '@/lib/utils'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { user } = useUserStore()
+  const { user } = useAuth()
   const userRole = user?.role || Role.USER
   const { state } = useSidebar()
   const { resolvedTheme } = useTheme()
   const { t } = useT()
   const [mounted, setMounted] = React.useState(false)
+  const isCollapsed = state === 'collapsed'
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  const logoSrc = mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg'
+  const logoSrc =
+    mounted && resolvedTheme === 'dark' ? '/icones/logo-white.svg' : '/icones/logo.svg'
 
   const dashboardConfig = React.useMemo(() => getDashboardConfig(userRole), [userRole])
   const isDashboardActive =
@@ -54,28 +54,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .filter((section) => section.roles.includes(userRole))
       .map((section) => ({
         title: section.title,
-        items: section.items.filter((item) => item.roles.includes(userRole)),
+        items: section.items
+          .filter((item) => item.roles.includes(userRole))
+          // Skip the dashboard entry inside sections — it's already pinned at the top
+          .filter((item) => item.url !== dashboardConfig.url),
       }))
       .filter((section) => section.items.length > 0)
-  }, [userRole])
-
-  const filteredNavSecondary = React.useMemo(() => {
-    return secondaryNavConfig
-      .filter((item: RoleBasedNavItem) => item.roles.includes(userRole))
-      .map(({ roles, ...item }) => item)
-  }, [userRole])
+  }, [userRole, dashboardConfig.url])
 
   const canAccessDashboard = dashboardConfig.roles.includes(userRole)
+  const DashboardIcon = dashboardConfig.icon
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border/50">
         <SidebarMenu>
-          <SidebarMenuItem className={`${state === 'collapsed' ? 'mx-auto' : ''}  p-2`}>
-            <SidebarMenuButton size="lg" asChild className="bg-transparent!">
-              <Link href="/" className={`flex ${state === 'collapsed' ? 'justify-center' : 'justify-start'} `}>
+          <SidebarMenuItem className={cn('p-2', isCollapsed && 'mx-auto')}>
+            <SidebarMenuButton size="lg" asChild className="bg-transparent! hover:bg-transparent!">
+              <Link
+                href="/"
+                className={cn(
+                  'flex',
+                  isCollapsed ? 'justify-center' : 'justify-start'
+                )}
+              >
                 <div className="relative h-8 w-28">
-                  <Image src={logoSrc} alt="MboaSMS" fill className="rounded-sm object-contain" />
+                  <Image
+                    src={logoSrc}
+                    alt="MboaSMS"
+                    fill
+                    className="rounded-sm object-contain"
+                  />
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -83,21 +92,51 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        {/* Dashboard Item */}
+      <SidebarContent className="px-2">
+        {/* Pinned Dashboard item */}
         {canAccessDashboard && (
-          <div className="px-3 pt-3">
+          <div className="px-1 pt-3">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   size="default"
-                  className="h-10 px-2"
+                  tooltip={t('nav.dashboard')}
+                  className={cn(
+                    'group/dash relative h-10 rounded-lg transition-all',
+                    isCollapsed ? 'px-0 justify-center' : 'px-2.5',
+                    isDashboardActive
+                      ? 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-semibold'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                  )}
                   isActive={isDashboardActive}
                 >
-                  <Link href={dashboardConfig.url} className="flex items-center gap-2">
-                    <dashboardConfig.icon className="size-4" />
-                    <span className="text-sm font-semibold">{t('nav.dashboard')}</span>
+                  <Link
+                    href={dashboardConfig.url}
+                    className={cn(
+                      'flex items-center',
+                      isCollapsed ? 'justify-center' : 'gap-2.5'
+                    )}
+                  >
+                    {/* Active indicator bar */}
+                    {isDashboardActive && !isCollapsed && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-primary" />
+                    )}
+                    <div
+                      className={cn(
+                        'flex items-center justify-center rounded-md transition-colors',
+                        isDashboardActive
+                          ? 'bg-primary/15 text-primary'
+                          : 'text-primary/80'
+                      )}
+                    >
+                      <DashboardIcon className="size-4" />
+                    </div>
+                    {!isCollapsed && (
+                      <span className="text-[13px] font-semibold">
+                        {t('nav.dashboard')}
+                      </span>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -106,10 +145,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
 
         <NavMain sections={filteredSections} />
-        {/* <NavSecondary items={filteredNavSecondary} className="mt-auto" /> */}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border/50">
         <NavUser />
       </SidebarFooter>
     </Sidebar>

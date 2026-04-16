@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react"
 import { DataTable } from "@/shared/common/data-table"
 import { useContacts, useContactsByEnterprise } from "@/core/hooks/useContact";
-import { useUserStore } from "@/core/stores/userStore";
+import { useAuth } from "@/core/hooks/useAuth";
 import { useT } from "@/core/hooks";
-import { People } from 'iconsax-react';
+import { People, Refresh2 } from 'iconsax-react';
+import { Button } from "@/shared/ui/button";
 import { ContactStats } from "./contact-stats"
 import { ImportContacts } from "./import-contacts";
 import { ExportContacts } from './export-contacts';
@@ -14,15 +15,15 @@ import { toast } from "sonner"
 import type { PaginationState } from "@tanstack/react-table"
 
 export default function ContactsPage() {
-  const { user } = useUserStore()
+  const { user } = useAuth()
   const { t } = useT()
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
   const columns = useMemo(() => createContactColumns(t), [t])
 
   // Use different hooks based on user role
-  const { data: allContactsData, isLoading: isLoadingAll, isError: isErrorAll } = useContacts(pagination.pageIndex, pagination.pageSize)
-  const { data: enterpriseContactsData, isLoading: isLoadingEnterprise, isError: isErrorEnterprise } = useContactsByEnterprise(
+  const { data: allContactsData, isLoading: isLoadingAll, isError: isErrorAll, refetch: refetchAll } = useContacts(pagination.pageIndex, pagination.pageSize)
+  const { data: enterpriseContactsData, isLoading: isLoadingEnterprise, isError: isErrorEnterprise, refetch: refetchEnterprise } = useContactsByEnterprise(
     user?.companyId || "",
     pagination.pageIndex,
     pagination.pageSize
@@ -32,6 +33,7 @@ export default function ContactsPage() {
   const contactsData = _isSuperAdmin ? allContactsData : enterpriseContactsData
   const isLoading = _isSuperAdmin ? isLoadingAll : isLoadingEnterprise
   const isError = _isSuperAdmin ? isErrorAll : isErrorEnterprise
+  const refetch = _isSuperAdmin ? refetchAll : refetchEnterprise
 
   const data = contactsData?.content || []
   const rowCount = contactsData?.totalElements || 0
@@ -60,7 +62,17 @@ export default function ContactsPage() {
               : t("contacts.subtitleEnterprise")}
           </p>
         </div>
-                <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <Refresh2 size="16" variant="Bulk" className={isLoading ? 'animate-spin' : ''} />
+            {t('common.refresh')}
+          </Button>
           <ExportContacts />
           <ImportContacts />
         </div>

@@ -11,9 +11,7 @@ import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { LanguageSwitcher } from '@/shared/common/language-switcher';
 import { useT } from '@/core/hooks';
-import { useUserStore } from '@/core/stores/userStore';
-import { useEnterpriseStore } from '@/core/stores/enterpriseStore';
-import { useAuthContext } from '@/core/providers/auth-provider';
+import { useAuth } from '@/core/hooks/useAuth';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
 import {
   Avatar,
@@ -31,9 +29,7 @@ import {
 
 const Header = () => {
   const pathname = usePathname();
-  const { user } = useUserStore();
-  const { clearUser } = useAuthContext();
-  const { enterprise, clearEnterprise } = useEnterpriseStore();
+  const { user, enterprise, clearUser } = useAuth();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -113,15 +109,9 @@ const Header = () => {
     window.location.href = "/auth/login";
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (mobileMenuOpen) setMobileMenuOpen(false);
-    try {
-      await fetch('/api/auth/session', { method: 'DELETE', credentials: 'same-origin' });
-    } catch {
-      // ignore — cookie may still expire naturally
-    }
     clearUser();
-    clearEnterprise();
     window.location.href = '/auth/login';
   };
 
@@ -132,8 +122,11 @@ const Header = () => {
     .join('')
     .slice(0, 2)
     .toUpperCase();
-  const userSmsBalance =
-    typeof user?.smsBalance === 'number' ? user.smsBalance : null;
+  // TODO migration: smsBalance no longer on user — fall back to enterprise.smsCredit only
+  const userSmsBalance = enterpriseSmsCreditFallback()
+  function enterpriseSmsCreditFallback(): number | null {
+    return typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : null
+  }
   const enterpriseSmsCredit =
     typeof enterprise?.smsCredit === 'number' ? enterprise.smsCredit : null;
 
