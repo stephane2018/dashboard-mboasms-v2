@@ -9,10 +9,11 @@ import { Role } from "@/core/config/enum"
 import { MessageText, Add } from "iconsax-react"
 import { createColumns } from "./columns"
 import type { PaginationState } from "@tanstack/react-table"
-import type { SenderId } from "@/modules/sender-id/types"
+import type { SenderId, CreateSenderIdInput } from "@/modules/sender-id/types"
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
 import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/components"
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
+import { SenderIdGuideModal } from "@/modules/sender-id/components/sender-id-guide-modal"
 import { Button } from "@/shared/ui/button"
 import { toast } from "sonner"
 import { useCreateSenderId, useDeleteSenderId, useGetAllSenderIds, useGetSenderIdsByEnterprise, useUpdateSenderId, useUpdateSenderIdStatus, useT } from "@/core/hooks"
@@ -27,6 +28,17 @@ export default function SenderIdsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false)
+
+  // Check if guide should be shown on first visit
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const guideShown = localStorage.getItem("senderIdGuideShown")
+      if (!guideShown) {
+        setIsGuideModalOpen(true)
+      }
+    }
+  }, [])
 
   // SUPER_ADMIN: paginated response with content/totalElements
   const { data: allData, isLoading: isLoadingAll, error: errorAll } = useGetAllSenderIds(
@@ -90,7 +102,7 @@ export default function SenderIdsPage() {
   }, [])
 
   const handleSaveCreate = useCallback(
-    async (input: { name: string; description: string; enterpriseId: string }) => {
+    async (input: CreateSenderIdInput) => {
       await createSenderIdMutation.mutateAsync(input)
       setIsCreateDialogOpen(false)
     },

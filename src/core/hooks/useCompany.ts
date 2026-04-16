@@ -154,3 +154,25 @@ export function useEnterpriseDetails(enterpriseId: string, enabled: boolean = tr
     enabled,
   })
 }
+
+export function useBlockUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => import('@/core/services/auth.service').then(m => m.blockUser(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.all })
+    },
+  })
+}
+
+export function useUnblockUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => import('@/core/services/auth.service').then(m => m.unblockUser(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: companyKeys.all })
+    },
+  })
+}

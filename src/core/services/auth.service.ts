@@ -153,6 +153,14 @@ export async function loginAsUser(userEmail: string) {
   return await httpClient.post(`/api/v1/auth/login-as-user/${sanitizedEmail}`, {});
 }
 
+export async function blockUser(id: string) {
+  return await httpClient.put(`/api/v1/auth/${id}/block`);
+}
+
+export async function unblockUser(id: string) {
+  return await httpClient.put(`/api/v1/auth/${id}/unblock`);
+}
+
 export interface UpdateUserPayload {
   firstName?: string;
   lastName?: string;

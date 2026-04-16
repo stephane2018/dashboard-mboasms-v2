@@ -107,12 +107,13 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t }:
           label: t('senderIds.changeStatus'),
           onClick: () => onChangeStatus(senderId),
         }] : []),
-        {
+        // Only SUPER_ADMIN can delete
+        ...(userRole === Role.SUPER_ADMIN ? [{
           icon: Trash2,
           label: t('senderIds.delete'),
           className: "text-destructive",
           onClick: () => onDelete(senderId),
-        },
+        }] : []),
       ]
 
       return <ActionsDropdown items={actions} />

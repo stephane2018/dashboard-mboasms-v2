@@ -15,6 +15,8 @@ import {
   useAddUserToEnterprise,
   useDeleteUserFromEnterprise,
   useCreditEnterprise,
+  useBlockUser,
+  useUnblockUser,
 } from "@/core/hooks/useCompany"
 import { useT } from "@/core/hooks"
 import type { EnterpriseType } from "@/core/models/company"
@@ -39,12 +41,17 @@ export default function CompagniePage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [companyToDelete, setCompanyToDelete] = useState<EnterpriseType | null>(null)
   const [selectedCompany, setSelectedCompany] = useState<EnterpriseType | null>(null)
+  const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false)
+  const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false)
+  const [companyToToggle, setCompanyToToggle] = useState<EnterpriseType | null>(null)
 
   const { data, isLoading, refetch } = useCompaniesPaginated(pagination.pageIndex, pagination.pageSize)
   const { mutate: deleteCompany, isPending: isDeleting } = useDeleteCompany()
   const { mutate: addUser, isPending: isAddingUser } = useAddUserToEnterprise()
   const { mutate: deleteUser, isPending: isRemovingUser } = useDeleteUserFromEnterprise()
   const { mutate: creditEnterprise, isPending: isCrediting } = useCreditEnterprise()
+  const { mutate: blockUser, isPending: isBlocking } = useBlockUser()
+  const { mutate: unblockUser, isPending: isUnblocking } = useUnblockUser()
 
   const companies = data || []
   const totalElements = data?.length || 0
@@ -91,6 +98,46 @@ export default function CompagniePage() {
     })
   }
 
+  const handleBlock = (company: EnterpriseType) => {
+    setCompanyToToggle(company)
+    setIsBlockDialogOpen(true)
+  }
+
+  const handleUnblock = (company: EnterpriseType) => {
+    setCompanyToToggle(company)
+    setIsUnblockDialogOpen(true)
+  }
+
+  const confirmBlock = () => {
+    if (!companyToToggle) return
+    blockUser(companyToToggle.id, {
+      onSuccess: () => {
+        toast.success(t('companies.blockSuccess'))
+        setIsBlockDialogOpen(false)
+        setCompanyToToggle(null)
+        refetch()
+      },
+      onError: () => {
+        toast.error(t('companies.blockError'))
+      },
+    })
+  }
+
+  const confirmUnblock = () => {
+    if (!companyToToggle) return
+    unblockUser(companyToToggle.id, {
+      onSuccess: () => {
+        toast.success(t('companies.unblockSuccess'))
+        setIsUnblockDialogOpen(false)
+        setCompanyToToggle(null)
+        refetch()
+      },
+      onError: () => {
+        toast.error(t('companies.unblockError'))
+      },
+    })
+  }
+
   const handleAddUserSubmit = (userData: any) => {
     if (!selectedCompany) return
     addUser(
@@ -120,7 +167,7 @@ export default function CompagniePage() {
   const columns = useMemo(
     () =>
       getColumns(
-        { onAddUser: handleAddUser, onCredit: handleCredit, onDelete: handleDeleteCompany },
+        { onAddUser: handleAddUser, onCredit: handleCredit, onDelete: handleDeleteCompany, onBlock: handleBlock, onUnblock: handleUnblock },
         t
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -235,6 +282,38 @@ export default function CompagniePage() {
           buttons: {
             cancel: t('common.cancel'),
             action: t('common.delete'),
+          },
+        }}
+      />
+
+      {/* Block Confirmation */}
+      <ConfirmDialog
+        isOpen={isBlockDialogOpen}
+        isLoading={isBlocking}
+        onDismiss={() => { setIsBlockDialogOpen(false); setCompanyToToggle(null) }}
+        onAction={confirmBlock}
+        messages={{
+          title: t('companies.blockTitle'),
+          description: <>{t('companies.blockConfirm', { name: companyToToggle?.socialRaison })}</>,
+          buttons: {
+            cancel: t('common.cancel'),
+            action: t('companies.block'),
+          },
+        }}
+      />
+
+      {/* Unblock Confirmation */}
+      <ConfirmDialog
+        isOpen={isUnblockDialogOpen}
+        isLoading={isUnblocking}
+        onDismiss={() => { setIsUnblockDialogOpen(false); setCompanyToToggle(null) }}
+        onAction={confirmUnblock}
+        messages={{
+          title: t('companies.unblockTitle'),
+          description: <>{t('companies.unblockConfirm', { name: companyToToggle?.socialRaison })}</>,
+          buttons: {
+            cancel: t('common.cancel'),
+            action: t('companies.unblock'),
           },
         }}
       />

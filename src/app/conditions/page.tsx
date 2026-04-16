@@ -405,8 +405,8 @@ export default function ConditionsPage() {
                     </div>
                     <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider m-0 mb-1">WhatsApp</p>
-                      <a href="https://wa.me/237670424589" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline no-underline">
-                        +237 670 424 589
+                      <a href="https://wa.me/237697193064" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:underline no-underline">
+                        +237 697 193 064 (WhatsApp uniquement)
                       </a>
                     </div>
                   </div>

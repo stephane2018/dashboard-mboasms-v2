@@ -32,7 +32,7 @@ import type {
  *
  * 4. POST /api/v1/sender-ids
  *    - Create new sender ID
- *    - Body: { name: string, description: string, enterpriseId: string }
+ *    - Body: { name: string, description: string, enterpriseId: string, kycA2PUrl: string, senderIdAuthLetterUrl: string }
  *    - Returns: SenderId
  *
  * 5. PUT /api/v1/sender-ids/{id}

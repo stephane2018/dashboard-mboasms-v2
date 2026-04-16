@@ -377,7 +377,7 @@ export function CreateRechargeModal({
                         <Call size={16} variant="Bulk" color="currentColor" className="text-amber-500 shrink-0" />
                         <p className="text-xs text-muted-foreground">
                             {t('recharge.whatsappHelp')}{" "}
-                            <a href="https://wa.me/237696050476" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">+237 6 96 05 04 76</a>
+                            <a href="https://wa.me/237697193064" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">+237 697 193 064 (WhatsApp uniquement)</a>
                         </p>
                     </div>
                 )}

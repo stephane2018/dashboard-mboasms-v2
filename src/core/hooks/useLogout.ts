@@ -17,12 +17,16 @@ export function useLogout() {
       toast.success("Déconnexion réussie", {
         description: "À bientôt sur MboaSMS",
       })
-      window.location.href = "/auth/login"
+      setTimeout(() => {
+        window.location.href = "/auth/login"
+      }, 100)
     },
     onError: () => {
       clearAuth()
       queryClient.clear()
-      window.location.href = "/auth/login"
+      setTimeout(() => {
+        window.location.href = "/auth/login"
+      }, 100)
     },
   })
 }

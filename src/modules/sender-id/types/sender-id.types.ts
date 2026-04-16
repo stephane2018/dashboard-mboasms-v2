@@ -44,6 +44,8 @@ export type CreateSenderIdInput = {
   name: string
   description: string
   enterpriseId: string
+  kycA2PUrl: string
+  senderIdAuthLetterUrl: string
 }
 
 export type UpdateSenderIdInput = {

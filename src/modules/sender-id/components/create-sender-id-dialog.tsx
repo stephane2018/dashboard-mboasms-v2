@@ -22,7 +22,9 @@ import {
   Document,
 } from "iconsax-react"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import type { CreateSenderIdInput } from "../types"
+import { fileService } from "@/core/services/file.service"
 import { cn } from "@/lib/utils"
 
 interface CreateSenderIdDialogProps {
@@ -52,44 +54,70 @@ export function CreateSenderIdDialog({
   const { t } = useT()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [documents, setDocuments] = useState<File[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [kycFile, setKycFile] = useState<File | null>(null)
+  const [authLetterFile, setAuthLetterFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const kycInputRef = useRef<HTMLInputElement>(null)
+  const authLetterInputRef = useRef<HTMLInputElement>(null)
 
   const nameLength = name.length
   const isAlphanumeric = /^[a-zA-Z0-9]*$/.test(name)
   const isNameValid = name.trim().length > 0 && nameLength <= 11 && isAlphanumeric
 
   const handleSave = async () => {
-    await onSave({ name, description, enterpriseId })
+    if (!kycFile || !authLetterFile) {
+      toast.error(t("senderIds.bothFilesRequired"))
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const [kycA2PUrl, senderIdAuthLetterUrl] = await Promise.all([
+        fileService.uploadFile(kycFile),
+        fileService.uploadFile(authLetterFile),
+      ])
+
+      await onSave({ name, description, enterpriseId, kycA2PUrl, senderIdAuthLetterUrl })
+      resetForm()
+      onOpenChange(false)
+    } catch {
+      toast.error(t("senderIds.uploadError"))
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const resetForm = () => {
     setName("")
     setDescription("")
-    setDocuments([])
-    onOpenChange(false)
+    setKycFile(null)
+    setAuthLetterFile(null)
   }
 
   const handleCancel = () => {
-    setName("")
-    setDescription("")
-    setDocuments([])
+    resetForm()
     onOpenChange(false)
   }
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    setDocuments((prev) => [...prev, ...files])
-  }
-
-  const removeDocument = (index: number) => {
-    setDocuments((prev) => prev.filter((_, i) => i !== index))
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setter: (file: File | null) => void
+  ) => {
+    const file = event.target.files?.[0] ?? null
+    setter(file)
+    event.target.value = ""
   }
 
   const downloadDocument = (docType: "template1" | "template2") => {
     const urls = {
-      template1: "/documents/sender-id-template-1.pdf",
-      template2: "/documents/sender-id-template-2.pdf",
+      template1: "https://firebasestorage.googleapis.com/v0/b/package-tracking-system-445f6.appspot.com/o/MBOASMS%2FKYC_A2P_2025.docx?alt=media&token=507be5cf-33e5-4483-a4d3-1a3a88a0385a",
+      template2: "https://firebasestorage.googleapis.com/v0/b/package-tracking-system-445f6.appspot.com/o/MBOASMS%2FSender%20ID%20autorization%20letter.docx?alt=media&token=5de005a2-255f-4fdf-9842-4c2491e5d186",
     }
     window.open(urls[docType], "_blank")
   }
+
+  const isBusy = isLoading || isUploading
+  const canSubmit = isNameValid && !!kycFile && !!authLetterFile
 
   const counterColor =
     nameLength === 0
@@ -188,7 +216,7 @@ export function CreateSenderIdDialog({
               {t("senderIds.documentsSection")}
             </SectionLabel>
 
-            {/* Templates */}
+            {/* Templates download */}
             <div className="rounded-xl border border-border/60 bg-muted/30 p-3 space-y-2.5">
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <DocumentDownload size={12} color="currentColor" />
@@ -218,56 +246,97 @@ export function CreateSenderIdDialog({
               </div>
             </div>
 
-            {/* Upload zone */}
+            {/* KYC A2P Upload */}
             <div className="space-y-2">
-              <p className="text-[11px] text-muted-foreground">{t("senderIds.uploadDocuments")}</p>
+              <p className="text-[11px] font-medium text-foreground">
+                {t("senderIds.kycA2PLabel")} <span className="text-red-500">*</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">{t("senderIds.kycA2PDesc")}</p>
               <input
-                ref={fileInputRef}
+                ref={kycInputRef}
                 type="file"
-                multiple
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileSelect}
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => handleFileChange(e, setKycFile)}
                 className="hidden"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-                className={cn(
-                  "w-full gap-2 h-12 rounded-lg text-xs border-dashed",
-                  "hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                )}
-              >
-                <DocumentUpload size={16} color="currentColor" variant="Bulk" className="text-primary" />
-                {t("senderIds.selectFiles")}
-              </Button>
-
-              {documents.length > 0 && (
-                <div className="space-y-1.5 pt-1">
-                  {documents.map((doc, index) => (
-                    <div
-                      key={index}
-                      className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]"
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
-                        <span className="truncate font-medium text-foreground">{doc.name}</span>
-                        <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                          {(doc.size / 1024).toFixed(0)} Ko
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeDocument(index)}
-                        className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                        aria-label="Retirer"
-                      >
-                        <CloseCircle size={14} color="currentColor" variant="Bulk" />
-                      </button>
-                    </div>
-                  ))}
+              {kycFile ? (
+                <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
+                    <span className="truncate font-medium text-foreground">{kycFile.name}</span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                      {(kycFile.size / 1024).toFixed(0)} Ko
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setKycFile(null)}
+                    className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <CloseCircle size={14} color="currentColor" variant="Bulk" />
+                  </button>
                 </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => kycInputRef.current?.click()}
+                  disabled={isBusy}
+                  className={cn(
+                    "w-full gap-2 h-12 rounded-lg text-xs border-dashed",
+                    "hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  )}
+                >
+                  <DocumentUpload size={16} color="currentColor" variant="Bulk" className="text-primary" />
+                  {t("senderIds.selectFile")}
+                </Button>
+              )}
+            </div>
+
+            {/* Sender ID Auth Letter Upload */}
+            <div className="space-y-2">
+              <p className="text-[11px] font-medium text-foreground">
+                {t("senderIds.authLetterLabel")} <span className="text-red-500">*</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">{t("senderIds.authLetterDesc")}</p>
+              <input
+                ref={authLetterInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => handleFileChange(e, setAuthLetterFile)}
+                className="hidden"
+              />
+              {authLetterFile ? (
+                <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
+                    <span className="truncate font-medium text-foreground">{authLetterFile.name}</span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                      {(authLetterFile.size / 1024).toFixed(0)} Ko
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAuthLetterFile(null)}
+                    className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <CloseCircle size={14} color="currentColor" variant="Bulk" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => authLetterInputRef.current?.click()}
+                  disabled={isBusy}
+                  className={cn(
+                    "w-full gap-2 h-12 rounded-lg text-xs border-dashed",
+                    "hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  )}
+                >
+                  <DocumentUpload size={16} color="currentColor" variant="Bulk" className="text-primary" />
+                  {t("senderIds.selectFile")}
+                </Button>
               )}
             </div>
           </section>
@@ -296,24 +365,24 @@ export function CreateSenderIdDialog({
           <Button
             variant="outline"
             onClick={handleCancel}
-            disabled={isLoading}
+            disabled={isBusy}
             className="rounded-lg"
           >
             {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isLoading || !isNameValid}
+            disabled={isBusy || !canSubmit}
             className={cn(
               "rounded-lg gap-2 bg-primary text-white font-semibold",
               "shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30",
               "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             )}
           >
-            {isLoading ? (
+            {isBusy ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t("senderIds.creating")}
+                {isUploading ? t("senderIds.uploading") : t("senderIds.creating")}
               </>
             ) : (
               <>

@@ -141,7 +141,7 @@ const ScheduleCallModal = ({ isOpen, onClose }: ScheduleCallModalProps) => {
     const message = encodeURIComponent(
       `${t('scheduleCall.whatsappMessage', { date: format(eventData.date, "d MMMM", { locale: fr }), time: eventData.time, title: eventData.title, description: eventData.description })}`
     );
-    return `https://wa.me/237670424589?text=${message}`;
+    return `https://wa.me/237697193064?text=${message}`;
   };
 
   const handleConfirm = () => {
