@@ -16,10 +16,8 @@ export function detectBrowserLang(): Lang {
 
 interface LanguageState {
   lang: Lang;
-  /** true only when the user has explicitly picked a language via the switcher */
   userHasChosen: boolean;
   setLang: (lang: Lang) => void;
-  /** Internal: set language without marking as user-chosen (used after rehydration) */
   _syncBrowserLang: () => void;
 }
 
