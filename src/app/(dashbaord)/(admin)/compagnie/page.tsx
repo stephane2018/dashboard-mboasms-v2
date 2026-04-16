@@ -110,7 +110,13 @@ export default function CompagniePage() {
 
   const confirmBlock = () => {
     if (!companyToToggle) return
-    blockUser(companyToToggle.id, {
+    const firstUser = companyToToggle.user?.[0]
+    const userId = typeof firstUser === 'string' ? firstUser : (firstUser as any)?.id
+    if (!userId) {
+      toast.error(t('companies.blockError'))
+      return
+    }
+    blockUser(userId, {
       onSuccess: () => {
         toast.success(t('companies.blockSuccess'))
         setIsBlockDialogOpen(false)
@@ -125,7 +131,13 @@ export default function CompagniePage() {
 
   const confirmUnblock = () => {
     if (!companyToToggle) return
-    unblockUser(companyToToggle.id, {
+    const firstUser = companyToToggle.user?.[0]
+    const userId = typeof firstUser === 'string' ? firstUser : (firstUser as any)?.id
+    if (!userId) {
+      toast.error(t('companies.unblockError'))
+      return
+    }
+    unblockUser(userId, {
       onSuccess: () => {
         toast.success(t('companies.unblockSuccess'))
         setIsUnblockDialogOpen(false)
