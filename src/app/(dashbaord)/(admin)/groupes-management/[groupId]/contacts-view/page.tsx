@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
-import { ArrowLeft, SearchNormal1, Profile2User, Sms, UserAdd, DocumentDownload, Call, People } from "iconsax-react"
+import { ArrowLeft, SearchNormal1, Profile2User, Sms, UserAdd, DocumentDownload, Call, People, Trash } from "iconsax-react"
 import { contactService } from "@/core/services/contact.service"
 import { useSendToGroup } from "@/core/hooks/useContactMessage"
 import { useDeleteContactFromGroup } from "@/core/hooks/use-groups"
@@ -376,146 +376,123 @@ export default function GroupContactsViewPage() {
     )
   }
 
+  const kpiCards = [
+    { label: t('groupContacts.totalContacts'), value: contactStats.total, Icon: People, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", ring: "ring-blue-200/50 dark:ring-blue-500/20", accent: "from-blue-500/15" },
+    { label: "MTN", value: contactStats.operators.MTN, sub: `${contactStats.valid > 0 ? Math.round((contactStats.operators.MTN / contactStats.valid) * 100) : 0}% ${t('groupContacts.ofValid')}`, Icon: Call, color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-50 dark:bg-yellow-500/10", ring: "ring-yellow-200/50 dark:ring-yellow-500/20", accent: "from-yellow-500/15" },
+    { label: "Orange", value: contactStats.operators.ORANGE, sub: `${contactStats.valid > 0 ? Math.round((contactStats.operators.ORANGE / contactStats.valid) * 100) : 0}% ${t('groupContacts.ofValid')}`, Icon: Call, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10", ring: "ring-orange-200/50 dark:ring-orange-500/20", accent: "from-orange-500/15" },
+    { label: t('groupContacts.others'), value: contactStats.operators.NEXTTEL + contactStats.operators.CAMTEL, sub: "Nexttel & Camtel", Icon: Call, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/10", ring: "ring-purple-200/50 dark:ring-purple-500/20", accent: "from-purple-500/15" },
+  ]
+
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft size={20} variant="Bulk" color="currentColor" className="text-primary" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Profile2User size={24}  variant="Bulk" color="currentColor" className="text-primary"  />
-              {groupInfo?.name || `${t('groups.title')} ${groupId}`}
-            </h1>
-            <p className="text-muted-foreground">
-              {filteredContacts.length} contact{filteredContacts.length > 1 ? "s" : ""}
-            </p>
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Hero header */}
+      <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-6">
+        <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_top_right,theme(colors.primary/15),transparent_60%)]" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.back()}
+              className="shrink-0 h-10 w-10 rounded-xl bg-background/60 backdrop-blur"
+            >
+              <ArrowLeft size={18} variant="Bulk" color="currentColor" className="text-primary" />
+            </Button>
+            <div className="rounded-xl bg-primary/15 p-2.5 ring-1 ring-primary/20 shrink-0">
+              <Profile2User size={22} variant="Bulk" color="currentColor" className="text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                {groupInfo?.name || `${t('groups.title')} ${groupId}`}
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {filteredContacts.length} contact{filteredContacts.length > 1 ? "s" : ""} · {contactStats.valid} {t('groupContacts.ofValid').toLowerCase()}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAddContactModalOpen(true)}
+              disabled={isAddingContacts}
+              className="rounded-xl gap-2 bg-background/60 backdrop-blur"
+            >
+              <UserAdd size={14} variant="Bulk" color="currentColor" />
+              {t('groups.addContacts')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportContacts}
+              disabled={filteredContacts.length === 0 || isExporting}
+              className="rounded-xl gap-2 bg-background/60 backdrop-blur"
+            >
+              <DocumentDownload size={14} variant="Bulk" color="currentColor" />
+              {isExporting ? t('groupContacts.exporting') : t('common.export')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSendMessageFromGroup}
+              disabled={filteredContacts.length === 0}
+              className="rounded-xl gap-2 bg-primary text-white font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            >
+              <Sms size={14} variant="Bulk" color="currentColor" />
+              {t('groupContacts.sendMessage')}
+            </Button>
           </div>
         </div>
+      </section>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsAddContactModalOpen(true)}
-            disabled={isAddingContacts}
-          >
-            <UserAdd size={16} className="mr-2" variant="Bulk" color="currentColor" />
-            {t('groups.addContacts')}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExportContacts}
-            disabled={filteredContacts.length === 0 || isExporting}
-          >
-            <DocumentDownload size={16} className="mr-2" variant="Bulk" color="currentColor" />
-            {isExporting ? t('groupContacts.exporting') : t('common.export')}
-          </Button>
-          <Button
-            onClick={handleSendMessageFromGroup}
-            disabled={filteredContacts.length === 0}
-            className="bg-pink-600 hover:bg-pink-700"
-          >
-            <Sms size={16} color="currentColor" className="mr-2" variant="Bulk" />
-            {t('groupContacts.sendMessage')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Statistics */}
+      {/* KPI cards */}
       {!isLoading && filteredContacts.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+        <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+          {kpiCards.map((kpi) => (
+            <div
+              key={kpi.label}
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+            >
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 [background-image:radial-gradient(circle_at_top_right,var(--tw-gradient-from)_0%,transparent_70%)] ${kpi.accent}`} />
+              <div className="relative flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('groupContacts.totalContacts')}</p>
-                  <p className="text-3xl font-bold mt-2">{contactStats.total}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
+                  <p className="text-3xl font-bold text-foreground leading-none mt-2 tabular-nums">{kpi.value}</p>
+                  {(kpi as any).sub && (
+                    <p className="text-[11px] text-muted-foreground mt-1.5">{(kpi as any).sub}</p>
+                  )}
                 </div>
-                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                  <People size={24} variant="Bulk" color="currentColor" className="text-blue-600" />
+                <div className={`rounded-xl p-2.5 ring-1 ${kpi.bg} ${kpi.ring}`}>
+                  <kpi.Icon size={18} variant="Bulk" color="currentColor" className={kpi.color} />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* MTN */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">MTN</p>
-                  <p className="text-3xl font-bold mt-2 text-yellow-600">{contactStats.operators.MTN}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {contactStats.valid > 0 ? Math.round((contactStats.operators.MTN / contactStats.valid) * 100) : 0}% {t('groupContacts.ofValid')}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
-                  <Call size={24} variant="Bulk" color="currentColor" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Orange */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Orange</p>
-                  <p className="text-3xl font-bold mt-2 text-orange-600">{contactStats.operators.ORANGE}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {contactStats.valid > 0 ? Math.round((contactStats.operators.ORANGE / contactStats.valid) * 100) : 0}% {t('groupContacts.ofValid')}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-                  <Call size={24} variant="Bulk" color="currentColor" className="text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Others (Nexttel + Camtel) */}
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{t('groupContacts.others')}</p>
-                  <p className="text-3xl font-bold mt-2 text-purple-600">
-                    {contactStats.operators.NEXTTEL + contactStats.operators.CAMTEL}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Nexttel & Camtel
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
-                  <Call size={24} variant="Bulk" color="currentColor" className="text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          ))}
+        </section>
       )}
 
       {/* Contacts Table */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-xl">{t('groupContacts.contactList')}</CardTitle>
-            <div className="relative w-full md:w-96">
-              <SearchNormal1  variant="Bulk" color="currentColor" className="text-primary absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
+      <section className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="px-5 pt-4 pb-3 border-b border-border/60 bg-gradient-to-r from-primary/5 to-transparent">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <People size={14} variant="Bulk" color="currentColor" className="text-primary" />
+              {t('groupContacts.contactList')}
+              <span className="text-[11px] font-medium text-muted-foreground tabular-nums ml-1">
+                ({filteredContacts.length})
+              </span>
+            </h2>
+            <div className="relative w-full md:w-80">
+              <SearchNormal1 size={14} variant="Bulk" color="currentColor" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('groupContacts.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-9 rounded-lg"
               />
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-5">
           <ContactsDataTable
             data={filteredContacts}
             isLoading={isLoading}
@@ -524,65 +501,35 @@ export default function GroupContactsViewPage() {
             onDelete={handleDelete}
             onSendMessage={handleSendMessageToContact}
           />
-        </CardContent>
-      </Card>
-
-      {/* Message Modal */}
-      {isMessageModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader>
-              <CardTitle>{t('groupContacts.sendMessageToGroup')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <textarea
-                placeholder={t('groupContacts.typeMessage')}
-                className="w-full min-h-[100px] p-3 border rounded-md resize-none"
-                id="group-message"
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsMessageModalOpen(false)}
-                  className="flex-1"
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    const message = (document.getElementById("group-message") as HTMLTextAreaElement)?.value
-                    if (message?.trim()) {
-                      handleSendMessageToGroup(message.trim())
-                    }
-                  }}
-                  disabled={isSending}
-                  className="flex-1 bg-pink-600 hover:bg-pink-700"
-                >
-                  {isSending ? t('sms.sending') : t('sms.send')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      )}
+      </section>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('groupContacts.removeFromGroup')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('groupContacts.removeConfirm', {
-                name: `${contactToDelete?.firstname} ${contactToDelete?.lastname}`
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+        <AlertDialogContent className="sm:max-w-[440px] p-0 gap-0 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-red-500/10 via-red-500/5 to-transparent border-b border-border/60 px-5 py-5">
+            <AlertDialogHeader>
+              <div className="flex items-start gap-3 text-left">
+                <div className="rounded-xl bg-red-500/15 p-2.5 ring-1 ring-red-500/20">
+                  <Trash size={20} color="currentColor" variant="Bulk" className="text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <AlertDialogTitle className="text-base font-semibold">{t('groupContacts.removeFromGroup')}</AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t('groupContacts.removeConfirm', {
+                      name: `${contactToDelete?.firstname} ${contactToDelete?.lastname}`
+                    })}
+                  </AlertDialogDescription>
+                </div>
+              </div>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter className="px-5 py-3.5 border-t border-border/60 bg-background/80 backdrop-blur-md">
+            <AlertDialogCancel disabled={isDeleting} className="rounded-lg mt-0">{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="rounded-lg gap-2 bg-red-600 text-white font-semibold hover:bg-red-700 shadow-md shadow-red-600/25 transition-all duration-200"
             >
               {isDeleting ? t('groupContacts.removing') : t('groupContacts.remove')}
             </AlertDialogAction>

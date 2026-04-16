@@ -33,14 +33,6 @@ export interface NavSection {
     items: NavItem[]
 }
 
-// Mock user data - replace with actual API call
-export const mockUserData = {
-    name: 'Admin User',
-    email: 'admin@mboasms.com',
-    avatar: '/logo.png',
-}
-
-// Role-based navigation configuration
 export interface RoleBasedNavItem extends NavItem {
     roles: UserRole[]
 }
@@ -50,17 +42,34 @@ export interface RoleBasedNavSection extends NavSection {
     items: RoleBasedNavItem[]
 }
 
+// ── Admin sections (ADMIN_USER + SUPER_ADMIN) ──────────────────────
+
 export const navigationConfig: RoleBasedNavSection[] = [
+    // ── Messagerie ──
     {
-        title: 'nav.admin',
+        title: 'nav.messaging',
         roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
         items: [
             {
-                title: 'nav.dashboard',
-                url: '/dashboard',
-                icon: Category,
+                title: 'nav.sms',
+                url: '/sms',
+                icon: Sms,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
+            {
+                title: 'nav.senderIds',
+                url: '/sender-ids',
+                icon: MessageText,
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+            },
+        ],
+    },
+
+    // ── Contacts & Groupes ──
+    {
+        title: 'nav.contactsAndGroups',
+        roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+        items: [
             {
                 title: 'nav.contacts',
                 url: '/users',
@@ -74,40 +83,24 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.SUPER_ADMIN],
             },
             {
-                title: 'nav.companies',
-                url: '/compagnie',
-                icon: Building,
-                roles: [Role.SUPER_ADMIN],
-            },
-            {
-                title: 'nav.sms',
-                url: '/sms',
-                icon: Sms,
-                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
-            },
-            {
-                title: 'nav.senderIds',
-                url: '/sender-ids',
-                icon: MessageText,
-                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
-            },
-             {
                 title: 'nav.groups',
                 url: '/groupes-management',
                 icon: Element3,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
+        ],
+    },
+
+    // ── Finance ──
+    {
+        title: 'nav.finance',
+        roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+        items: [
             {
                 title: 'nav.recharge',
                 url: '/recharge',
                 icon: WalletMoney,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
-            },
-            {
-                title: 'nav.termsConditions',
-                url: '/termes-and-condition',
-                icon: DocumentText,
-                roles: [Role.SUPER_ADMIN],
             },
             {
                 title: 'nav.pricing',
@@ -127,13 +120,33 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 icon: TicketDiscount,
                 roles: [Role.SUPER_ADMIN],
             },
+        ],
+    },
+
+    // ── Administration ──
+    {
+        title: 'nav.administration',
+        roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+        items: [
+            {
+                title: 'nav.companies',
+                url: '/compagnie',
+                icon: Building,
+                roles: [Role.SUPER_ADMIN],
+            },
             {
                 title: 'nav.history',
                 url: '/historique-plateforme',
                 icon: Clock,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
-             {
+            {
+                title: 'nav.termsConditions',
+                url: '/termes-and-condition',
+                icon: DocumentText,
+                roles: [Role.SUPER_ADMIN],
+            },
+            {
                 title: 'nav.apiKeys',
                 url: '/api-keys',
                 icon: Key,
@@ -142,8 +155,25 @@ export const navigationConfig: RoleBasedNavSection[] = [
         ],
     },
 
+    // ── Client sections (USER) ──────────────────────────────────────
+
+    // ── Messagerie (client) ──
     {
-        title: 'nav.menu',
+        title: 'nav.messaging',
+        roles: [Role.USER],
+        items: [
+            {
+                title: 'nav.sendSms',
+                url: '/sms-client',
+                icon: Sms,
+                roles: [Role.USER],
+            },
+        ],
+    },
+
+    // ── Contacts & Groupes (client) ──
+    {
+        title: 'nav.contactsAndGroups',
         roles: [Role.USER],
         items: [
             {
@@ -153,27 +183,37 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 roles: [Role.USER],
             },
             {
-                title: 'nav.sendSms',
-                url: '/sms-client',
-                icon: Sms,
-                roles: [Role.USER],
-            },
-            {
                 title: 'nav.groups',
                 url: '/groupes',
                 icon: Element3,
                 roles: [Role.USER],
             },
-            {
-                title: 'nav.history',
-                url: '/historique',
-                icon: Clock,
-                roles: [Role.USER],
-            },
+        ],
+    },
+
+    // ── Finance (client) ──
+    {
+        title: 'nav.finance',
+        roles: [Role.USER],
+        items: [
             {
                 title: 'nav.recharges',
                 url: '/recharges',
                 icon: WalletMoney,
+                roles: [Role.USER],
+            },
+        ],
+    },
+
+    // ── Mon compte (client) ──
+    {
+        title: 'nav.myAccount',
+        roles: [Role.USER],
+        items: [
+            {
+                title: 'nav.history',
+                url: '/historique',
+                icon: Clock,
                 roles: [Role.USER],
             },
             {
@@ -208,23 +248,6 @@ export const secondaryNavConfig: RoleBasedNavItem[] = [
 ]
 
 // Utility functions
-export const getUserRole = (): UserRole => {
-    // Read from sessionStorage (user-storage key used by Zustand)
-    try {
-        const stored = sessionStorage.getItem('user-storage')
-        if (stored) {
-            const parsed = JSON.parse(stored)
-            const role = parsed?.state?.user?.role
-            if (role && Object.values(Role).includes(role as Role)) {
-                return role as Role
-            }
-        }
-    } catch {
-        // Ignore parse errors
-    }
-    return Role.USER
-}
-
 export const getDashboardConfig = (userRole: UserRole) => {
     return {
         title: 'Dashboard',
