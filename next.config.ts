@@ -73,6 +73,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Unique build ID for version-check hard refresh
+  generateBuildId: async () => `build-${Date.now()}`,
+
+  env: {
+    NEXT_PUBLIC_BUILD_ID: `build-${Date.now()}`,
+  },
+
   // Enable standalone output for Docker
   output: 'standalone',
 

@@ -10,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore, authRoleHelpers, type AuthUser } from '@/core/stores/authStore';
 import { getCompagnieConnectedDetails } from '@/core/services/CompanyService';
+import { checkAppVersion, isTokenExpired } from '@/core/lib/version-check';
 import type { EnterpriseType } from '@/core/models';
 import { Role } from '@/core/config/enum';
 
@@ -51,8 +52,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   useEffect(() => {
+    // 1. Version check — hard refresh si nouveau déploiement
+    checkAppVersion();
+
+    // 2. Rehydrate store depuis localStorage
     useAuthStore.persist.rehydrate();
   }, []);
+
+  // 3. Token expiré → auto-logout après hydration
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (token && isTokenExpired(token)) {
+      clearAuth();
+      window.location.href = '/auth/login';
+    }
+  }, [isHydrated, token, clearAuth]);
 
   const userId = user?.id ?? null;
   const enterpriseId = user?.enterpriseId ?? null;
