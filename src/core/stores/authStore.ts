@@ -130,6 +130,7 @@ export const useAuthStore = create<AuthState>()(
         }
         return window.localStorage;
       }),
+      skipHydration: true,
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,
@@ -140,7 +141,17 @@ export const useAuthStore = create<AuthState>()(
         actingCompanyName: state.actingCompanyName,
       }),
       onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true);
+        if (state) {
+          const u = state.user;
+          if (u && (
+            typeof u.id !== 'string' || !u.id ||
+            typeof u.email !== 'string' || !u.email ||
+            typeof u.role !== 'string' || !u.role
+          )) {
+            state.clearAuth();
+          }
+          state.setHydrated(true);
+        }
       },
     }
   )

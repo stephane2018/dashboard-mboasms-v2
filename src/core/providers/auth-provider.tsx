@@ -48,15 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isImpersonating = useAuthStore((s) => s.isImpersonating);
   const actingCompanyId = useAuthStore((s) => s.actingCompanyId);
   const actingCompanyName = useAuthStore((s) => s.actingCompanyName);
-  const setHydrated = useAuthStore((s) => s.setHydrated);
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   useEffect(() => {
-    void useAuthStore.persist.rehydrate();
-    if (useAuthStore.persist.hasHydrated()) {
-      setHydrated(true);
-    }
-  }, [setHydrated]);
+    useAuthStore.persist.rehydrate();
+  }, []);
 
   const userId = user?.id ?? null;
   const enterpriseId = user?.enterpriseId ?? null;
