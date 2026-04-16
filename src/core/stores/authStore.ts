@@ -2,6 +2,15 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Role } from '@/core/config/enum';
 
+function syncTokenCookie(token: string | null) {
+  if (typeof document === 'undefined') return;
+  if (token) {
+    document.cookie = `mboasms-access-token=${token}; path=/; max-age=86400; SameSite=Lax`;
+  } else {
+    document.cookie = 'mboasms-access-token=; path=/; max-age=0; SameSite=Lax';
+  }
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -60,16 +69,19 @@ export const useAuthStore = create<AuthState>()(
       actingCompanyName: undefined,
       isHydrated: false,
 
-      setAuth: ({ token, refreshToken, user }) =>
+      setAuth: ({ token, refreshToken, user }) => {
+        syncTokenCookie(token);
         set({
           token,
           refreshToken,
           user,
           isImpersonating: false,
           originalAuth: null,
-        }),
+        });
+      },
 
-      clearAuth: () =>
+      clearAuth: () => {
+        syncTokenCookie(null);
         set({
           token: null,
           refreshToken: null,
@@ -78,11 +90,13 @@ export const useAuthStore = create<AuthState>()(
           originalAuth: null,
           actingCompanyId: undefined,
           actingCompanyName: undefined,
-        }),
+        });
+      },
 
       startImpersonation: ({ token, refreshToken, user }) => {
         const current = get();
         if (!current.token || !current.refreshToken || !current.user) return;
+        syncTokenCookie(token);
         set({
           originalAuth: {
             token: current.token,
@@ -99,6 +113,7 @@ export const useAuthStore = create<AuthState>()(
       stopImpersonation: () => {
         const { originalAuth } = get();
         if (!originalAuth) return;
+        syncTokenCookie(originalAuth.token);
         set({
           token: originalAuth.token,
           refreshToken: originalAuth.refreshToken,
@@ -149,6 +164,8 @@ export const useAuthStore = create<AuthState>()(
             typeof u.role !== 'string' || !u.role
           )) {
             state.clearAuth();
+          } else {
+            syncTokenCookie(state.token);
           }
           state.setHydrated(true);
         }
