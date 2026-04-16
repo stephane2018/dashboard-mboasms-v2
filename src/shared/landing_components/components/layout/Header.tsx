@@ -217,7 +217,7 @@ const Header = () => {
               {t('nav.contactUs')}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-500 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <Link href="/dashboard" className={`${pathname === '/dashboard' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
+            <Link href={user ? "/dashboard" : "/auth/login"} className={`${pathname === '/dashboard' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors relative group`}>
               {t('nav.adminPanel')}
               <span className={`absolute -bottom-1 left-0 h-0.5 bg-linear-to-r from-primary to-purple-500 transition-all duration-300 ${pathname === '/dashboard' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
             </Link>
@@ -435,8 +435,8 @@ const Header = () => {
                       {t('nav.contactUs')}
                     </motion.div>
                   </a>
-                  <a
-                    href="/dashboard"
+                  <Link
+                    href={user ? "/dashboard" : "/auth/login"}
                     className="text-foreground hover:text-primary transition-colors text-xl font-medium flex items-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -449,7 +449,7 @@ const Header = () => {
                       <span>{t('nav.adminPanel')}</span>
                       <ArrowRight2 size="18" variant="Bulk" color="currentColor" className="text-primary" />
                     </motion.div>
-                  </a>
+                  </Link>
                 </nav>
                 
                 <div className="mt-auto space-y-4">

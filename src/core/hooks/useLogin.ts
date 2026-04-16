@@ -46,7 +46,10 @@ export function useLogin() {
         description: i18next.t('auth.loginWelcome'),
       })
 
-      window.location.href = getDefaultDashboardUrl()
+      // Attendre que Zustand persiste les données avant de rediriger
+      setTimeout(() => {
+        window.location.href = getDefaultDashboardUrl()
+      }, 100)
     },
     onError: (error: Error) => {
       toast.error(i18next.t('auth.loginError'), {
