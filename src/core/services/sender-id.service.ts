@@ -122,4 +122,13 @@ export const senderIdService = {
       return Promise.reject(refractHttpError(error))
     }
   },
+
+  async checkSenderIdAvailability(name: string): Promise<{ available: boolean }> {
+    try {
+      const result = await httpClient.get<{ exists: boolean }>(`/api/v1/sender-ids/check?name=${encodeURIComponent(name)}`)
+      return { available: !result.exists }
+    } catch (error) {
+      return Promise.reject(refractHttpError(error))
+    }
+  },
 }

@@ -21,10 +21,12 @@ import {
   TickCircle,
   Document,
 } from "iconsax-react"
-import { Loader2 } from "lucide-react"
+import { Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
 import type { CreateSenderIdInput } from "../types"
 import { fileService } from "@/core/services/file.service"
+import { senderIdService } from "@/core/services/sender-id.service"
+import { isSenderIdBlacklisted } from "../constants/blacklist"
 import { cn } from "@/lib/utils"
 
 interface CreateSenderIdDialogProps {
@@ -57,12 +59,29 @@ export function CreateSenderIdDialog({
   const [kycFile, setKycFile] = useState<File | null>(null)
   const [authLetterFile, setAuthLetterFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isChecking, setIsChecking] = useState(false)
+  const [availabilityStatus, setAvailabilityStatus] = useState<"idle" | "available" | "taken">("idle")
   const kycInputRef = useRef<HTMLInputElement>(null)
   const authLetterInputRef = useRef<HTMLInputElement>(null)
 
   const nameLength = name.length
   const isAlphanumeric = /^[a-zA-Z0-9]*$/.test(name)
-  const isNameValid = name.trim().length > 0 && nameLength <= 11 && isAlphanumeric
+  const isBlacklisted = name.trim().length > 0 && isSenderIdBlacklisted(name)
+  const isNameValid = name.trim().length > 0 && nameLength <= 11 && isAlphanumeric && !isBlacklisted
+
+  const handleCheckAvailability = async () => {
+    if (!isNameValid) return
+    setIsChecking(true)
+    try {
+      const result = await senderIdService.checkSenderIdAvailability(name)
+      setAvailabilityStatus(result.available ? "available" : "taken")
+    } catch {
+      toast.error(t("senderIds.checkError", { defaultValue: "Erreur lors de la vérification" }))
+      setAvailabilityStatus("idle")
+    } finally {
+      setIsChecking(false)
+    }
+  }
 
   const handleSave = async () => {
     if (!kycFile || !authLetterFile) {
@@ -92,6 +111,7 @@ export function CreateSenderIdDialog({
     setDescription("")
     setKycFile(null)
     setAuthLetterFile(null)
+    setAvailabilityStatus("idle")
   }
 
   const handleCancel = () => {
@@ -158,26 +178,44 @@ export function CreateSenderIdDialog({
             </SectionLabel>
 
             <div className="space-y-1.5">
-              <div className="relative">
-                <Input
-                  id="sender-name"
-                  value={name}
-                  onChange={(e) =>
-                    setName(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11))
-                  }
-                  placeholder="MONENTREPRISE"
-                  disabled={isLoading}
-                  className="h-11 rounded-lg pr-16 font-mono uppercase tracking-wide"
-                  maxLength={11}
-                />
-                <span
-                  className={cn(
-                    "absolute right-3 top-1/2 -translate-y-1/2 text-[11px] tabular-nums font-medium",
-                    counterColor
-                  )}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="sender-name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11))
+                      setAvailabilityStatus("idle")
+                    }}
+                    placeholder="MONENTREPRISE"
+                    disabled={isLoading}
+                    className="h-11 rounded-lg pr-16 font-mono uppercase tracking-wide"
+                    maxLength={11}
+                  />
+                  <span
+                    className={cn(
+                      "absolute right-3 top-1/2 -translate-y-1/2 text-[11px] tabular-nums font-medium",
+                      counterColor
+                    )}
+                  >
+                    {nameLength}/11
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCheckAvailability}
+                  disabled={!isNameValid || isChecking || isBusy}
+                  className="h-11 px-3 rounded-lg shrink-0 gap-1.5 text-[11px] hover:border-primary/40 hover:bg-primary/5"
                 >
-                  {nameLength}/11
-                </span>
+                  {isChecking ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Search className="h-3.5 w-3.5" />
+                  )}
+                  {t("senderIds.checkAvailability", { defaultValue: "Vérifier" })}
+                </Button>
               </div>
               {name && !isAlphanumeric && (
                 <div className="flex items-center gap-1.5 text-[11px] text-red-500">
@@ -185,10 +223,22 @@ export function CreateSenderIdDialog({
                   {t("senderIds.alphanumericOnly")}
                 </div>
               )}
-              {name && isNameValid && (
+              {name && isAlphanumeric && isBlacklisted && (
+                <div className="flex items-center gap-1.5 text-[11px] text-red-500">
+                  <CloseCircle size={12} color="currentColor" variant="Bulk" />
+                  {t("senderIds.blacklisted")}
+                </div>
+              )}
+              {availabilityStatus === "available" && (
                 <div className="flex items-center gap-1.5 text-[11px] text-emerald-500">
                   <TickCircle size={12} color="currentColor" variant="Bulk" />
-                  Disponible
+                  {t("senderIds.senderIdAvailable", { defaultValue: "Ce Sender ID est disponible" })}
+                </div>
+              )}
+              {availabilityStatus === "taken" && (
+                <div className="flex items-center gap-1.5 text-[11px] text-red-500">
+                  <CloseCircle size={12} color="currentColor" variant="Bulk" />
+                  {t("senderIds.senderIdTaken", { defaultValue: "Ce Sender ID est déjà utilisé" })}
                 </div>
               )}
             </div>
@@ -215,6 +265,14 @@ export function CreateSenderIdDialog({
             <SectionLabel icon={<DocumentDownload size={12} color="currentColor" variant="Bulk" />}>
               {t("senderIds.documentsSection")}
             </SectionLabel>
+
+            {/* Warning */}
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                {t("senderIds.documentsWarning")}
+              </p>
+            </div>
 
             {/* Templates download */}
             <div className="rounded-xl border border-border/60 bg-muted/30 p-3 space-y-2.5">
