@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/shared/ui/badge"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
-import { Edit2, Trash2, RefreshCcw } from "lucide-react"
+import { Edit2, Trash2, RefreshCcw, ExternalLink } from "lucide-react"
 import { ActionsDropdown } from "@/shared/common/data-table/actions-dropdown"
 import type { SenderId, SenderIdStatus } from "@/modules/sender-id/types"
 import { format } from "date-fns"
@@ -74,6 +74,44 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t }:
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return format(date, "dd MMM yyyy", { locale: fr })
+    },
+  },
+  {
+    accessorKey: "kycA2PUrl",
+    header: t('senderIds.kycA2PLabel', { defaultValue: "KYC A2P" }),
+    cell: ({ row }) => {
+      const url = row.getValue("kycA2PUrl") as string | null
+      if (!url) return <span className="text-muted-foreground">-</span>
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <ExternalLink className="h-3 w-3" />
+          {t('senderIds.viewDocument', { defaultValue: "Voir" })}
+        </a>
+      )
+    },
+  },
+  {
+    accessorKey: "senderIdAuthLetterUrl",
+    header: t('senderIds.authLetterLabel', { defaultValue: "Lettre auth." }),
+    cell: ({ row }) => {
+      const url = row.getValue("senderIdAuthLetterUrl") as string | null
+      if (!url) return <span className="text-muted-foreground">-</span>
+      return (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <ExternalLink className="h-3 w-3" />
+          {t('senderIds.viewDocument', { defaultValue: "Voir" })}
+        </a>
+      )
     },
   },
   {

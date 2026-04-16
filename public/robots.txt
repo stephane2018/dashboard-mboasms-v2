@@ -1,6 +1,28 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /sms
+Disallow: /sms-client
+Disallow: /contacts
+Disallow: /historique
+Disallow: /historique-plateforme
+Disallow: /groupes
+Disallow: /groupes-management
+Disallow: /sender-ids
+Disallow: /recharge
+Disallow: /recharges
+Disallow: /users
+Disallow: /compagnie
+Disallow: /coupons
+Disallow: /pricing
+Disallow: /country-prices
+Disallow: /contacts-management
+Disallow: /api-keys
+Disallow: /unauthorized
+Disallow: /sentry-example-page
+Disallow: /termes-and-condition
 
 # Sitemap location
 Sitemap: https://mboasms.com/sitemap.xml

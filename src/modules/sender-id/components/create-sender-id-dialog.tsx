@@ -90,17 +90,37 @@ export function CreateSenderIdDialog({
     }
 
     setIsUploading(true)
+
+    // Step 1: Upload files
+    let kycA2PUrl: string
+    let senderIdAuthLetterUrl: string
     try {
-      const [kycA2PUrl, senderIdAuthLetterUrl] = await Promise.all([
+      const results = await Promise.all([
         fileService.uploadFile(kycFile),
         fileService.uploadFile(authLetterFile),
       ])
+      kycA2PUrl = results[0]
+      senderIdAuthLetterUrl = results[1]
+    } catch {
+      toast.error(t("senderIds.uploadError"))
+      setIsUploading(false)
+      return
+    }
 
+    // Step 2: Validate URLs before submitting
+    if (!kycA2PUrl || !senderIdAuthLetterUrl) {
+      toast.error(t("senderIds.uploadError"))
+      setIsUploading(false)
+      return
+    }
+
+    // Step 3: Create sender ID
+    try {
       await onSave({ name, description, enterpriseId, kycA2PUrl, senderIdAuthLetterUrl })
       resetForm()
       onOpenChange(false)
     } catch {
-      toast.error(t("senderIds.uploadError"))
+      toast.error(t("senderIds.createError", { defaultValue: "Erreur lors de la création" }))
     } finally {
       setIsUploading(false)
     }

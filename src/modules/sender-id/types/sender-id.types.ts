@@ -9,6 +9,10 @@ export type SenderId = {
   updatedAt: string
   status: SenderIdStatus
   rejectionReason: string | null
+  approvedAt: string | null
+  rejectedAt: string | null
+  kycA2PUrl: string | null
+  senderIdAuthLetterUrl: string | null
 }
 
 export type PaginatedSenderIds = {

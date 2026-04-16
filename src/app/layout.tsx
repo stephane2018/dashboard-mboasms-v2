@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/core/providers/query-provider";
@@ -7,7 +6,10 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/shared/components/theme-provider";
 import { SuppressScriptWarning } from "@/shared/components/suppress-script-warning"
 import { ClientErrorReporter } from "@/shared/components/client-error-reporter";
+import { OrganizationJsonLd, SoftwareApplicationJsonLd, WebSiteJsonLd, FAQJsonLd } from "@/shared/components/json-ld";
 import '@/core/lib/i18n';
+
+export { metadata } from "./metadata";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,18 +21,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "MboaSMS - SMS Management Platform",
-  description: "Manage your SMS campaigns efficiently",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <OrganizationJsonLd />
+        <SoftwareApplicationJsonLd />
+        <WebSiteJsonLd />
+        <FAQJsonLd />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
