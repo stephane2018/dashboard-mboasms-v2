@@ -61,6 +61,9 @@ export function CreateSenderIdDialog({
   const [isUploading, setIsUploading] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [availabilityStatus, setAvailabilityStatus] = useState<"idle" | "available" | "taken">("idle")
+  const [uploadProgress, setUploadProgress] = useState<{ kyc: number; authLetter: number }>({ kyc: 0, authLetter: 0 })
+  const [kycUrl, setKycUrl] = useState<string>("")
+  const [authLetterUrl, setAuthLetterUrl] = useState<string>("")
   const kycInputRef = useRef<HTMLInputElement>(null)
   const authLetterInputRef = useRef<HTMLInputElement>(null)
 
@@ -90,39 +93,40 @@ export function CreateSenderIdDialog({
     }
 
     setIsUploading(true)
+    setUploadProgress({ kyc: 0, authLetter: 0 })
 
-    // Step 1: Upload files
-    let kycA2PUrl: string
-    let senderIdAuthLetterUrl: string
     try {
-      const results = await Promise.all([
-        fileService.uploadFile(kycFile),
-        fileService.uploadFile(authLetterFile),
-      ])
-      kycA2PUrl = results[0]
-      senderIdAuthLetterUrl = results[1]
-    } catch {
-      toast.error(t("senderIds.uploadError"))
-      setIsUploading(false)
-      return
-    }
+      // Step 1: Upload KYC file with progress
+      setUploadProgress(prev => ({ ...prev, kyc: 10 }))
+      const kycA2PUrl = await fileService.uploadFile(kycFile)
+      
+      if (!kycA2PUrl || !kycA2PUrl.includes("https://firebasestorage.googleapis.com")) {
+        throw new Error("Invalid KYC URL response")
+      }
+      setKycUrl(kycA2PUrl)
+      setUploadProgress(prev => ({ ...prev, kyc: 100 }))
 
-    // Step 2: Validate URLs before submitting
-    if (!kycA2PUrl || !senderIdAuthLetterUrl) {
-      toast.error(t("senderIds.uploadError"))
-      setIsUploading(false)
-      return
-    }
+      // Step 2: Upload Auth Letter file with progress
+      setUploadProgress(prev => ({ ...prev, authLetter: 10 }))
+      const senderIdAuthLetterUrl = await fileService.uploadFile(authLetterFile)
+      
+      if (!senderIdAuthLetterUrl || !senderIdAuthLetterUrl.includes("https://firebasestorage.googleapis.com")) {
+        throw new Error("Invalid Auth Letter URL response")
+      }
+      setAuthLetterUrl(senderIdAuthLetterUrl)
+      setUploadProgress(prev => ({ ...prev, authLetter: 100 }))
 
-    // Step 3: Create sender ID
-    try {
+      // Step 3: Create sender ID with the collected URLs
       await onSave({ name, description, enterpriseId, kycA2PUrl, senderIdAuthLetterUrl })
       resetForm()
       onOpenChange(false)
-    } catch {
-      toast.error(t("senderIds.createError", { defaultValue: "Erreur lors de la création" }))
+      toast.success(t("senderIds.createSuccess", { defaultValue: "Sender ID créé avec succès" }))
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : t("senderIds.uploadError")
+      toast.error(errorMsg)
     } finally {
       setIsUploading(false)
+      setUploadProgress({ kyc: 0, authLetter: 0 })
     }
   }
 
@@ -338,21 +342,44 @@ export function CreateSenderIdDialog({
                 className="hidden"
               />
               {kycFile ? (
-                <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
-                    <span className="truncate font-medium text-foreground">{kycFile.name}</span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                      {(kycFile.size / 1024).toFixed(0)} Ko
-                    </span>
+                <div className="space-y-2">
+                  <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
+                      <span className="truncate font-medium text-foreground">{kycFile.name}</span>
+                      <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                        {(kycFile.size / 1024).toFixed(0)} Ko
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setKycFile(null)}
+                      disabled={isUploading}
+                      className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <CloseCircle size={14} color="currentColor" variant="Bulk" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setKycFile(null)}
-                    className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                  >
-                    <CloseCircle size={14} color="currentColor" variant="Bulk" />
-                  </button>
+                  {isUploading && uploadProgress.kyc > 0 && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-muted-foreground">Upload KYC</span>
+                        <span className="font-semibold text-primary">{uploadProgress.kyc}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-300"
+                          style={{ width: `${uploadProgress.kyc}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {kycUrl && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
+                      <TickCircle size={12} color="currentColor" variant="Bulk" />
+                      Fichier uploadé avec succès
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Button
@@ -385,21 +412,44 @@ export function CreateSenderIdDialog({
                 className="hidden"
               />
               {authLetterFile ? (
-                <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
-                    <span className="truncate font-medium text-foreground">{authLetterFile.name}</span>
-                    <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                      {(authLetterFile.size / 1024).toFixed(0)} Ko
-                    </span>
+                <div className="space-y-2">
+                  <div className="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-[12px]">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Document size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0" />
+                      <span className="truncate font-medium text-foreground">{authLetterFile.name}</span>
+                      <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                        {(authLetterFile.size / 1024).toFixed(0)} Ko
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAuthLetterFile(null)}
+                      disabled={isUploading}
+                      className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <CloseCircle size={14} color="currentColor" variant="Bulk" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setAuthLetterFile(null)}
-                    className="rounded-md p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                  >
-                    <CloseCircle size={14} color="currentColor" variant="Bulk" />
-                  </button>
+                  {isUploading && uploadProgress.authLetter > 0 && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-muted-foreground">Upload Auth Letter</span>
+                        <span className="font-semibold text-primary">{uploadProgress.authLetter}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-300"
+                          style={{ width: `${uploadProgress.authLetter}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {authLetterUrl && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
+                      <TickCircle size={12} color="currentColor" variant="Bulk" />
+                      Fichier uploadé avec succès
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Button
