@@ -51,10 +51,12 @@ export function useLogin() {
         window.location.href = getDefaultDashboardUrl()
       }, 100)
     },
-    onError: (error: Error) => {
-      toast.error(i18next.t('auth.loginError'), {
-        description: error.message || i18next.t('auth.loginErrorDesc'),
-      })
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      const description = apiMessage === 'Invalid user or password'
+        ? 'Identifiants invalides'
+        : (error?.message || i18next.t('auth.loginErrorDesc'));
+      toast.error(i18next.t('auth.loginError'), { description })
     },
   })
 }
@@ -105,10 +107,12 @@ export function useLoginAs() {
 
       window.location.href = '/dashboard'
     },
-    onError: (error: Error) => {
-      toast.error(i18next.t('auth.loginError'), {
-        description: error.message || i18next.t('auth.loginErrorDesc'),
-      })
+    onError: (error: any) => {
+      const apiMessage = error?.response?.data?.message;
+      const description = apiMessage === 'Invalid user or password'
+        ? 'Identifiants invalides'
+        : (error?.message || i18next.t('auth.loginErrorDesc'));
+      toast.error(i18next.t('auth.loginError'), { description })
     },
   })
 }

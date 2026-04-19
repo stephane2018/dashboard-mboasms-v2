@@ -112,16 +112,16 @@
     "contactsAndGroups": "Contacts & Groups",
     "finance": "Finance",
     "administration": "Administration",
-    "myAccount": "My Account",
+    "myAccount": "My account",
     "home": "Home",
     "documentation": "Documentation",
     "contactUs": "Contact Us",
     "adminPanel": "Admin Panel",
-    "myAccount": "My account",
     "welcomeBanner": "Welcome to the new version of MboaSMS!",
     "oldVersionMobile": "Old version?",
     "oldVersionDesktop": "To go back to the old version,",
-    "clickHere": "click here"
+    "clickHere": "click here",
+    "smsJobs": "SMS Jobs"
   },
   "layout": {
     "goHome": "Go to homepage",

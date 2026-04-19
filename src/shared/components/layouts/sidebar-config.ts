@@ -18,6 +18,7 @@ import {
     Key,
 } from 'iconsax-react'
 import { Role } from '@/core/config/enum'
+import { Activity } from 'iconsax-react'
 
 // Types
 export type UserRole = Role
@@ -54,6 +55,12 @@ export const navigationConfig: RoleBasedNavSection[] = [
                 title: 'nav.sms',
                 url: '/sms',
                 icon: Sms,
+                roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
+            },
+            {
+                title: 'nav.smsJobs',
+                url: '/sms/jobs',
+                icon: Activity,
                 roles: [Role.ADMIN_USER, Role.SUPER_ADMIN],
             },
             {

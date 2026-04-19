@@ -126,11 +126,11 @@
     "documentation": "Documentation",
     "contactUs": "Contactez-nous",
     "adminPanel": "Espace admin",
-    "myAccount": "Mon compte",
     "welcomeBanner": "Bienvenue sur la nouvelle version de MboaSMS !",
     "oldVersionMobile": "Ancienne version ?",
     "oldVersionDesktop": "Pour revenir à l'ancienne version,",
-    "clickHere": "cliquez ici"
+    "clickHere": "cliquez ici",
+    "smsJobs": "Jobs SMS"
   },
   "layout": {
     "goHome": "Aller à l'accueil",

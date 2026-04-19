@@ -25,6 +25,8 @@ import {
 import { useSendMessage } from "@/core/hooks/useSendMessage"
 import { SmsGuideModal } from "@/modules/sms/components/sms-guide-modal"
 import { useMainStatistics, useT } from "@/core/hooks"
+import { BulkSmsTab } from "@/modules/sms/components/bulk-sms-tab"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 
 const DEFAULT_TEMP_SENDER_ID = "infos"
 
@@ -332,7 +334,7 @@ export default function SMSPage() {
     }
 
     return (
-        <div className="  p-4 md:p-6 space-y-5">
+        <div className="p-4 md:p-6 space-y-5">
             {/* Page Header — compact */}
             <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5">
@@ -345,6 +347,15 @@ export default function SMSPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Tabs */}
+            <Tabs defaultValue="simple" className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                    <TabsTrigger value="simple">Envoi simple</TabsTrigger>
+                    <TabsTrigger value="bulk">Envoi en masse</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="simple" className="mt-5">
 
             {/* Group origin banner */}
             {prefilledGroup && (
@@ -492,6 +503,12 @@ export default function SMSPage() {
                 mtnCount={mtnCount}
                 otherOperatorsCount={otherOperatorsCount}
             />
+                </TabsContent>
+
+                <TabsContent value="bulk">
+                    <BulkSmsTab />
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
