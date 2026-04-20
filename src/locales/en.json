@@ -639,7 +639,14 @@
     "authLetterDesc": "Upload the signed authorization letter for the Sender ID (PDF, JPG or PNG)",
     "bothFilesRequired": "Both documents (KYC A2P and Authorization Letter) are required",
     "uploadError": "Error uploading files",
-    "uploading": "Uploading files..."
+    "uploading": "Uploading files...",
+    "reuploadFilesTitle": "Update Documents",
+    "reuploadFilesDesc": "Re-upload your KYC document and authorization letter to resubmit your request",
+    "kycDocument": "KYC Document",
+    "authLetterDocument": "Authorization Letter",
+    "clickToUpload": "Click to upload or drag and drop",
+    "updateFiles": "Update Files",
+    "filesUpdatedSuccess": "Files updated successfully"
   },
   "senderIdGuide": {
     "step1Title": "What is a Sender ID?",

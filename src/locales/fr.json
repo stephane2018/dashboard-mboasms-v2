@@ -741,7 +741,14 @@
     "authLetterDesc": "Téléchargez la lettre d'autorisation signée pour le Sender ID (PDF, JPG ou PNG)",
     "bothFilesRequired": "Les deux documents (KYC A2P et Lettre d'autorisation) sont obligatoires",
     "uploadError": "Erreur lors du téléchargement des fichiers",
-    "uploading": "Envoi des fichiers..."
+    "uploading": "Envoi des fichiers...",
+    "reuploadFilesTitle": "Mettre à jour les documents",
+    "reuploadFilesDesc": "Re-uploadez vos documents KYC et lettre d'autorisation pour resoummettre votre demande",
+    "kycDocument": "Document KYC",
+    "authLetterDocument": "Lettre d'autorisation",
+    "clickToUpload": "Cliquez pour uploader ou glissez-déposez",
+    "updateFiles": "Mettre à jour les fichiers",
+    "filesUpdatedSuccess": "Fichiers mis à jour avec succès"
   },
   "senderIdGuide": {
     "step1Title": "Qu'est-ce qu'un Sender ID ?",

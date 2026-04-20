@@ -20,18 +20,19 @@ export const fileService = {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("fileType", fileType)
-      const response = await httpClient.post<FileUploadResponse>(
+      const response = await httpClient.post<FileUploadResponse | string>(
         "/api/v1/file",
         formData
       )
-      console.log("File upload response:", { response, hasUrl: "url" in response })
 
-      if (response.url) {
-        return response.url
-      }
-
+      // Handle direct string URL response
       if (typeof response === "string") {
         return response
+      }
+
+      // Handle object with url property
+      if (response && typeof response === "object" && "url" in response) {
+        return response.url
       }
 
       throw new Error(`Unexpected response format: ${JSON.stringify(response)}`)

@@ -43,7 +43,16 @@ export function EditSenderIdDialog({
   }, [open, senderId])
 
   const handleSave = async () => {
-    await onSave(senderId.id, { name, description })
+    const input: UpdateSenderIdInput = {
+      name: name.trim() ? name : undefined,
+      description: description.trim() ? description : undefined,
+    }
+    
+    if (input.name === undefined && input.description === undefined) {
+      return
+    }
+    
+    await onSave(senderId.id, input)
     onOpenChange(false)
   }
 
@@ -86,7 +95,7 @@ export function EditSenderIdDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
+          <Button onClick={handleSave} disabled={isLoading || (!name.trim() && !description.trim())}>
             {isLoading ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>

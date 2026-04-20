@@ -9,7 +9,7 @@ import { Role } from "@/core/config/enum"
 import { MessageText, Add } from "iconsax-react"
 import { createColumns } from "./columns"
 import type { PaginationState } from "@tanstack/react-table"
-import type { SenderId, CreateSenderIdInput } from "@/modules/sender-id/types"
+import type { SenderId, CreateSenderIdInput, UpdateSenderIdInput } from "@/modules/sender-id/types"
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
 import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/components"
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
@@ -110,7 +110,7 @@ export default function SenderIdsPage() {
   )
 
   const handleSaveEdit = useCallback(
-    async (id: string, input: { name: string; description: string }) => {
+    async (id: string, input: UpdateSenderIdInput) => {
       await updateSenderIdMutation.mutateAsync({ id, data: input })
       setIsEditDialogOpen(false)
     },
