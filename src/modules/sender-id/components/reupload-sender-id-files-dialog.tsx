@@ -1,22 +1,19 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, type ReactNode } from "react"
 import { useT } from "@/core/hooks"
 import { fileService } from "@/core/services/file.service"
 import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Progress } from "@/shared/ui/progress"
-import { DocumentUpload, TickSquare } from "iconsax-react"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { DocumentUpload, TickSquare, InfoCircle, CloseCircle } from "iconsax-react"
+import { CheckCircle2 } from "lucide-react"
 import type { SenderId } from "../types"
+import { cn } from "@/lib/utils"
 
 interface ReuploadSenderIdFilesDialogProps {
   open: boolean
@@ -24,6 +21,15 @@ interface ReuploadSenderIdFilesDialogProps {
   senderId: SenderId
   onSave: (id: string, urls: { kycA2PUrl: string; senderIdAuthLetterUrl: string; status: "EN_ATTENTE" }) => Promise<void>
   isLoading?: boolean
+}
+
+function SectionLabel({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <span className="text-primary">{icon}</span>
+      {children}
+    </div>
+  )
 }
 
 export function ReuploadSenderIdFilesDialog({
@@ -41,6 +47,9 @@ export function ReuploadSenderIdFilesDialog({
   const [uploadComplete, setUploadComplete] = useState(false)
   const kycInputRef = useRef<HTMLInputElement>(null)
   const authLetterInputRef = useRef<HTMLInputElement>(null)
+
+  const kycSizeKo = kycFile ? (kycFile.size / 1024).toFixed(0) : 0
+  const authLetterSizeKo = authLetterFile ? (authLetterFile.size / 1024).toFixed(0) : 0
 
   const handleKycFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -67,35 +76,31 @@ export function ReuploadSenderIdFilesDialog({
     setUploadComplete(false)
 
     try {
-      // Upload KYC file
       setUploadProgress(prev => ({ ...prev, kyc: 50 }))
       const kycA2PUrl = await fileService.uploadFile(kycFile)
-      
+
       if (!kycA2PUrl) {
         throw new Error("KYC URL not returned")
       }
       setUploadProgress(prev => ({ ...prev, kyc: 100 }))
 
-      // Upload Auth Letter file
       setUploadProgress(prev => ({ ...prev, authLetter: 50 }))
       const senderIdAuthLetterUrl = await fileService.uploadFile(authLetterFile)
-      
+
       if (!senderIdAuthLetterUrl) {
         throw new Error("Auth Letter URL not returned")
       }
       setUploadProgress(prev => ({ ...prev, authLetter: 100 }))
 
-      // Save the URLs and reset status to EN_ATTENTE
-      await onSave(senderId.id, { 
-        kycA2PUrl, 
+      await onSave(senderId.id, {
+        kycA2PUrl,
         senderIdAuthLetterUrl,
         status: "EN_ATTENTE"
       })
-      
+
       setUploadComplete(true)
       toast.success(t("senderIds.filesUpdatedSuccess"))
-      
-      // Reset and close after 2 seconds
+
       setTimeout(() => {
         setKycFile(null)
         setAuthLetterFile(null)
@@ -119,147 +124,176 @@ export function ReuploadSenderIdFilesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t("senderIds.reuploadFilesTitle")}</DialogTitle>
-          <DialogDescription>
-            {t("senderIds.reuploadFilesDesc")}
-          </DialogDescription>
-        </DialogHeader>
-
-        {uploadComplete ? (
-          <div className="space-y-4 py-8 text-center">
-            <div className="flex justify-center">
-              <CheckCircle2 className="h-16 w-16 text-green-500" />
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+        {/* Hero Header */}
+        <div className="bg-gradient-to-br from-amber-600 to-amber-700 px-6 py-6 text-white">
+          <div className="flex items-start gap-3">
+            <div className="bg-white/20 rounded-xl p-2.5">
+              <DocumentUpload size={24} color="currentColor" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">{t("senderIds.submissionSuccessful")}</h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                {t("senderIds.submissionSuccessfulDesc")}
-              </p>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold">{t("senderIds.reuploadFilesTitle")}</h2>
+              <p className="text-sm text-amber-100 mt-1">{t("senderIds.reuploadFilesDesc")}</p>
             </div>
           </div>
-        ) : (
-          <div className="space-y-6 py-4">
-            {/* Instructions */}
-            <div className="rounded-lg bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/15 p-4 space-y-2">
-              <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-blue-900 dark:text-blue-400 text-sm">{t("senderIds.submissionInstructions")}</h4>
-                  <ul className="text-xs text-blue-800 dark:text-blue-300 mt-2 space-y-1 list-disc list-inside">
+        </div>
+
+        {/* Main Content */}
+        <div className={cn(
+          "flex-1 overflow-y-auto px-6 py-6",
+          uploadComplete && "flex flex-col items-center justify-center"
+        )}>
+          {uploadComplete ? (
+            <div className="space-y-4 text-center">
+              <div className="flex justify-center">
+                <CheckCircle2 className="h-16 w-16 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">{t("senderIds.submissionSuccessful")}</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t("senderIds.submissionSuccessfulDesc")}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Instructions Section */}
+              <div>
+                <SectionLabel icon={<InfoCircle size={14} />}>
+                  {t("senderIds.submissionInstructions")}
+                </SectionLabel>
+                <div className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15 p-4 space-y-2">
+                  <ul className="text-xs text-amber-900 dark:text-amber-300 space-y-2 list-disc list-inside">
                     <li>{t("senderIds.instruction1")}</li>
                     <li>{t("senderIds.instruction2")}</li>
                     <li>{t("senderIds.instruction3")}</li>
                   </ul>
                 </div>
               </div>
-            </div>
 
-            {/* KYC File Upload */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("senderIds.kycDocument")}</label>
-              <div
-                onClick={() => !isUploading && kycInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                  isUploading 
-                    ? "border-muted bg-muted/30 cursor-not-allowed" 
-                    : "border-border hover:border-primary cursor-pointer"
-                }`}
-              >
-                <input
-                  ref={kycInputRef}
-                  type="file"
-                  onChange={handleKycFileChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                {kycFile ? (
-                  <div className="space-y-2">
-                    <TickSquare size={28} className="mx-auto text-green-500" />
-                    <p className="text-sm font-medium text-green-700 dark:text-green-400">{kycFile.name}</p>
-                    <p className="text-xs text-muted-foreground">{(kycFile.size / 1024 / 1024).toFixed(2)} MB</p>
+              {/* Documents Section */}
+              <div>
+                <SectionLabel icon={<DocumentUpload size={14} />}>
+                  {t("senderIds.documents")}
+                </SectionLabel>
+
+                {/* KYC File Upload */}
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">{t("senderIds.kycDocument")}</label>
+                    {kycFile && (
+                      <span className="text-xs text-muted-foreground">{kycSizeKo} Ko</span>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <DocumentUpload size={28} className="mx-auto text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">{t("senderIds.clickToUpload")}</p>
-                    <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                  <div
+                    onClick={() => !isUploading && kycInputRef.current?.click()}
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+                      isUploading && "border-muted bg-muted/30 cursor-not-allowed",
+                      !isUploading && "border-border hover:border-primary hover:bg-primary/5",
+                      kycFile && "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/5"
+                    )}
+                  >
+                    <input
+                      ref={kycInputRef}
+                      type="file"
+                      onChange={handleKycFileChange}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                    {kycFile ? (
+                      <div className="space-y-2">
+                        <TickSquare size={32} className="mx-auto text-emerald-500" />
+                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{kycFile.name}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <DocumentUpload size={32} className="mx-auto text-muted-foreground" />
+                        <p className="text-sm text-foreground font-medium">{t("senderIds.clickToUpload")}</p>
+                        <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {uploadProgress.kyc > 0 && uploadProgress.kyc < 100 && (
-                <div className="space-y-1">
-                  <Progress value={uploadProgress.kyc} />
-                  <p className="text-xs text-muted-foreground text-center">{uploadProgress.kyc}%</p>
+                  {uploadProgress.kyc > 0 && uploadProgress.kyc < 100 && (
+                    <div className="space-y-2">
+                      <Progress value={uploadProgress.kyc} className="h-1.5" />
+                      <p className="text-xs text-muted-foreground text-center">{uploadProgress.kyc}%</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Auth Letter File Upload */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("senderIds.authLetterDocument")}</label>
-              <div
-                onClick={() => !isUploading && authLetterInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                  isUploading 
-                    ? "border-muted bg-muted/30 cursor-not-allowed" 
-                    : "border-border hover:border-primary cursor-pointer"
-                }`}
-              >
-                <input
-                  ref={authLetterInputRef}
-                  type="file"
-                  onChange={handleAuthLetterFileChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                {authLetterFile ? (
-                  <div className="space-y-2">
-                    <TickSquare size={28} className="mx-auto text-green-500" />
-                    <p className="text-sm font-medium text-green-700 dark:text-green-400">{authLetterFile.name}</p>
-                    <p className="text-xs text-muted-foreground">{(authLetterFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                {/* Auth Letter File Upload */}
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">{t("senderIds.authLetterDocument")}</label>
+                    {authLetterFile && (
+                      <span className="text-xs text-muted-foreground">{authLetterSizeKo} Ko</span>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <DocumentUpload size={28} className="mx-auto text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">{t("senderIds.clickToUpload")}</p>
-                    <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                  <div
+                    onClick={() => !isUploading && authLetterInputRef.current?.click()}
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+                      isUploading && "border-muted bg-muted/30 cursor-not-allowed",
+                      !isUploading && "border-border hover:border-primary hover:bg-primary/5",
+                      authLetterFile && "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/5"
+                    )}
+                  >
+                    <input
+                      ref={authLetterInputRef}
+                      type="file"
+                      onChange={handleAuthLetterFileChange}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                    {authLetterFile ? (
+                      <div className="space-y-2">
+                        <TickSquare size={32} className="mx-auto text-emerald-500" />
+                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{authLetterFile.name}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <DocumentUpload size={32} className="mx-auto text-muted-foreground" />
+                        <p className="text-sm text-foreground font-medium">{t("senderIds.clickToUpload")}</p>
+                        <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {uploadProgress.authLetter > 0 && uploadProgress.authLetter < 100 && (
-                <div className="space-y-1">
-                  <Progress value={uploadProgress.authLetter} />
-                  <p className="text-xs text-muted-foreground text-center">{uploadProgress.authLetter}%</p>
+                  {uploadProgress.authLetter > 0 && uploadProgress.authLetter < 100 && (
+                    <div className="space-y-2">
+                      <Progress value={uploadProgress.authLetter} className="h-1.5" />
+                      <p className="text-xs text-muted-foreground text-center">{uploadProgress.authLetter}%</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              handleReset()
-              onOpenChange(false)
-            }}
-            disabled={isUploading || uploadComplete}
-          >
-            {t("common.cancel")}
-          </Button>
-          {!uploadComplete && (
+        {/* Sticky Footer */}
+        {!uploadComplete && (
+          <div className="border-t bg-card px-6 py-4 flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                handleReset()
+                onOpenChange(false)
+              }}
+              disabled={isUploading}
+            >
+              {t("common.cancel")}
+            </Button>
             <Button
               onClick={handleUpload}
               disabled={isUploading || !kycFile || !authLetterFile}
             >
               {isUploading ? t("senderIds.uploading") : t("senderIds.submitFiles")}
             </Button>
-          )}
-        </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
