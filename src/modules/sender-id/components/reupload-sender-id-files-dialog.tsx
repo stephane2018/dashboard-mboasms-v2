@@ -126,7 +126,7 @@ export function ReuploadSenderIdFilesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
         {/* Hero Header */}
-        <div className="bg-gradient-to-br from-amber-600 to-amber-700 px-6 py-6 text-white">
+        <div className="bg-linear-to-br from-amber-600 to-amber-700 px-6 py-6 text-white">
           <div className="flex items-start gap-3">
             <div className="bg-white/20 rounded-xl p-2.5">
               <DocumentUpload size={24} color="currentColor" />
