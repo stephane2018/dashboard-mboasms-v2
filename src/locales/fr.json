@@ -130,7 +130,7 @@
     "oldVersionMobile": "Ancienne version ?",
     "oldVersionDesktop": "Pour revenir à l'ancienne version,",
     "clickHere": "cliquez ici",
-    "smsJobs": "Jobs SMS"
+    "smsJobs": "Suivie de SMS"
   },
   "layout": {
     "goHome": "Aller à l'accueil",
@@ -1513,5 +1513,18 @@
     "dayFri": "Ven",
     "daySat": "Sam",
     "whatsappMessage": "Bonjour! Je souhaite planifier un appel le {{date}} à {{time}}.\n\n{{title}}\n{{description}}"
+  },
+  "smsJobs": {
+    "title": "Suivie des SMS",
+    "subtitle": "Suivez vos envois en masse et l'état des SMS",
+    "bulkSms": "SMS en masse",
+    "pendingJobs": "Tâches en attente",
+    "completedJobs": "Tâches complétées",
+    "failedJobs": "Tâches échouées",
+    "status": "Statut",
+    "createdAt": "Créée le",
+    "viewDetails": "Voir les détails",
+    "noJobs": "Aucune tâche trouvée",
+    "errorLoading": "Erreur lors du chargement des tâches"
   }
 }

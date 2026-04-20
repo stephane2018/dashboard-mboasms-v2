@@ -121,7 +121,7 @@
     "oldVersionMobile": "Old version?",
     "oldVersionDesktop": "To go back to the old version,",
     "clickHere": "click here",
-    "smsJobs": "SMS Jobs"
+    "smsJobs": "SMS Tracking"
   },
   "layout": {
     "goHome": "Go to homepage",
@@ -1417,5 +1417,18 @@
     "dayFri": "Fri",
     "daySat": "Sat",
     "whatsappMessage": "Hello! I would like to schedule a call on {{date}} at {{time}}.\n\n{{title}}\n{{description}}"
+  },
+  "smsJobs": {
+    "title": "SMS Tracking",
+    "subtitle": "Track your bulk sends and SMS status",
+    "bulkSms": "Bulk SMS",
+    "pendingJobs": "Pending Jobs",
+    "completedJobs": "Completed Jobs",
+    "failedJobs": "Failed Jobs",
+    "status": "Status",
+    "createdAt": "Created at",
+    "viewDetails": "View Details",
+    "noJobs": "No jobs found",
+    "errorLoading": "Error loading tasks"
   }
 }

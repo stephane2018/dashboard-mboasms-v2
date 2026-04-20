@@ -30,9 +30,9 @@ export default function SmsJobsPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-foreground">Jobs SMS</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('smsJobs.title')}</h1>
           <p className="text-xs text-muted-foreground">
-            Suivi des envois en masse
+            {t('smsJobs.subtitle')}
           </p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function SmsJobsPage() {
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-800">
-            Erreur lors du chargement des jobs
+            {t('smsJobs.errorLoading')}
           </p>
         </div>
       )}
