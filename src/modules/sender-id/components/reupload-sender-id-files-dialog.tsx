@@ -124,7 +124,7 @@ export function ReuploadSenderIdFilesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[90vh] flex flex-col p-0 rounded-lg">
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 rounded-lg">
         {/* Hero Header */}
         <div className="bg-linear-to-br from-amber-600 to-amber-700 px-6 py-6 text-white">
           <div className="flex items-start gap-3">
