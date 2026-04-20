@@ -126,7 +126,7 @@ export function ReuploadSenderIdFilesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 rounded-lg">
         {/* Hero Header */}
-        <div className="bg-linear-to-br from-amber-600 to-amber-700 px-6 py-6 text-white">
+        <div className="bg-linear-to-br from-orange-500 to-orange-600 px-6 py-6 text-white">
           <div className="flex items-start gap-3">
             <div className="bg-white/20 rounded-xl p-2.5">
               <DocumentUpload size={24} color="currentColor" />
@@ -162,8 +162,8 @@ export function ReuploadSenderIdFilesDialog({
                 <SectionLabel icon={<InfoCircle size={14} />}>
                   {t("senderIds.submissionInstructions")}
                 </SectionLabel>
-                <div className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15 p-4 space-y-2">
-                  <ul className="text-xs text-amber-900 dark:text-amber-300 space-y-2 list-disc list-inside">
+                <div className="mt-3 rounded-lg bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/15 p-4 space-y-2">
+                  <ul className="text-xs text-orange-900 dark:text-orange-300 space-y-2 list-disc list-inside">
                     <li>{t("senderIds.instruction1")}</li>
                     <li>{t("senderIds.instruction2")}</li>
                     <li>{t("senderIds.instruction3")}</li>
