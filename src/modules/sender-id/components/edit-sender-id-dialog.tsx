@@ -32,13 +32,13 @@ export function EditSenderIdDialog({
   isLoading = false,
 }: EditSenderIdDialogProps) {
   const { t } = useT()
-  const [name, setName] = useState(senderId.name)
-  const [description, setDescription] = useState(senderId.description)
+  const [name, setName] = useState(senderId.name || "")
+  const [description, setDescription] = useState(senderId.description || "")
 
   useEffect(() => {
     if (open) {
-      setName(senderId.name)
-      setDescription(senderId.description)
+      setName(senderId.name || "")
+      setDescription(senderId.description || "")
     }
   }, [open, senderId])
 
