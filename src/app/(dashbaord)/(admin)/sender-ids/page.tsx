@@ -112,10 +112,14 @@ export default function SenderIdsPage() {
 
   const handleReupload = useCallback(
     async (id: string, urls: { kycA2PUrl: string; senderIdAuthLetterUrl: string; status: "EN_ATTENTE" }) => {
-      await updateSenderIdMutation.mutateAsync({ id, data: urls })
+      const updateData: UpdateSenderIdInput = {
+        ...selectedSenderId,
+        ...urls,
+      }
+      await updateSenderIdMutation.mutateAsync({ id, data: updateData })
       setIsReuploadDialogOpen(false)
     },
-    [updateSenderIdMutation]
+    [updateSenderIdMutation, selectedSenderId]
   )
 
     const handleSaveEdit = useCallback(
