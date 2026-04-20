@@ -227,6 +227,14 @@ export default function SenderIdsPage() {
             itemName={selectedSenderId.name}
             isDeleting={deleteSenderIdMutation.isPending}
           />
+
+          <ReuploadSenderIdFilesDialog
+            open={isReuploadDialogOpen}
+            onOpenChange={setIsReuploadDialogOpen}
+            senderId={selectedSenderId}
+            onSave={handleReupload}
+            isLoading={updateSenderIdMutation.isPending}
+          />
         </>
       )}
     </div>
