@@ -7,13 +7,24 @@ import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Progress } from "@/shared/ui/progress"
-import { DocumentUpload, TickSquare, InfoCircle, CloseCircle } from "iconsax-react"
+import { DocumentUpload, InfoCircle, Trash } from "iconsax-react"
 import { CheckCircle2 } from "lucide-react"
 import type { SenderId } from "../types"
 import { cn } from "@/lib/utils"
+
+function truncateFileName(name: string, maxLength: number = 30): string {
+  if (name.length <= maxLength) return name
+  const ext = name.lastIndexOf(".")
+  if (ext === -1) return name.slice(0, maxLength) + "..."
+  const baseName = name.slice(0, ext)
+  const extension = name.slice(ext)
+  const remaining = maxLength - extension.length - 3
+  return baseName.slice(0, Math.max(1, remaining)) + "..." + extension
+}
 
 interface ReuploadSenderIdFilesDialogProps {
   open: boolean
@@ -37,7 +48,6 @@ export function ReuploadSenderIdFilesDialog({
   onOpenChange,
   senderId,
   onSave,
-  isLoading = false,
 }: ReuploadSenderIdFilesDialogProps) {
   const { t } = useT()
   const [kycFile, setKycFile] = useState<File | null>(null)
@@ -45,6 +55,7 @@ export function ReuploadSenderIdFilesDialog({
   const [uploadProgress, setUploadProgress] = useState<{ kyc: number; authLetter: number }>({ kyc: 0, authLetter: 0 })
   const [isUploading, setIsUploading] = useState(false)
   const [uploadComplete, setUploadComplete] = useState(false)
+  const [isDragging, setIsDragging] = useState<{ kyc: boolean; authLetter: boolean }>({ kyc: false, authLetter: false })
   const kycInputRef = useRef<HTMLInputElement>(null)
   const authLetterInputRef = useRef<HTMLInputElement>(null)
 
@@ -62,6 +73,52 @@ export function ReuploadSenderIdFilesDialog({
     const file = e.target.files?.[0]
     if (file) {
       setAuthLetterFile(file)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, zone: "kyc" | "authLetter") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(prev => ({ ...prev, [zone]: true }))
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, zone: "kyc" | "authLetter") => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(prev => ({ ...prev, [zone]: false }))
+  }
+
+  const handleDropKyc = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(prev => ({ ...prev, kyc: false }))
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type === "application/pdf") {
+      setKycFile(file)
+    } else if (file) {
+      toast.error(t("senderIds.pdfOnly"))
+    }
+  }
+
+  const handleDropAuthLetter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(prev => ({ ...prev, authLetter: false }))
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type === "application/pdf") {
+      setAuthLetterFile(file)
+    } else if (file) {
+      toast.error(t("senderIds.pdfOnly"))
+    }
+  }
+
+  const clearFile = (zone: "kyc" | "authLetter") => {
+    if (zone === "kyc") {
+      setKycFile(null)
+      if (kycInputRef.current) kycInputRef.current.value = ""
+    } else {
+      setAuthLetterFile(null)
+      if (authLetterInputRef.current) authLetterInputRef.current.value = ""
     }
   }
 
@@ -125,6 +182,7 @@ export function ReuploadSenderIdFilesDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 rounded-lg">
+        <DialogTitle className="sr-only">{t("senderIds.reuploadFilesTitle")}</DialogTitle>
         {/* Hero Header */}
         <div className="bg-linear-to-br from-purple-600 to-purple-800 px-6 py-6 text-white">
           <div className="flex items-start gap-3">
@@ -179,19 +237,18 @@ export function ReuploadSenderIdFilesDialog({
 
                 {/* KYC File Upload */}
                 <div className="mt-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">{t("senderIds.kycDocument")}</label>
-                    {kycFile && (
-                      <span className="text-xs text-muted-foreground">{kycSizeKo} Ko</span>
-                    )}
-                  </div>
+                  <label className="text-sm font-medium">{t("senderIds.kycDocument")}</label>
                   <div
-                    onClick={() => !isUploading && kycInputRef.current?.click()}
+                    onDragOver={(e) => handleDragOver(e, "kyc")}
+                    onDragLeave={(e) => handleDragLeave(e, "kyc")}
+                    onDrop={handleDropKyc}
+                    onClick={() => !isUploading && !kycFile && kycInputRef.current?.click()}
                     className={cn(
-                      "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+                      "border-2 border-dashed rounded-lg transition-all cursor-pointer",
                       isUploading && "border-muted bg-muted/30 cursor-not-allowed",
-                      !isUploading && "border-border hover:border-primary hover:bg-primary/5",
-                      kycFile && "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/5"
+                      !isUploading && !kycFile && "border-border hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-500/5",
+                      isDragging.kyc && "border-purple-500 bg-purple-50/20 dark:bg-purple-500/10",
+                      kycFile && !uploadProgress.kyc && "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10"
                     )}
                   >
                     <input
@@ -203,41 +260,59 @@ export function ReuploadSenderIdFilesDialog({
                       disabled={isUploading}
                     />
                     {kycFile ? (
-                      <div className="space-y-2">
-                        <TickSquare size={32} className="mx-auto text-emerald-500" />
-                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{kycFile.name}</p>
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="shrink-0 w-10 h-10 rounded-md bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                            <DocumentUpload size={20} className="text-red-600 dark:text-red-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{truncateFileName(kycFile.name)}</p>
+                            <p className="text-xs text-muted-foreground">{kycSizeKo} Ko</p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              clearFile("kyc")
+                            }}
+                            className="shrink-0 p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                            disabled={isUploading}
+                          >
+                            <Trash size={16} className="text-red-600 dark:text-red-400" />
+                          </button>
+                        </div>
+                        {uploadProgress.kyc > 0 && uploadProgress.kyc < 100 && (
+                          <div className="space-y-1.5">
+                            <Progress value={uploadProgress.kyc} className="h-1" />
+                            <p className="text-xs text-muted-foreground text-center">{uploadProgress.kyc}%</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <DocumentUpload size={32} className="mx-auto text-muted-foreground" />
-                        <p className="text-sm text-foreground font-medium">{t("senderIds.clickToUpload")}</p>
-                        <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                      <div className="p-8 space-y-3 text-center">
+                        <DocumentUpload size={40} className="mx-auto text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{t("senderIds.clickToUpload")}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t("senderIds.maxFileSize")}</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                  {uploadProgress.kyc > 0 && uploadProgress.kyc < 100 && (
-                    <div className="space-y-2">
-                      <Progress value={uploadProgress.kyc} className="h-1.5" />
-                      <p className="text-xs text-muted-foreground text-center">{uploadProgress.kyc}%</p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Auth Letter File Upload */}
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">{t("senderIds.authLetterDocument")}</label>
-                    {authLetterFile && (
-                      <span className="text-xs text-muted-foreground">{authLetterSizeKo} Ko</span>
-                    )}
-                  </div>
+                  <label className="text-sm font-medium">{t("senderIds.authLetterDocument")}</label>
                   <div
-                    onClick={() => !isUploading && authLetterInputRef.current?.click()}
+                    onDragOver={(e) => handleDragOver(e, "authLetter")}
+                    onDragLeave={(e) => handleDragLeave(e, "authLetter")}
+                    onDrop={handleDropAuthLetter}
+                    onClick={() => !isUploading && !authLetterFile && authLetterInputRef.current?.click()}
                     className={cn(
-                      "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer",
+                      "border-2 border-dashed rounded-lg transition-all cursor-pointer",
                       isUploading && "border-muted bg-muted/30 cursor-not-allowed",
-                      !isUploading && "border-border hover:border-primary hover:bg-primary/5",
-                      authLetterFile && "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/5"
+                      !isUploading && !authLetterFile && "border-border hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-500/5",
+                      isDragging.authLetter && "border-purple-500 bg-purple-50/20 dark:bg-purple-500/10",
+                      authLetterFile && !uploadProgress.authLetter && "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10"
                     )}
                   >
                     <input
@@ -249,24 +324,43 @@ export function ReuploadSenderIdFilesDialog({
                       disabled={isUploading}
                     />
                     {authLetterFile ? (
-                      <div className="space-y-2">
-                        <TickSquare size={32} className="mx-auto text-emerald-500" />
-                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{authLetterFile.name}</p>
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="shrink-0 w-10 h-10 rounded-md bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                            <DocumentUpload size={20} className="text-red-600 dark:text-red-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{truncateFileName(authLetterFile.name)}</p>
+                            <p className="text-xs text-muted-foreground">{authLetterSizeKo} Ko</p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              clearFile("authLetter")
+                            }}
+                            className="shrink-0 p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                            disabled={isUploading}
+                          >
+                            <Trash size={16} className="text-red-600 dark:text-red-400" />
+                          </button>
+                        </div>
+                        {uploadProgress.authLetter > 0 && uploadProgress.authLetter < 100 && (
+                          <div className="space-y-1.5">
+                            <Progress value={uploadProgress.authLetter} className="h-1" />
+                            <p className="text-xs text-muted-foreground text-center">{uploadProgress.authLetter}%</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <DocumentUpload size={32} className="mx-auto text-muted-foreground" />
-                        <p className="text-sm text-foreground font-medium">{t("senderIds.clickToUpload")}</p>
-                        <p className="text-xs text-muted-foreground">{t("senderIds.maxFileSize")}</p>
+                      <div className="p-8 space-y-3 text-center">
+                        <DocumentUpload size={40} className="mx-auto text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{t("senderIds.clickToUpload")}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t("senderIds.maxFileSize")}</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                  {uploadProgress.authLetter > 0 && uploadProgress.authLetter < 100 && (
-                    <div className="space-y-2">
-                      <Progress value={uploadProgress.authLetter} className="h-1.5" />
-                      <p className="text-xs text-muted-foreground text-center">{uploadProgress.authLetter}%</p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
