@@ -24,7 +24,7 @@ export function PlanDetails() {
     return null
   }
 
-  const recharges = rechargesQuery?.data ?? []
+  const recharges = rechargesQuery?.data?.content ?? []
   const mostRecentRecharge = recharges?.filter(r => r.status === 'VALIDE')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
 
@@ -46,12 +46,13 @@ export function PlanDetails() {
 
     try {
       await createRecharge({
-        qteMessage: data.qteMessage,
+        ...(data.rechargeType === "international" && { amount: data.amount }),
+        ...(data.rechargeType !== "international" && { qteMessage: data.qteMessage, couponCode: data.couponCode }),
         enterpriseId: user.companyId,
         paymentMethod: data.paymentMethod,
         debitPhoneNumber: data.debitPhoneNumber,
         debitBankAccountNumber: data.debitBankAccountNumber,
-        couponCode: data.couponCode,
+        rechargeType: data.rechargeType,
       })
       toast.success(t('recharge.rechargeCreatedDesc'))
       setIsRechargeModalOpen(false)

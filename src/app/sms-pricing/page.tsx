@@ -6,7 +6,7 @@ import { ArrowLeft, SearchNormal1, Global, Wallet } from "iconsax-react"
 import { Button } from "@/shared/ui/button"
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices"
 import { useAuth } from "@/core/hooks/useAuth"
-import { createInternationalRecharge } from "@/core/services/recharge.service"
+import { createRecharge } from "@/core/services/recharge.service"
 import { LoginModal } from "@/shared/common/login-modal"
 import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal"
 import Header from "@/shared/landing_components/components/layout/Header"
@@ -85,7 +85,7 @@ export default function PricingPage() {
 
     setIsSubmitting(true)
     try {
-      await createInternationalRecharge({
+      await createRecharge({
         qteMessage: data.qteMessage,
         amount: data.amount,
         enterpriseId: user.companyId,
@@ -93,6 +93,7 @@ export default function PricingPage() {
         debitPhoneNumber: data.debitPhoneNumber,
         debitBankAccountNumber: data.debitBankAccountNumber,
         couponCode: data.couponCode,
+        rechargeType: "international",
       })
       toast.success("Recharge internationale créée", {
         description: "Votre demande de recharge a été créée avec succès.",

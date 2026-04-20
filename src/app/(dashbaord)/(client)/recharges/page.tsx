@@ -17,11 +17,13 @@ export default function RechargesPage() {
   const enterpriseId = user?.companyId || ""
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(10)
 
   const { query, createRechargeMutation } = useEnterpriseRecharges(
     enterpriseId,
-    0,
-    100,
+    currentPage,
+    pageSize,
   )
 
   const handleCreateRecharge = async (data: RechargeFormData) => {
@@ -33,19 +35,39 @@ export default function RechargesPage() {
     }
 
     await createRechargeMutation.mutateAsync({
-      qteMessage: data.qteMessage,
+      ...(data.rechargeType === "international" && { amount: data.amount }),
+      ...(data.rechargeType !== "international" && { qteMessage: data.qteMessage, couponCode: data.couponCode }),
       enterpriseId,
       paymentMethod: data.paymentMethod,
       debitPhoneNumber: data.debitPhoneNumber,
       debitBankAccountNumber: data.debitBankAccountNumber,
-      couponCode: data.couponCode,
+      rechargeType: data.rechargeType,
     })
   }
 
-  const recharges = (query.data || [])
+  const paginationData = query.data || { content: [], totalElements: 0, totalPages: 0, currentPage: 0, pageSize }
+
+  const recharges = (paginationData.content || [])
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const columns = createClientRechargeColumns(t)
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize)
+    setCurrentPage(0)
+  }
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1))
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < paginationData.totalPages - 1) {
+      setCurrentPage(prev => prev + 1)
+    }
+  }
+
+  const canGoNext = currentPage < paginationData.totalPages - 1
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -70,10 +92,54 @@ export default function RechargesPage() {
         columns={columns}
         rowCount={recharges.length}
         isLoading={query.isLoading}
-        enablePagination
-        autoPagination
+        enablePagination={false}
+        autoPagination={false}
         emptyMessage={t('rechargesPage.noRechargesFound')}
       />
+
+      <div className="flex items-center justify-between border-t pt-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {t('dataTable.rowsPerPage')}
+          </span>
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            className="h-9 px-3 rounded-md border border-input bg-background text-sm"
+            disabled={query.isLoading}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            {t('dataTable.page')} {currentPage + 1} {t('dataTable.of')} {Math.max(1, paginationData.totalPages)}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 0 || query.isLoading}
+            >
+              {t('dataTable.previous')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={!canGoNext || query.isLoading}
+            >
+              {t('dataTable.next')}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <CreateRechargeModal
         isOpen={isCreateModalOpen}

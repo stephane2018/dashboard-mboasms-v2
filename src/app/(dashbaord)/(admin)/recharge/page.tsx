@@ -3,9 +3,7 @@
 import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { useAuth } from "@/core/hooks/useAuth"
-import { getActivePlans } from "@/core/services/pricing.service"
 import type { RechargeListContentType } from "@/core/models/recharges"
-import type { PricingPlanType } from "@/core/models/pricing"
 import { DataTable } from "@/shared/common/data-table/table"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -17,8 +15,11 @@ import { RechargeFilters, type RechargeFilters as RechargeFiltersType } from "./
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal"
 import { ValidateRechargeModal, RefuseRechargeModal, CreditAccountModal } from "./_components/recharge-action-modals"
 import { useRecharge } from "@/core/hooks/useRecharge"
-import { useActivePlans, useT } from "@/core/hooks"
+import { useT } from "@/core/hooks"
 import { RechargeGuideModal, RechargeSupportBanner } from "./_components/recharge-guide-modal"
+import type { PaginationState } from "@tanstack/react-table"
+
+const DEFAULT_PAGE_SIZE = 10
 
 export default function RechargePage() {
   const { user, isSuperAdmin } = useAuth()
@@ -26,13 +27,21 @@ export default function RechargePage() {
   const _isSuperAdmin = user?.role === "SUPER_ADMIN"
   const _isAdminUser = user?.role === "ADMIN_USER"
   const _isAdmin = _isSuperAdmin || _isAdminUser
+
+  // Pagination state
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  })
+
+  // Use recharge with pagination params
   const {
     rechargesQuery,
     createRechargeMutation,
     validateRechargeMutation,
     refuseRechargeMutation,
     creditAccountMutation,
-  } = useRecharge()
+  } = useRecharge({}, pagination.pageIndex, pagination.pageSize)
 
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -47,14 +56,14 @@ export default function RechargePage() {
     endDate: undefined,
   })
 
-  const allRecharges = rechargesQuery.data || []
-  
+  // Get data from current page
+  const currentPageRecharges = rechargesQuery.data?.content || []
   const isLoadingRecharges = rechargesQuery.isLoading
-  const totalElements = allRecharges.length
+  const totalElements = rechargesQuery.data?.totalElements || 0
 
-  // Filter recharges based on search term and filters
+  // Filter recharges based on search term and filters (client-side on current page)
   const filteredRecharges = useMemo(() => {
-    let filtered = allRecharges.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    let filtered = currentPageRecharges.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     // Apply search term filter
     if (searchTerm) {
@@ -98,13 +107,13 @@ export default function RechargePage() {
     }
 
     return filtered
-  }, [allRecharges, searchTerm, filters])
+  }, [currentPageRecharges, searchTerm, filters])
 
   const displayedElements = filteredRecharges.length
 
-  // Calculate statistics
+  // Calculate statistics from all data
   const statistics = useMemo(() => {
-    if (!allRecharges) {
+    if (!currentPageRecharges) {
       return {
         totalRecharges: 0,
         pendingRecharges: 0,
@@ -114,10 +123,10 @@ export default function RechargePage() {
       }
     }
 
-    const pending = allRecharges.filter((r) => r.status === "DEMANDE").length
-    const validated = allRecharges.filter((r) => r.status === "VALIDATED").length
-    const refused = allRecharges.filter((r) => r.status === "REFUSED").length
-    const totalAmount = allRecharges.reduce(
+    const pending = currentPageRecharges.filter((r) => r.status === "DEMANDE").length
+    const validated = currentPageRecharges.filter((r) => r.status === "VALIDATED").length
+    const refused = currentPageRecharges.filter((r) => r.status === "REFUSED").length
+    const totalAmount = currentPageRecharges.reduce(
       (sum, r) => sum + (r.qteMessage * r.messagePriceUnit),
       0
     )
@@ -129,7 +138,7 @@ export default function RechargePage() {
       refusedRecharges: refused,
       totalAmount,
     }
-  }, [allRecharges, totalElements])
+  }, [currentPageRecharges, totalElements])
 
   // Handlers
   const handleCreateRecharge = async (data: RechargeFormData) => {
@@ -141,12 +150,13 @@ export default function RechargePage() {
     }
 
     await createRechargeMutation.mutateAsync({
-      qteMessage: data.qteMessage,
+      ...(data.rechargeType === "international" && { amount: data.amount }),
+      ...(data.rechargeType !== "international" && { qteMessage: data.qteMessage, couponCode: data.couponCode }),
       enterpriseId: user.companyId,
       paymentMethod: data.paymentMethod,
       debitPhoneNumber: data.debitPhoneNumber,
       debitBankAccountNumber: data.debitBankAccountNumber,
-      couponCode: data.couponCode,
+      rechargeType: data.rechargeType,
     })
   }
 
@@ -322,6 +332,8 @@ export default function RechargePage() {
         enablePagination={true}
         enableColumnFilter={false}
         rowSelectable={false}
+        onPaginationChange={setPagination}
+        initialState={{ pagination }}
       />
 
       {/* Create Recharge Modal */}

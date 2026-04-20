@@ -3,12 +3,12 @@ import { refractHttpError } from '@/core/utils/http-error';
 import { extractContent } from '@/core/utils/extract-content';
 import {
     CreateRechargeRequestType,
-    CreateInternationalRechargeRequestType,
     CreateRechargeTypeResponse,
     CreditAccountRequestType,
     CreditAccountResponseType,
     RechargeListContentType,
     UpdateRechargeRequestType,
+    PaginatedRechargeResponse,
 } from '@/core/models/recharges';
 
 export const createRecharge = async (data: CreateRechargeRequestType): Promise<CreateRechargeTypeResponse> => {
@@ -20,7 +20,7 @@ export const createRecharge = async (data: CreateRechargeRequestType): Promise<C
     }
 };
 
-export const getRechargesByEnterprise = async (enterpriseId: string, page: number, size: number): Promise<RechargeListContentType[]> => {
+export const getRechargesByEnterprise = async (enterpriseId: string, page: number, size: number): Promise<PaginatedRechargeResponse> => {
     try {
         const queryParams = new URLSearchParams()
         queryParams.append("enterpriseId", enterpriseId)
@@ -28,20 +28,76 @@ export const getRechargesByEnterprise = async (enterpriseId: string, page: numbe
         queryParams.append("size", size.toString())
 
         const response = await httpClient.get(`/api/v1/recharge/enterprise?${queryParams.toString()}`);
-        return extractContent<RechargeListContentType>(response);
+
+        if (Array.isArray(response)) {
+            return {
+                content: response,
+                totalElements: response.length,
+                totalPages: 1,
+                currentPage: page,
+                pageSize: size,
+            };
+        }
+
+        if (response && typeof response === "object" && "content" in response) {
+            const paginated = response as any;
+            return {
+                content: Array.isArray(paginated.content) ? paginated.content : [],
+                totalElements: paginated.totalElements || 0,
+                totalPages: paginated.totalPages || 1,
+                currentPage: page,
+                pageSize: size,
+            };
+        }
+
+        return {
+            content: [],
+            totalElements: 0,
+            totalPages: 0,
+            currentPage: page,
+            pageSize: size,
+        };
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
 };
 
-export const getAllRecharges = async (page = 0, size = 500): Promise<RechargeListContentType[]> => {
+export const getAllRecharges = async (page = 0, size = 500): Promise<PaginatedRechargeResponse> => {
     try {
         const queryParams = new URLSearchParams()
         queryParams.append("page", page.toString())
         queryParams.append("size", size.toString())
 
         const response = await httpClient.get(`/api/v1/recharge/all/paginate?${queryParams.toString()}`);
-        return extractContent<RechargeListContentType>(response);
+
+        if (Array.isArray(response)) {
+            return {
+                content: response,
+                totalElements: response.length,
+                totalPages: 1,
+                currentPage: page,
+                pageSize: size,
+            };
+        }
+
+        if (response && typeof response === "object" && "content" in response) {
+            const paginated = response as any;
+            return {
+                content: Array.isArray(paginated.content) ? paginated.content : [],
+                totalElements: paginated.totalElements || 0,
+                totalPages: paginated.totalPages || 1,
+                currentPage: page,
+                pageSize: size,
+            };
+        }
+
+        return {
+            content: [],
+            totalElements: 0,
+            totalPages: 0,
+            currentPage: page,
+            pageSize: size,
+        };
     } catch (error) {
         return Promise.reject(refractHttpError(error));
     }
@@ -83,14 +139,6 @@ export const refuseRecharge = async (rechargeId: string): Promise<RechargeListCo
     }
 };
 
-export const createInternationalRecharge = async (data: CreateInternationalRechargeRequestType): Promise<CreateRechargeTypeResponse> => {
-    try {
-        const response = await httpClient.post<CreateRechargeTypeResponse>('/api/v1/recharge/create-international-request', data);
-        return response;
-    } catch (error) {
-        return Promise.reject(refractHttpError(error));
-    }
-};
 
 export const creditAccount = async (enterpriseId: string, data: CreditAccountRequestType): Promise<CreditAccountResponseType> => {
     try {

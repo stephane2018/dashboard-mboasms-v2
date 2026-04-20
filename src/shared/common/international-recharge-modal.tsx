@@ -87,13 +87,14 @@ export function InternationalRechargeModal({
     const [couponError, setCouponError] = useState("")
     const [errors, setErrors] = useState<Record<string, string>>({})
 
-    // Auto-calculate amount when qteMessage changes
-    const handleQteChange = (value: string) => {
-        setQteMessage(value)
+    // Auto-calculate SMS qty when amount changes
+    const handleAmountChange = (value: string) => {
+        setAmount(value)
         if (selectedCountry && value) {
-            setAmount(String(Number(value) * selectedCountry.pricePerSms))
+            const qty = Math.floor(Number(value) / selectedCountry.pricePerSms)
+            setQteMessage(String(qty))
         } else if (!value) {
-            setAmount("")
+            setQteMessage("")
         }
     }
 
@@ -128,13 +129,13 @@ export function InternationalRechargeModal({
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {}
 
-        if (!qteMessage || Number(qteMessage) <= 0) {
-            newErrors.qteMessage = t("intlRecharge.qteError")
-        }
-
         const numAmount = Number(amount)
         if (!amount || numAmount <= 0) {
             newErrors.amount = t("intlRecharge.amountError")
+        }
+
+        if (!qteMessage || Number(qteMessage) <= 0) {
+            newErrors.qteMessage = t("intlRecharge.qteError")
         }
 
         if (!paymentMethod) {
@@ -219,25 +220,6 @@ export function InternationalRechargeModal({
                 )}
 
                 <div className="space-y-6 py-4">
-                    {/* Quantity of SMS */}
-                    <div className="space-y-2">
-                        <Label htmlFor="intl-qte">{t("intlRecharge.smsQuantity")} *</Label>
-                        <Input
-                            id="intl-qte"
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            step={1}
-                            value={qteMessage}
-                            onChange={(e) => handleQteChange(e.target.value.replace(/[^0-9]/g, ""))}
-                            placeholder="Ex: 500"
-                            className={cn("h-12 text-lg font-semibold", errors.qteMessage && "border-red-500 ring-1 ring-red-500")}
-                        />
-                        {errors.qteMessage && (
-                            <p className="text-xs text-red-500 mt-1">{errors.qteMessage}</p>
-                        )}
-                    </div>
-
                     {/* Amount */}
                     <div className="space-y-2">
                         <Label htmlFor="intl-amount">{t("intlRecharge.amount")} *</Label>
@@ -248,7 +230,7 @@ export function InternationalRechargeModal({
                             min={1}
                             step={1}
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+                            onChange={(e) => handleAmountChange(e.target.value.replace(/[^0-9]/g, ""))}
                             placeholder="Ex: 5000"
                             className={cn("h-12 text-lg font-semibold", errors.amount && "border-red-500 ring-1 ring-red-500")}
                         />
@@ -261,6 +243,25 @@ export function InternationalRechargeModal({
                                 {t("intlRecharge.amountNote")}
                             </AlertDescription>
                         </Alert>
+                    </div>
+
+                    {/* Quantity of SMS (auto-calculated) */}
+                    <div className="space-y-2">
+                        <Label htmlFor="intl-qte">{t("intlRecharge.smsQuantity")}</Label>
+                        <Input
+                            id="intl-qte"
+                            type="number"
+                            inputMode="numeric"
+                            value={qteMessage}
+                            readOnly
+                            placeholder="Calculé automatiquement"
+                            className={cn("h-12 text-lg font-semibold bg-muted")}
+                        />
+                        {qteMessage && (
+                            <p className="text-xs text-muted-foreground">
+                                {t("intlRecharge.smsQuantity")}: {Number(qteMessage).toLocaleString()}
+                            </p>
+                        )}
                     </div>
 
                     {/* Payment Method */}

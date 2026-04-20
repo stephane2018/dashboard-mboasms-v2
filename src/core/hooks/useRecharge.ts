@@ -11,7 +11,7 @@ import {
   getAllRecharges,
   getRechargesByEnterprise,
 } from "@/core/services/recharge.service"
-import type { CreateRechargeRequestType, RechargeListContentType } from "@/core/models/recharges"
+import type { CreateRechargeRequestType, RechargeListContentType, PaginatedRechargeResponse } from "@/core/models/recharges"
 import type { UseQueryOptions } from "@tanstack/react-query"
 import { useAuth } from "@/core/hooks/useAuth"
 import { Role } from "@/core/config/enum"
@@ -20,6 +20,8 @@ type CreditAccountPayload = { enterpriseId: string; qteMessage: number }
 
 const rechargeKeys = {
   all: ["recharges"] as const,
+  allPaginated: (page: number, size: number) =>
+    ["recharges", "all", page, size] as const,
   enterprise: (enterpriseId: string, page: number, size: number) =>
     ["recharges", "enterprise", enterpriseId, page, size] as const,
 }
@@ -27,7 +29,7 @@ const rechargeKeys = {
 export function useEnterpriseRecharges(enterpriseId: string, page: number, size: number) {
   const queryClient = useQueryClient()
 
-  const query = useQuery<RechargeListContentType[], Error>({
+  const query = useQuery<PaginatedRechargeResponse, Error>({
     queryKey: rechargeKeys.enterprise(enterpriseId, page, size),
     queryFn: () => getRechargesByEnterprise(enterpriseId, page, size),
     enabled: !!enterpriseId,
@@ -54,12 +56,12 @@ export function useEnterpriseRecharges(enterpriseId: string, page: number, size:
 interface UseRechargeOptions {
   queryKey?: QueryKey
   queryOptions?: Omit<
-    UseQueryOptions<RechargeListContentType[], unknown, RechargeListContentType[], QueryKey>,
+    UseQueryOptions<PaginatedRechargeResponse, unknown, PaginatedRechargeResponse, QueryKey>,
     "queryKey" | "queryFn"
   >
 }
 
-export function useRecharge(options: UseRechargeOptions = {}) {
+export function useRecharge(options: UseRechargeOptions = {}, page = 0, size = 10) {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const _isSuperAdmin = user?.role === Role.SUPER_ADMIN
@@ -67,20 +69,36 @@ export function useRecharge(options: UseRechargeOptions = {}) {
   const _isAdmin = _isSuperAdmin || _isAdminUser
   const enterpriseId = user?.companyId
 
-  const queryKey = options.queryKey ?? (_isSuperAdmin ? ["recharges"] : ["recharges", enterpriseId])
+  const queryKey = options.queryKey ?? 
+    (_isSuperAdmin 
+      ? rechargeKeys.allPaginated(page, size)
+      : rechargeKeys.enterprise(enterpriseId || "", page, size)
+    )
 
   const invalidate = () => {
     if (!queryKey) return
-    queryClient.invalidateQueries({ queryKey })
+    queryClient.invalidateQueries({ queryKey: rechargeKeys.all })
   }
 
   const rechargesQuery = useQuery({
     queryKey,
-    queryFn: async (): Promise<RechargeListContentType[]> => {
+    queryFn: async (): Promise<PaginatedRechargeResponse> => {
       if (_isSuperAdmin) {
-        return (await getAllRecharges(0, 500)) ?? []
+        return (await getAllRecharges(page, size)) ?? {
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          currentPage: page,
+          pageSize: size,
+        }
       }
-      return (await getRechargesByEnterprise(enterpriseId!, 0, 500)) ?? []
+      return (await getRechargesByEnterprise(enterpriseId!, page, size)) ?? {
+        content: [],
+        totalElements: 0,
+        totalPages: 0,
+        currentPage: page,
+        pageSize: size,
+      }
     },
     enabled: !!user && (_isSuperAdmin || !!enterpriseId),
     ...(options.queryOptions ?? {}),

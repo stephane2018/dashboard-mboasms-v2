@@ -25,7 +25,7 @@ export function SmsBalancePopover() {
   // TODO migration: planName no longer on user — needs mapping from enterprise/plan source
   const planName: string | null = null
 
-  const recharges = rechargesQuery?.data ?? []
+  const recharges = rechargesQuery?.data?.content ?? []
   const mostRecentRecharge = recharges
     .filter((r) => r.status === 'VALIDE')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]

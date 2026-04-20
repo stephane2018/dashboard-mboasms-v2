@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useActivePlans, useT } from "@/core/hooks"
 import {
     Dialog,
@@ -32,6 +33,8 @@ import {
     MoneyRecive,
     Global,
     Call,
+    ArrowLeft2,
+    ArrowRight2,
 } from "iconsax-react"
 import { Loader2, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -48,8 +51,7 @@ interface CreateRechargeModalProps {
 }
 
 export interface RechargeFormData {
-    qteMessage?: number
-    amount?: number
+    qteMessage: number
     paymentMethod: string
     debitPhoneNumber: string
     debitBankAccountNumber?: string
@@ -61,6 +63,12 @@ const localPaymentMethods = [
     { value: PaymentMethod.ORANGE_MONEY, label: "Orange Money", icon: MoneyRecive },
     { value: PaymentMethod.MTN_MONEY, label: "MTN Money", icon: MoneyRecive },
 ]
+
+const slideVariants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 200 : -200, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -200 : 200, opacity: 0 }),
+}
 
 export function CreateRechargeModal({
     isOpen,
@@ -79,8 +87,15 @@ export function CreateRechargeModal({
         { value: PaymentMethod.PAYPAL, label: "PayPal", icon: CardIcon },
     ]
 
-const [rechargeType, setRechargeType] = useState<"local" | "international">("local")
-    const [intlAmount, setIntlAmount] = useState(5000)
+    const INTL_STEPS = [
+        { label: t('recharge.stepQuantity'), description: t('recharge.stepQuantityDesc') },
+        { label: t('recharge.stepPayment'), description: t('recharge.stepPaymentDesc') },
+        { label: t('recharge.stepConfirmation'), description: t('recharge.stepConfirmationDesc') },
+    ]
+
+    const [rechargeType, setRechargeType] = useState<"local" | "international">("local")
+    const [intlStep, setIntlStep] = useState(0)
+    const [intlDirection, setIntlDirection] = useState(1)
     const [smsQuantity, setSmsQuantity] = useState(100)
     const [paymentMethod, setPaymentMethod] = useState<string>("")
     const [phoneNumber, setPhoneNumber] = useState("")
@@ -142,20 +157,39 @@ const [rechargeType, setRechargeType] = useState<"local" | "international">("loc
         setPaymentMethod("")
         setPhoneNumber("")
         setBankAccount("")
+        setIntlStep(0)
         setErrors({})
-        setVerifiedCoupon(null)
-        setCouponCode("")
-        setCouponError("")
     }
 
-const validateAll = (): boolean => {
+    const validateStep = (step: number): boolean => {
         const newErrors: Record<string, string> = {}
-        if (rechargeType === "local") {
-            if (smsQuantity < minSMS || smsQuantity > maxSMS) newErrors.smsQuantity = t('recharge.quantityInvalid')
-            if (!plan) newErrors.smsQuantity = t('recharge.noPlanAvailable')
-        } else {
-            if (intlAmount < 1) newErrors.intlAmount = t('recharge.amountMustBePositive')
+        if (step === 0) {
+            if (smsQuantity < minSMS || smsQuantity > maxSMS) {
+                newErrors.smsQuantity = t('recharge.quantityMustBeBetween', { min: minSMS, max: maxSMS })
+            }
+            if (!plan) {
+                newErrors.smsQuantity = t('recharge.noPlanForQuantity')
+            }
         }
+        if (step === 1) {
+            if (!paymentMethod) {
+                newErrors.paymentMethod = t('recharge.paymentMethodRequired')
+            }
+            if ((paymentMethod === PaymentMethod.ORANGE_MONEY || paymentMethod === PaymentMethod.MTN_MONEY) && !phoneNumber) {
+                newErrors.phoneNumber = t('recharge.phoneRequired')
+            }
+            if (paymentMethod === PaymentMethod.BANK_ACCOUNT && !bankAccount) {
+                newErrors.bankAccount = t('recharge.bankAccountRequired')
+            }
+        }
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
+    const validateAll = (): boolean => {
+        const newErrors: Record<string, string> = {}
+        if (smsQuantity < minSMS || smsQuantity > maxSMS) newErrors.smsQuantity = t('recharge.quantityInvalid')
+        if (!plan) newErrors.smsQuantity = t('recharge.noPlanAvailable')
         if (!paymentMethod) newErrors.paymentMethod = t('recharge.methodRequired')
         if ((paymentMethod === PaymentMethod.ORANGE_MONEY || paymentMethod === PaymentMethod.MTN_MONEY) && !phoneNumber) newErrors.phoneNumber = t('recharge.numberRequired')
         if (paymentMethod === PaymentMethod.BANK_ACCOUNT && !bankAccount) newErrors.bankAccount = t('recharge.accountRequired')
@@ -163,15 +197,27 @@ const validateAll = (): boolean => {
         return Object.keys(newErrors).length === 0
     }
 
-const handleSubmit = async () => {
+    const handleIntlNext = () => {
+        if (!validateStep(intlStep)) return
+        setIntlDirection(1)
+        setIntlStep((s) => s + 1)
+    }
+
+    const handleIntlPrev = () => {
+        setIntlDirection(-1)
+        setIntlStep((s) => s - 1)
+        setErrors({})
+    }
+
+    const handleSubmit = async () => {
         if (rechargeType === "local" && !validateAll()) return
         if (rechargeType === "international" && !validateAll()) return
         const data: RechargeFormData = {
-            ...(rechargeType === "local" && { qteMessage: smsQuantity, couponCode: couponCode || undefined }),
-            ...(rechargeType === "international" && { amount: intlAmount }),
+            qteMessage: smsQuantity,
             paymentMethod,
             debitPhoneNumber: phoneNumber,
             debitBankAccountNumber: bankAccount || undefined,
+            couponCode: couponCode || undefined,
             rechargeType,
         }
         try {
@@ -184,7 +230,6 @@ const handleSubmit = async () => {
 
     const handleClose = () => {
         setSmsQuantity(100)
-        setIntlAmount(5000)
         setPaymentMethod("")
         setPhoneNumber("")
         setBankAccount("")
@@ -192,6 +237,7 @@ const handleSubmit = async () => {
         setVerifiedCoupon(null)
         setCouponError("")
         setIsVerifyingCoupon(false)
+        setIntlStep(0)
         setErrors({})
         onClose()
     }
@@ -227,42 +273,7 @@ const handleSubmit = async () => {
         </div>
     )
 
-    const AmountSection = (
-        <div className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="intl-amount" className="text-sm font-semibold">{t('recharge.amount')} (FCFA) *</Label>
-                <div className="relative">
-                    <Input
-                        id="intl-amount"
-                        type="number"
-                        value={intlAmount}
-                        onChange={(e) => setIntlAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                        placeholder="5000"
-                        min="1"
-                        step="100"
-                        className={cn("h-12 pr-16 rounded-xl text-base", errors.intlAmount && "border-red-500")}
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-primary">FCFA</span>
-                </div>
-                {errors.intlAmount && (
-                    <Alert className="border-0 bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-500/10 dark:to-red-600/10 rounded-lg">
-                        <Warning2 size={16} color="currentColor" variant="Bulk" className="text-red-600 dark:text-red-400" />
-                        <AlertDescription className="text-red-700 dark:text-red-300 text-sm">{errors.intlAmount}</AlertDescription>
-                    </Alert>
-                )}
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-5 shadow-sm">
-                <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide font-semibold">Montant à transférer</p>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">{intlAmount.toLocaleString()}</span>
-                    <span className="text-lg font-bold text-primary">FCFA</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">{t('recharge.intlNoTaxesOrFees')}</p>
-            </div>
-        </div>
-    )
-
-    const PaymentSection = (methods: typeof localPaymentMethods, showCoupon = true) => (
+    const PaymentSection = (methods: typeof localPaymentMethods) => (
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label>{t('recharge.paymentMethod')} *</Label>
@@ -297,64 +308,53 @@ const handleSubmit = async () => {
                     {errors.bankAccount && <p className="text-xs text-red-500">{errors.bankAccount}</p>}
                 </div>
             )}
-            {/* Coupon - Local only */}
-            {showCoupon && (
-                <div className="space-y-2">
-                    <Label>{t('recharge.promoCode')}</Label>
-                    <div className="flex gap-2">
-                        <Input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); if (verifiedCoupon) setVerifiedCoupon(null); if (couponError) setCouponError("") }} placeholder="PROMO2024" className="h-12" disabled={!!verifiedCoupon} />
-                        {verifiedCoupon ? (
-                            <Button type="button" variant="outline" className="h-12 shrink-0" onClick={handleClearCoupon}>{t('recharge.clear')}</Button>
-                        ) : (
-                            <Button type="button" variant="outline" className="h-12 shrink-0" onClick={handleVerifyCoupon} disabled={!couponCode.trim() || isVerifyingCoupon}>
-                                {isVerifyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : t('recharge.verify')}
-                            </Button>
-                        )}
-                    </div>
-                    {verifiedCoupon && (
-                        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
-                            <TickCircle size={16} color="currentColor" variant="Bulk" />
-                            <span>{verifiedCoupon.name} - {verifiedCoupon.percentage}% {t('recharge.discount')}</span>
-                        </div>
+            {/* Coupon */}
+            <div className="space-y-2">
+                <Label>{t('recharge.promoCode')}</Label>
+                <div className="flex gap-2">
+                    <Input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); if (verifiedCoupon) setVerifiedCoupon(null); if (couponError) setCouponError("") }} placeholder="PROMO2024" className="h-12" disabled={!!verifiedCoupon} />
+                    {verifiedCoupon ? (
+                        <Button type="button" variant="outline" className="h-12 shrink-0" onClick={handleClearCoupon}>{t('recharge.clear')}</Button>
+                    ) : (
+                        <Button type="button" variant="outline" className="h-12 shrink-0" onClick={handleVerifyCoupon} disabled={!couponCode.trim() || isVerifyingCoupon}>
+                            {isVerifyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : t('recharge.verify')}
+                        </Button>
                     )}
-                    {couponError && <p className="text-xs text-red-500">{couponError}</p>}
                 </div>
-            )}
+                {verifiedCoupon && (
+                    <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md px-3 py-2">
+                        <TickCircle size={16} color="currentColor" variant="Bulk" />
+                        <span>{verifiedCoupon.name} - {verifiedCoupon.percentage}% {t('recharge.discount')}</span>
+                    </div>
+                )}
+                {couponError && <p className="text-xs text-red-500">{couponError}</p>}
+            </div>
         </div>
     )
 
     const SummarySection = (
-        (rechargeType === "local" ? plan : true) ? (
+        plan ? (
             <div className="space-y-4">
                 <div className="space-y-2.5 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('recharge.type')}</span>
                         <span className="font-medium">{rechargeType === "local" ? t('recharge.localCameroon') : t('recharge.international')}</span>
                     </div>
-                    {rechargeType === "local" ? (
-                        <>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">{t('recharge.quantity')}</span>
-                                <span className="font-medium">{smsQuantity.toLocaleString()} SMS</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">{t('recharge.unitPrice')}</span>
-                                <span className="font-medium">{plan?.smsUnitPrice} FCFA</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t('recharge.amount')}</span>
-                            <span className="font-medium">{intlAmount.toLocaleString()} FCFA</span>
-                        </div>
-                    )}
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t('recharge.quantity')}</span>
+                        <span className="font-medium">{smsQuantity.toLocaleString()} SMS</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t('recharge.unitPrice')}</span>
+                        <span className="font-medium">{plan.smsUnitPrice} FCFA</span>
+                    </div>
                     {paymentMethod && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('recharge.payment')}</span>
                             <span className="font-medium">{[...localPaymentMethods, ...internationalPaymentMethods].find(m => m.value === paymentMethod)?.label}</span>
                         </div>
                     )}
-                    {rechargeType === "local" && verifiedCoupon && (
+                    {verifiedCoupon && (
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('recharge.reductionLabel', { percentage: verifiedCoupon.percentage })}</span>
                             <span className="font-medium text-green-600">-{(price - (discountedPrice ?? price)).toLocaleString()} FCFA</span>
@@ -362,13 +362,13 @@ const handleSubmit = async () => {
                     )}
                     <div className="flex justify-between pt-3 border-t">
                         <span className="font-semibold">{t('recharge.total')}</span>
-                        {rechargeType === "local" && verifiedCoupon && discountedPrice !== null ? (
+                        {verifiedCoupon && discountedPrice !== null ? (
                             <div className="text-right">
                                 <span className="line-through text-muted-foreground text-sm mr-2">{price.toLocaleString()} FCFA</span>
                                 <span className="font-bold text-lg text-primary">{discountedPrice.toLocaleString()} FCFA</span>
                             </div>
                         ) : (
-                            <span className="font-bold text-lg text-primary">{rechargeType === "local" ? price.toLocaleString() : intlAmount.toLocaleString()} FCFA</span>
+                            <span className="font-bold text-lg text-primary">{price.toLocaleString()} FCFA</span>
                         )}
                     </div>
                 </div>
@@ -389,52 +389,37 @@ const handleSubmit = async () => {
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[620px] max-h-[90vh] overflow-y-auto p-0 gap-0 rounded-2xl border-0 shadow-2xl">
-                {/* Hero Header */}
-                <div className="relative bg-gradient-to-br from-primary via-primary/95 to-purple-600 p-6 text-white overflow-hidden">
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full blur-3xl -mr-20 -mt-20" />
-                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full blur-3xl -ml-16 -mb-16" />
-                    </div>
-                    <DialogHeader className="relative">
-                        <div className="flex items-start gap-3">
-                            <div className="rounded-xl bg-white/20 p-2.5 ring-1 ring-white/30 backdrop-blur-sm">
-                                <Wallet size={24} color="currentColor" variant="Bulk" className="text-white" />
-                            </div>
-                            <div className="flex-1">
-                                <DialogTitle className="text-2xl font-bold text-white">
-                                    {t('recharge.createRecharge')}
-                                </DialogTitle>
-                                <DialogDescription className="text-white/80 text-sm mt-1">
-                                    {t('recharge.chooseTypeAndPayment')}
-                                </DialogDescription>
-                            </div>
-                        </div>
-                    </DialogHeader>
-                </div>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl flex items-center gap-2">
+                        <Wallet size={24} color="currentColor" variant="Bulk" className="text-primary" />
+                        {t('recharge.createRecharge')}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {t('recharge.chooseTypeAndPayment')}
+                    </DialogDescription>
+                </DialogHeader>
 
-                <div className="space-y-5 px-6 py-6">
+                <div className="space-y-5 py-4">
                     {/* Tabs */}
                     <Tabs value={rechargeType} onValueChange={handleTabChange}>
-                        <TabsList className="w-full grid grid-cols-2 bg-muted/40 border border-border/50 rounded-lg p-1">
-                            <TabsTrigger value="local" className="gap-2 data-[state=active]:shadow-md data-[state=active]:bg-background">
+                        <TabsList className="w-full grid grid-cols-2">
+                            <TabsTrigger value="local" className="gap-1.5">
                                 <MapPin className="w-4 h-4" />
-                                <span className="hidden sm:inline">{t('recharge.localCameroon')}</span>
-                                <span className="sm:hidden">{t('recharge.localCameroon')}</span>
+                                {t('recharge.localCameroon')}
                             </TabsTrigger>
-                            <TabsTrigger value="international" className="gap-2 data-[state=active]:shadow-md data-[state=active]:bg-background">
+                            <TabsTrigger value="international" className="gap-1.5">
                                 <Global size={16} variant="Bulk" color="currentColor" />
-                                <span className="hidden sm:inline">{t('recharge.international')}</span>
-                                <span className="sm:hidden">{t('recharge.international')}</span>
+                                {t('recharge.international')}
                             </TabsTrigger>
                         </TabsList>
 
                         {/* ── LOCAL TAB ─────────────────────────────────── */}
                         <TabsContent value="local">
                             <div className="space-y-5">
-                                <Alert className="border-0 bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-500/10 dark:to-blue-600/10 rounded-xl">
-                                    <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600 dark:text-blue-400" />
-                                    <AlertDescription className="text-blue-700 dark:text-blue-300 text-xs leading-relaxed">
+                                <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
+                                    <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-blue-600" />
+                                    <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs leading-relaxed">
                                         <strong>{t('recharge.howItWorks')} :</strong> {t('recharge.localHowItWorks')}
                                     </AlertDescription>
                                 </Alert>
@@ -452,36 +437,86 @@ const handleSubmit = async () => {
                             </div>
                         </TabsContent>
 
-                        {/* ── INTERNATIONAL TAB (single form) ───────────── */}
+                        {/* ── INTERNATIONAL TAB (multi-step) ───────────── */}
                         <TabsContent value="international">
                             <div className="space-y-5">
-                                <Alert className="border-0 bg-gradient-to-r from-purple-50 to-purple-50/50 dark:from-purple-500/10 dark:to-purple-600/10 rounded-xl">
-                                    <Global size={16} variant="Bulk" color="currentColor" className="text-purple-600 dark:text-purple-400" />
-                                    <AlertDescription className="text-purple-700 dark:text-purple-300 text-xs leading-relaxed">
+                                <Alert className="border-purple-300 bg-purple-50 dark:bg-purple-900/20">
+                                    <Global size={16} variant="Bulk" color="currentColor" className="text-purple-600" />
+                                    <AlertDescription className="text-purple-700 dark:text-purple-400 text-xs leading-relaxed">
                                         <strong>{t('recharge.howItWorks')} :</strong> {t('recharge.intlHowItWorks')}
                                     </AlertDescription>
                                 </Alert>
 
-                                {/* Direct form content */}
-                                {AmountSection}
-                                {PaymentSection(internationalPaymentMethods, false)}
-                                {SummarySection}
+                                {/* Step indicator */}
+                                <div className="flex items-center gap-1">
+                                    {INTL_STEPS.map((s, i) => (
+                                        <div key={i} className="flex items-center flex-1">
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <div className={cn(
+                                                    "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors",
+                                                    i <= intlStep ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                                                )}>
+                                                    {i < intlStep ? <TickCircle size={14} color="currentColor" variant="Bulk" /> : i + 1}
+                                                </div>
+                                                <div className="hidden sm:block min-w-0">
+                                                    <p className={cn("text-[11px] font-semibold truncate", i <= intlStep ? "text-foreground" : "text-muted-foreground")}>{s.label}</p>
+                                                </div>
+                                            </div>
+                                            {i < INTL_STEPS.length - 1 && (
+                                                <div className={cn("h-px flex-1 mx-2 transition-colors", i < intlStep ? "bg-primary" : "bg-border")} />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Step content with slide animation */}
+                                <AnimatePresence mode="wait" custom={intlDirection}>
+                                    <motion.div
+                                        key={intlStep}
+                                        custom={intlDirection}
+                                        variants={slideVariants}
+                                        initial="enter"
+                                        animate="center"
+                                        exit="exit"
+                                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                                    >
+                                        {intlStep === 0 && QuantitySection}
+                                        {intlStep === 1 && PaymentSection(internationalPaymentMethods)}
+                                        {intlStep === 2 && SummarySection}
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {/* Step navigation */}
+                                <div className="flex items-center justify-between pt-2">
+                                    <div>
+                                        {intlStep > 0 && (
+                                            <Button type="button" variant="outline" size="sm" onClick={handleIntlPrev} className="gap-1.5">
+                                                <ArrowLeft2 size={14} color="currentColor" />
+                                                {t('common.previous')}
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div>
+                                        {intlStep < INTL_STEPS.length - 1 && (
+                                            <Button type="button" size="sm" onClick={handleIntlNext} className="gap-1.5">
+                                                {t('common.next')}
+                                                <ArrowRight2 size={14} color="currentColor" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </TabsContent>
                     </Tabs>
                 </div>
 
-                <div className="border-t border-border/50 bg-muted/20 px-6 py-4 flex items-center justify-between gap-3">
-                    <Button variant="outline" onClick={handleClose} disabled={isLoading} className="rounded-lg h-10">
+                <DialogFooter className="gap-2">
+                    <Button variant="outline" onClick={handleClose} disabled={isLoading}>
                         {t('common.cancel')}
                     </Button>
-                    {/* Show submit button for both local and international */}
-                    {(
-                        <Button 
-                            onClick={handleSubmit} 
-                            disabled={isLoading || !plan} 
-                            className="min-w-[200px] h-10 rounded-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/95 hover:to-primary/80 shadow-lg shadow-primary/20"
-                        >
+                    {/* Show submit only on local tab OR last intl step */}
+                    {(rechargeType === "local" || intlStep === INTL_STEPS.length - 1) && (
+                        <Button onClick={handleSubmit} disabled={isLoading || !plan} className="min-w-[140px]">
                             {isLoading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -497,7 +532,7 @@ const handleSubmit = async () => {
                             )}
                         </Button>
                     )}
-                </div>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

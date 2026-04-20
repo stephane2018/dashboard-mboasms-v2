@@ -33,12 +33,13 @@ export function RechargeSection({
 
     const handleSubmit = async (data: RechargeFormData) => {
         await createRechargeMutation.mutateAsync({
-            qteMessage: data.qteMessage,
+            ...(data.rechargeType === "international" && { amount: data.amount }),
+            ...(data.rechargeType !== "international" && { qteMessage: data.qteMessage, couponCode: data.couponCode }),
             enterpriseId: user?.companyId || "",
             paymentMethod: data.paymentMethod,
             debitPhoneNumber: data.debitPhoneNumber,
             debitBankAccountNumber: data.debitBankAccountNumber,
-            couponCode: data.couponCode,
+            rechargeType: data.rechargeType,
         })
         onRechargeSuccess?.()
     }

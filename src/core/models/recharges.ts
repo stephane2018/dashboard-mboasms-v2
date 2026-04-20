@@ -138,6 +138,7 @@ export type RechargeListContentType = {
     pricingPlan: RechargePricingPlanType | null;
     paymentAmount: number;
     coupon: RechargeCouponType | null;
+    rechargeType?: "local" | "international";
     archived: boolean;
 };
 
@@ -344,24 +345,17 @@ export type GroupeType = {
 };
 
 export type CreateRechargeRequestType = {
-    qteMessage: number;
+    qteMessage?: number;
+    amount?: number;
     enterpriseId: string;
     // paymentMethod: PaymentMethod;
     paymentMethod: string;
     debitPhoneNumber: string;
     debitBankAccountNumber?: string;
     couponCode?: string;
+    rechargeType?: "local" | "international";
 }
 
-export type CreateInternationalRechargeRequestType = {
-    qteMessage: number;
-    amount: number;
-    enterpriseId: string;
-    paymentMethod: string;
-    debitPhoneNumber: string;
-    debitBankAccountNumber?: string;
-    couponCode?: string;
-}
 
 export type CreateRechargeTypeResponse = {
     statusCode: number;
@@ -379,6 +373,14 @@ export type CreateRechargeTypeResponse = {
     debitBankAccountNumber?: string;
     couponCode?: string;
     archived: boolean;
+}
+
+export type PaginatedRechargeResponse = {
+    content: RechargeListContentType[];
+    totalElements: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
 }
 
 

@@ -17,7 +17,8 @@ import {
   MoneyRecive,
   Mobile,
   Bank,
-  Clock
+  Clock,
+  Global
 } from "iconsax-react"
 import { RechargeListContentType, PaymentMethod, RechargeStatus } from "@/core/models/recharges"
 import { format } from "date-fns"
@@ -127,6 +128,15 @@ const getStatusConfig = (status: string, t: (key: string) => string) => {
       borderColor: "border-green-300 dark:border-green-700",
       borderStyle: "border-solid",
     },
+    "VALIDE": {
+      label: "Validé",
+      icon: TickCircle,
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      textColor: "text-green-700 dark:text-green-400",
+      iconColor: "text-green-600",
+      borderColor: "border-green-300 dark:border-green-700",
+      borderStyle: "border-solid",
+    },
     [RechargeStatus.REFUSED]: {
       label: t('recharge.refusedStatus'),
       icon: CloseCircle,
@@ -145,11 +155,79 @@ const getStatusConfig = (status: string, t: (key: string) => string) => {
       borderColor: "border-red-300 dark:border-red-700",
       borderStyle: "border-solid",
     },
+    "ECHEC_PAIMENT": {
+      label: "Échec paiement",
+      icon: CloseCircle,
+      bgColor: "bg-red-50 dark:bg-red-900/20",
+      textColor: "text-red-700 dark:text-red-400",
+      iconColor: "text-red-600",
+      borderColor: "border-red-300 dark:border-red-700",
+      borderStyle: "border-dashed",
+    },
   }
 
   return configs[status] || {
     label: status,
     icon: Clock,
+    bgColor: "bg-gray-50 dark:bg-gray-900/20",
+    textColor: "text-gray-700 dark:text-gray-400",
+    iconColor: "text-gray-600",
+    borderColor: "border-gray-300 dark:border-gray-700",
+    borderStyle: "border-solid",
+  }
+}
+
+const getRechargeTypeConfig = (type: string, t: (key: string) => string) => {
+  const configs: Record<string, {
+    label: string
+    icon: any
+    bgColor: string
+    textColor: string
+    iconColor: string
+    borderColor: string
+    borderStyle: string
+  }> = {
+    "local": {
+      label: "Local",
+      icon: Wallet,
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      textColor: "text-blue-700 dark:text-blue-400",
+      iconColor: "text-blue-600",
+      borderColor: "border-blue-300 dark:border-blue-700",
+      borderStyle: "border-solid",
+    },
+    "LOCAL": {
+      label: "Local",
+      icon: Wallet,
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      textColor: "text-blue-700 dark:text-blue-400",
+      iconColor: "text-blue-600",
+      borderColor: "border-blue-300 dark:border-blue-700",
+      borderStyle: "border-solid",
+    },
+    "international": {
+      label: "International",
+      icon: Global,
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      textColor: "text-purple-700 dark:text-purple-400",
+      iconColor: "text-purple-600",
+      borderColor: "border-purple-300 dark:border-purple-700",
+      borderStyle: "border-dashed",
+    },
+    "INTERNATIONAL": {
+      label: "International",
+      icon: Global,
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      textColor: "text-purple-700 dark:text-purple-400",
+      iconColor: "text-purple-600",
+      borderColor: "border-purple-300 dark:border-purple-700",
+      borderStyle: "border-dashed",
+    },
+  }
+
+  return configs[type] || {
+    label: type,
+    icon: Wallet,
     bgColor: "bg-gray-50 dark:bg-gray-900/20",
     textColor: "text-gray-700 dark:text-gray-400",
     iconColor: "text-gray-600",
@@ -191,32 +269,62 @@ export const getColumns = ({
       ),
     },
     {
-      accessorKey: "messagePriceUnit",
-      header: t('recharge.unitPrice'),
-      cell: ({ row }) => (
-        <span className="font-mono text-sm">
-          {row.original.messagePriceUnit} FCFA
-        </span>
-      ),
-    },
-    {
-      id: "totalAmount",
-      header: t('recharge.totalAmount'),
+      id: "paymentDetails",
+      header: t('recharge.paymentDetails'),
       cell: ({ row }) => {
+        const rechargeType = row.original.rechargeType || "local"
+        const amount = row.original.paymentAmount
         const total = row.original.qteMessage * row.original.messagePriceUnit
+        const displayAmount = rechargeType === "international" ? amount : total
+
+        const method = row.original.paymentMethod
+        const methodConfig = getPaymentMethodConfig(method, t)
+        const MethodIcon = methodConfig.icon
+
         return (
-          <span className="font-mono font-semibold text-primary">
-            {total.toLocaleString()} FCFA
-          </span>
+          <div className="space-y-0.5 text-xs">
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground min-w-fit">PU:</span>
+              <span className="font-mono font-semibold">
+                {row.original.messagePriceUnit}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground min-w-fit">Total:</span>
+              <span className="font-mono font-semibold text-primary">
+                {displayAmount.toLocaleString()}
+              </span>
+            </div>
+            <div className={cn(
+              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border",
+              methodConfig.borderStyle,
+              methodConfig.borderColor,
+              methodConfig.bgColor
+            )}>
+              <MethodIcon size={10} variant="Bulk" color="currentColor" className={methodConfig.iconColor} />
+              <span className={cn("font-medium truncate max-w-24", methodConfig.textColor)}>
+                {methodConfig.label}
+              </span>
+            </div>
+          </div>
         )
       },
     },
     {
-      accessorKey: "paymentMethod",
-      header: t('recharge.paymentMethod'),
+      accessorKey: "debitPhoneNumber",
+      header: t('common.phone'),
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">
+          {row.original.debitPhoneNumber || "N/A"}
+        </span>
+      ),
+    },
+    {
+      id: "rechargeType",
+      header: t('recharge.type'),
       cell: ({ row }) => {
-        const method = row.original.paymentMethod
-        const config = getPaymentMethodConfig(method, t)
+        const type = row.original.rechargeType || "local"
+        const config = getRechargeTypeConfig(type, t)
         const Icon = config.icon
 
         return (
@@ -233,15 +341,6 @@ export const getColumns = ({
           </div>
         )
       },
-    },
-    {
-      accessorKey: "debitPhoneNumber",
-      header: t('common.phone'),
-      cell: ({ row }) => (
-        <span className="font-mono text-sm">
-          {row.original.debitPhoneNumber || "N/A"}
-        </span>
-      ),
     },
     {
       accessorKey: "status",

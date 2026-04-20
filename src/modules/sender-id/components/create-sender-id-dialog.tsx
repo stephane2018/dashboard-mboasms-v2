@@ -62,6 +62,8 @@ export function CreateSenderIdDialog({
   const [isChecking, setIsChecking] = useState(false)
   const [availabilityStatus, setAvailabilityStatus] = useState<"idle" | "available" | "taken">("idle")
   const [uploadProgress, setUploadProgress] = useState<{ kyc: number; authLetter: number }>({ kyc: 0, authLetter: 0 })
+  const [uploadSpeed, setUploadSpeed] = useState<{ kyc: string; authLetter: string }>({ kyc: "", authLetter: "" })
+  const [uploadStartTime, setUploadStartTime] = useState<{ kyc: number; authLetter: number }>({ kyc: 0, authLetter: 0 })
   const [kycUrl, setKycUrl] = useState<string>("")
   const [authLetterUrl, setAuthLetterUrl] = useState<string>("")
   const kycInputRef = useRef<HTMLInputElement>(null)
@@ -86,6 +88,17 @@ export function CreateSenderIdDialog({
     }
   }
 
+  const calculateUploadSpeed = (startTime: number, fileSize: number, progress: number) => {
+    if (progress === 0 || startTime === 0) return ""
+    const elapsed = (Date.now() - startTime) / 1000 // en secondes
+    const uploadedBytes = (fileSize * progress) / 100
+    const speed = uploadedBytes / elapsed // bytes par seconde
+    
+    if (speed < 1024) return `${speed.toFixed(1)} B/s`
+    if (speed < 1024 * 1024) return `${(speed / 1024).toFixed(1)} KB/s`
+    return `${(speed / (1024 * 1024)).toFixed(1)} MB/s`
+  }
+
   const handleSave = async () => {
     if (!kycFile || !authLetterFile) {
       toast.error(t("senderIds.bothFilesRequired"))
@@ -94,27 +107,66 @@ export function CreateSenderIdDialog({
 
     setIsUploading(true)
     setUploadProgress({ kyc: 0, authLetter: 0 })
+    setUploadSpeed({ kyc: "", authLetter: "" })
 
     try {
       // Step 1: Upload KYC file with progress
-      setUploadProgress(prev => ({ ...prev, kyc: 10 }))
-      const kycA2PUrl = await fileService.uploadFile(kycFile)
+      const kycStartTime = Date.now()
+      setUploadStartTime(prev => ({ ...prev, kyc: kycStartTime }))
       
-      if (!kycA2PUrl || !kycA2PUrl.includes("https://firebasestorage.googleapis.com")) {
-        throw new Error("Invalid KYC URL response")
+      // Simuler la progression (normalement fileService aurait un callback de progrès)
+      let kycProgress = 10
+      const kycInterval = setInterval(() => {
+        if (kycProgress < 95) {
+          kycProgress += Math.random() * 30
+          if (kycProgress > 95) kycProgress = 95
+          setUploadProgress(prev => ({ ...prev, kyc: kycProgress }))
+          setUploadSpeed(prev => ({
+            ...prev,
+            kyc: calculateUploadSpeed(kycStartTime, kycFile.size, kycProgress)
+          }))
+        }
+      }, 300)
+      
+      const kycA2PUrl = await fileService.uploadFile(kycFile)
+      clearInterval(kycInterval)
+
+      console.log("KYC response received:", { kycA2PUrl, type: typeof kycA2PUrl })
+      if (!kycA2PUrl || typeof kycA2PUrl !== "string" || kycA2PUrl.trim().length === 0) {
+        console.error("KYC URL validation failed:", { kycA2PUrl, type: typeof kycA2PUrl })
+        throw new Error(`Invalid KYC URL response: ${JSON.stringify(kycA2PUrl)}`)
       }
       setKycUrl(kycA2PUrl)
       setUploadProgress(prev => ({ ...prev, kyc: 100 }))
+      setUploadSpeed(prev => ({ ...prev, kyc: calculateUploadSpeed(kycStartTime, kycFile.size, 100) }))
 
       // Step 2: Upload Auth Letter file with progress
-      setUploadProgress(prev => ({ ...prev, authLetter: 10 }))
-      const senderIdAuthLetterUrl = await fileService.uploadFile(authLetterFile)
+      const authStartTime = Date.now()
+      setUploadStartTime(prev => ({ ...prev, authLetter: authStartTime }))
       
-      if (!senderIdAuthLetterUrl || !senderIdAuthLetterUrl.includes("https://firebasestorage.googleapis.com")) {
+      let authProgress = 10
+      const authInterval = setInterval(() => {
+        if (authProgress < 95) {
+          authProgress += Math.random() * 30
+          if (authProgress > 95) authProgress = 95
+          setUploadProgress(prev => ({ ...prev, authLetter: authProgress }))
+          setUploadSpeed(prev => ({
+            ...prev,
+            authLetter: calculateUploadSpeed(authStartTime, authLetterFile.size, authProgress)
+          }))
+        }
+      }, 300)
+      
+      const senderIdAuthLetterUrl = await fileService.uploadFile(authLetterFile)
+      clearInterval(authInterval)
+
+      if (!senderIdAuthLetterUrl || typeof senderIdAuthLetterUrl !== "string" || senderIdAuthLetterUrl.trim().length === 0) {
+        console.error("Auth Letter URL validation failed:", { senderIdAuthLetterUrl })
         throw new Error("Invalid Auth Letter URL response")
       }
       setAuthLetterUrl(senderIdAuthLetterUrl)
       setUploadProgress(prev => ({ ...prev, authLetter: 100 }))
+      setUploadSpeed(prev => ({ ...prev, authLetter: calculateUploadSpeed(authStartTime, authLetterFile.size, 100) }))
 
       // Step 3: Create sender ID with the collected URLs
       await onSave({ name, description, enterpriseId, kycA2PUrl, senderIdAuthLetterUrl })
@@ -127,6 +179,7 @@ export function CreateSenderIdDialog({
     } finally {
       setIsUploading(false)
       setUploadProgress({ kyc: 0, authLetter: 0 })
+      setUploadSpeed({ kyc: "", authLetter: "" })
     }
   }
 
@@ -364,7 +417,10 @@ export function CreateSenderIdDialog({
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="text-muted-foreground">Upload KYC</span>
-                        <span className="font-semibold text-primary">{uploadProgress.kyc}%</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-primary">{uploadProgress.kyc}%</span>
+                          {uploadSpeed.kyc && <span className="text-gray-500">• {uploadSpeed.kyc}</span>}
+                        </div>
                       </div>
                       <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
@@ -375,9 +431,22 @@ export function CreateSenderIdDialog({
                     </div>
                   )}
                   {kycUrl && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
-                      <TickCircle size={12} color="currentColor" variant="Bulk" />
-                      Fichier uploadé avec succès
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
+                        <TickCircle size={12} color="currentColor" variant="Bulk" />
+                        Fichier uploadé avec succès
+                      </div>
+                      <a
+                        href={kycUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors group"
+                      >
+                        <span className="text-primary text-[10px] group-hover:underline break-all flex-1">
+                          {kycUrl}
+                        </span>
+                        <span className="text-primary text-xs shrink-0">↗</span>
+                      </a>
                     </div>
                   )}
                 </div>
@@ -434,7 +503,10 @@ export function CreateSenderIdDialog({
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="text-muted-foreground">Upload Auth Letter</span>
-                        <span className="font-semibold text-primary">{uploadProgress.authLetter}%</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-primary">{uploadProgress.authLetter}%</span>
+                          {uploadSpeed.authLetter && <span className="text-gray-500">• {uploadSpeed.authLetter}</span>}
+                        </div>
                       </div>
                       <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
@@ -445,9 +517,22 @@ export function CreateSenderIdDialog({
                     </div>
                   )}
                   {authLetterUrl && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
-                      <TickCircle size={12} color="currentColor" variant="Bulk" />
-                      Fichier uploadé avec succès
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-emerald-500">
+                        <TickCircle size={12} color="currentColor" variant="Bulk" />
+                        Fichier uploadé avec succès
+                      </div>
+                      <a
+                        href={authLetterUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors group"
+                      >
+                        <span className="text-primary text-[10px] group-hover:underline break-all flex-1">
+                          {authLetterUrl}
+                        </span>
+                        <span className="text-primary text-xs shrink-0">↗</span>
+                      </a>
                     </div>
                   )}
                 </div>

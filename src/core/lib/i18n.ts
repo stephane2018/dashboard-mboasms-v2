@@ -5,17 +5,17 @@ import fr from '@/locales/fr.json';
 import en from '@/locales/en.json';
 
 function getPersistedLang(): string {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'fr';
   try {
     const stored = window.localStorage.getItem('mboasms-language');
     if (stored) {
       const parsed = JSON.parse(stored);
-      return parsed?.state?.lang || 'en'; // Also fallback to 'en' client-side if parsing fails
+      return parsed?.state?.lang || 'fr';
     }
   } catch {
     // ignore
   }
-  return 'en'; // Fallback to 'en' if localStorage is not available or empty
+  return 'fr';
 }
 
 if (!i18next.isInitialized) {

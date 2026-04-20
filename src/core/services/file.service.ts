@@ -24,7 +24,17 @@ export const fileService = {
         "/api/v1/file",
         formData
       )
-      return response.url
+      console.log("File upload response:", { response, hasUrl: "url" in response })
+
+      if (response.url) {
+        return response.url
+      }
+
+      if (typeof response === "string") {
+        return response
+      }
+
+      throw new Error(`Unexpected response format: ${JSON.stringify(response)}`)
     } catch (error) {
       return Promise.reject(refractHttpError(error))
     }

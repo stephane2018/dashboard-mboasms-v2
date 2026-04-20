@@ -7,7 +7,7 @@ import { ArrowRight2, Global, MessageText1, Chart2, Clock, ShieldTick, Wallet } 
 import { usePricing } from "@/core/hooks/usePricing";
 import { useSmsCountryPrices } from "@/core/hooks/useSmsCountryPrices";
 import { useAuth } from "@/core/hooks/useAuth";
-import { createRecharge, createInternationalRecharge } from "@/core/services/recharge.service";
+import { createRecharge } from "@/core/services/recharge.service";
 import { LoginModal } from "@/shared/common/login-modal";
 import { CreateRechargeModal, type RechargeFormData } from "@/shared/common/create-recharge-modal";
 import { InternationalRechargeModal, type InternationalRechargeFormData } from "@/shared/common/international-recharge-modal";
@@ -91,14 +91,13 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
 
     setIsIntlSubmitting(true);
     try {
-      await createInternationalRecharge({
-        qteMessage: data.qteMessage,
+      await createRecharge({
         amount: data.amount,
         enterpriseId: user.companyId,
         paymentMethod: data.paymentMethod,
         debitPhoneNumber: data.debitPhoneNumber,
         debitBankAccountNumber: data.debitBankAccountNumber,
-        couponCode: data.couponCode,
+        rechargeType: "international",
       });
       toast.success("Recharge internationale créée", {
         description: "Votre demande de recharge a été créée avec succès.",
