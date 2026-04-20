@@ -111,7 +111,7 @@ export default function SenderIdsPage() {
   )
 
   const handleReupload = useCallback(
-    async (id: string, urls: { kycA2PUrl: string; senderIdAuthLetterUrl: string }) => {
+    async (id: string, urls: { kycA2PUrl: string; senderIdAuthLetterUrl: string; status: "EN_ATTENTE" }) => {
       await updateSenderIdMutation.mutateAsync({ id, data: urls })
       setIsReuploadDialogOpen(false)
     },

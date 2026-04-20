@@ -749,7 +749,15 @@
     "clickToUpload": "Cliquez pour uploader ou glissez-déposez",
     "updateFiles": "Mettre à jour les fichiers",
     "filesUpdatedSuccess": "Fichiers mis à jour avec succès",
-    "reuploadFiles": "Re-uploader les fichiers"
+    "reuploadFiles": "Re-uploader les fichiers",
+    "submissionInstructions": "Instructions de soumission",
+    "instruction1": "Assurez-vous que le document KYC est clair et lisible",
+    "instruction2": "La lettre d'autorisation doit être signée et datée",
+    "instruction3": "Les fichiers doivent être au format PDF, JPG ou PNG",
+    "maxFileSize": "Taille maximale : 10 MB par fichier",
+    "submitFiles": "Soumettre les fichiers",
+    "submissionSuccessful": "Soumission réussie !",
+    "submissionSuccessfulDesc": "Vos documents ont été resoumis avec succès. Votre demande est maintenant en attente d'examen."
   },
   "senderIdGuide": {
     "step1Title": "Qu'est-ce qu'un Sender ID ?",

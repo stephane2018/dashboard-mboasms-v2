@@ -647,7 +647,15 @@
     "clickToUpload": "Click to upload or drag and drop",
     "updateFiles": "Update Files",
     "filesUpdatedSuccess": "Files updated successfully",
-    "reuploadFiles": "Reupload Files"
+    "reuploadFiles": "Reupload Files",
+    "submissionInstructions": "Submission Instructions",
+    "instruction1": "Make sure the KYC document is clear and legible",
+    "instruction2": "Authorization letter must be signed and dated",
+    "instruction3": "Files must be in PDF, JPG or PNG format",
+    "maxFileSize": "Maximum size: 10 MB per file",
+    "submitFiles": "Submit Files",
+    "submissionSuccessful": "Submission Successful!",
+    "submissionSuccessfulDesc": "Your documents have been resubmitted successfully. Your request is now pending review."
   },
   "senderIdGuide": {
     "step1Title": "What is a Sender ID?",
