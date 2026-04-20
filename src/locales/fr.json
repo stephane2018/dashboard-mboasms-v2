@@ -748,7 +748,8 @@
     "authLetterDocument": "Lettre d'autorisation",
     "clickToUpload": "Cliquez pour uploader ou glissez-déposez",
     "updateFiles": "Mettre à jour les fichiers",
-    "filesUpdatedSuccess": "Fichiers mis à jour avec succès"
+    "filesUpdatedSuccess": "Fichiers mis à jour avec succès",
+    "reuploadFiles": "Re-uploader les fichiers"
   },
   "senderIdGuide": {
     "step1Title": "Qu'est-ce qu'un Sender ID ?",

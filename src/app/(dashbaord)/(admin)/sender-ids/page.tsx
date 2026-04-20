@@ -11,7 +11,7 @@ import { createColumns } from "./columns"
 import type { PaginationState } from "@tanstack/react-table"
 import type { SenderId, CreateSenderIdInput, UpdateSenderIdInput } from "@/modules/sender-id/types"
 import { DeleteConfirmationDialog } from "@/shared/common/delete-confirmation-dialog"
-import { EditSenderIdDialog, CreateSenderIdDialog } from "@/modules/sender-id/components"
+import { EditSenderIdDialog, CreateSenderIdDialog, ReuploadSenderIdFilesDialog } from "@/modules/sender-id/components"
 import { ChangeStatusDialog } from "@/modules/sender-id/components"
 import { SenderIdGuideModal } from "@/modules/sender-id/components/sender-id-guide-modal"
 import { Button } from "@/shared/ui/button"
@@ -28,6 +28,7 @@ export default function SenderIdsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isReuploadDialogOpen, setIsReuploadDialogOpen] = useState(false)
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false)
 
   // Check if guide should be shown on first visit
@@ -109,7 +110,15 @@ export default function SenderIdsPage() {
     [createSenderIdMutation]
   )
 
-  const handleSaveEdit = useCallback(
+  const handleReupload = useCallback(
+    async (id: string, urls: { kycA2PUrl: string; senderIdAuthLetterUrl: string }) => {
+      await updateSenderIdMutation.mutateAsync({ id, data: urls })
+      setIsReuploadDialogOpen(false)
+    },
+    [updateSenderIdMutation]
+  )
+
+    const handleSaveEdit = useCallback(
     async (id: string, input: UpdateSenderIdInput) => {
       await updateSenderIdMutation.mutateAsync({ id, data: input })
       setIsEditDialogOpen(false)
@@ -136,6 +145,10 @@ export default function SenderIdsPage() {
     onEdit: handleEdit,
     onDelete: handleDelete,
     onChangeStatus: handleChangeStatus,
+    onReupload: (senderId) => {
+      setSelectedSenderId(senderId)
+      setIsReuploadDialogOpen(true)
+    },
     userRole: user?.role as Role | undefined,
     t,
   })

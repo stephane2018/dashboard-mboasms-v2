@@ -646,7 +646,8 @@
     "authLetterDocument": "Authorization Letter",
     "clickToUpload": "Click to upload or drag and drop",
     "updateFiles": "Update Files",
-    "filesUpdatedSuccess": "Files updated successfully"
+    "filesUpdatedSuccess": "Files updated successfully",
+    "reuploadFiles": "Reupload Files"
   },
   "senderIdGuide": {
     "step1Title": "What is a Sender ID?",

@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/shared/ui/badge"
 import { DataTableColumnHeader } from "@/shared/common/data-table/data-table-column-header"
-import { Edit2, Trash2, RefreshCcw, ExternalLink } from "lucide-react"
+import { Edit2, Trash2, RefreshCcw, ExternalLink, FileUp } from "lucide-react"
 import { ActionsDropdown } from "@/shared/common/data-table/actions-dropdown"
 import type { SenderId, SenderIdStatus } from "@/modules/sender-id/types"
 import { format } from "date-fns"
@@ -17,6 +17,7 @@ const statusColors: Record<SenderIdStatus, "default" | "secondary" | "destructiv
 }
 
 interface ColumnsProps {
+  onReupload: (senderId: SenderId) => void
   onEdit: (senderId: SenderId) => void
   onDelete: (senderId: SenderId) => void
   onChangeStatus: (senderId: SenderId) => void
@@ -24,7 +25,7 @@ interface ColumnsProps {
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
-export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t }: ColumnsProps): ColumnDef<SenderId>[] => {
+export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t, onReupload }: ColumnsProps): ColumnDef<SenderId>[] => {
   const statusLabels: Record<SenderIdStatus, string> = {
     EN_ATTENTE: t('senderIds.statusPending'),
     VALIDE: t('senderIds.statusValidated'),
@@ -139,6 +140,12 @@ export const createColumns = ({ onEdit, onDelete, onChangeStatus, userRole, t }:
           label: t('senderIds.edit'),
           onClick: () => onEdit(senderId),
         },
+        // Reupload for rejected sender IDs
+        ...(senderId.status === "REJETE" ? [{
+          icon: FileUp,
+          label: t('senderIds.reuploadFiles'),
+          onClick: () => onReupload(senderId),
+        }] : []),
         // Only SUPER_ADMIN can change status
         ...(userRole === Role.SUPER_ADMIN ? [{
           icon: RefreshCcw,
