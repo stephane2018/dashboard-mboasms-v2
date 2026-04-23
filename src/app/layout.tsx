@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/shared/components/theme-provider";
 import { SuppressScriptWarning } from "@/shared/components/suppress-script-warning"
 import { ClientErrorReporter } from "@/shared/components/client-error-reporter";
 import { OrganizationJsonLd, SoftwareApplicationJsonLd, WebSiteJsonLd, FAQJsonLd } from "@/shared/components/json-ld";
+import { GoogleAnalytics } from "@/shared/components/google-analytics";
 import '@/core/lib/i18n';
 
 export { metadata } from "./metadata";
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
         <SuppressScriptWarning />
         <ClientErrorReporter />
         <QueryProvider>
