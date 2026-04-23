@@ -69,7 +69,13 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-export function HeroSection({ t }: { t: typeof landingContent.fr }) {
+export function HeroSection({ t, campaign = false }: { t: typeof landingContent.fr; campaign?: boolean }) {
+  const hero = campaign ? t.heroCampaign : t.hero;
+  const titleSizeClass = campaign
+    ? "text-4xl md:text-5xl lg:text-6xl"
+    : "text-5xl md:text-6xl lg:text-7xl";
+  const secondaryHref = campaign ? "/api-docs" : "#pricing";
+
   return (
     <section className="relative py-20 md:py-32 px-6 md:px-12 lg:px-24 overflow-hidden">
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -85,39 +91,39 @@ export function HeroSection({ t }: { t: typeof landingContent.fr }) {
             <motion.div variants={fadeUp}>
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
                 <Global size="16" color="currentColor" variant="Bold" />
-                {t.hero.badge}
+                {hero.badge}
               </span>
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
-              <span className="text-foreground">{t.hero.title1}</span>
+            <motion.h1 variants={fadeUp} className={`${titleSizeClass} font-bold tracking-tight mb-6 leading-[1.1]`}>
+              <span className="text-foreground">{hero.title1}</span>
               <br />
               <span className="bg-gradient-to-r from-primary via-purple-500 to-amber-500 bg-clip-text text-transparent bg-300% animate-gradient-x">
-                {t.hero.title2}
+                {hero.title2}
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-lg md:text-xl text-muted-foreground max-w-lg mb-10 leading-relaxed">
-              {t.hero.subtitle}
+              {hero.subtitle}
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
               <Button size="lg" className="bg-primary text-white rounded-xl group text-base px-8 h-12 font-semibold shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200" asChild>
                 <a href="/compte" className="flex items-center">
-                  {t.hero.cta}
+                  {hero.cta}
                   <ArrowRight2 size="18" color="currentColor" className="ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
                 </a>
               </Button>
               <Button variant="outline" size="lg" className="rounded-xl border-border hover:border-primary/40 hover:bg-primary/5 text-foreground h-12 px-8 text-base font-semibold active:scale-[0.98] transition-all duration-200" asChild>
-                <a href="#pricing">{t.hero.ctaSecondary}</a>
+                <a href={secondaryHref}>{hero.ctaSecondary}</a>
               </Button>
             </motion.div>
 
             <motion.div variants={fadeUp} className="flex gap-8 md:gap-12">
               {[
-                { value: t.hero.stat1, label: t.hero.stat1Label },
-                { value: t.hero.stat2, label: t.hero.stat2Label },
-                { value: t.hero.stat3, label: t.hero.stat3Label },
+                { value: hero.stat1, label: hero.stat1Label },
+                { value: hero.stat2, label: hero.stat2Label },
+                { value: hero.stat3, label: hero.stat3Label },
               ].map((stat, i) => (
                 <div key={i} className="text-center sm:text-left">
                   <div className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</div>

@@ -13,7 +13,9 @@ const Footer = dynamic(() => import("@/shared/landing_components/components/layo
 });
 import { landingContent } from "@/shared/landing_components/i18n/landing-content";
 import { useLanguageStore } from "@/core/stores/languageStore";
+import { CampaignBanner } from "@/shared/landing_components/components/sections/CampaignBanner";
 import { HeroSection } from "@/shared/landing_components/components/sections/HeroSection";
+import { HowItWorksSection } from "@/shared/landing_components/components/sections/HowItWorksSection";
 import { StatsBar } from "@/shared/landing_components/components/sections/StatsBar";
 import { PlatformsSection } from "@/shared/landing_components/components/sections/PlatformsSection";
 import { MobileAppSection } from "@/shared/landing_components/components/sections/MobileAppSection";
@@ -32,6 +34,8 @@ function SectionFallback() {
   return <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div></div>;
 }
 
+const isCampaignEnabled = process.env.NEXT_PUBLIC_CAMPAIGN_ENABLED === "true";
+
 export default function Home() {
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -47,7 +51,9 @@ export default function Home() {
     <div className="min-h-screen bg-background pt-20 noise-overlay relative">
       <Header />
 
-      <HeroSection t={t} />
+      <HeroSection t={t} campaign={isCampaignEnabled} />
+
+      {isCampaignEnabled && <HowItWorksSection t={t} />}
 
       <StatsBar t={t} />
 
@@ -59,9 +65,9 @@ export default function Home() {
         <Testimonials />
       </Suspense>
 
-      <Suspense fallback={<SectionFallback />}>
+      {/* <Suspense fallback={<SectionFallback />}>
         <CollaboratorLogos />
-      </Suspense>
+      </Suspense> */}
 
       <PlatformsSection t={t} lang={lang} />
 
