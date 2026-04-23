@@ -9,6 +9,8 @@ services:
         - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
         - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
         - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-MboaSMS}
+        - NEXT_PUBLIC_GA_ID=${NEXT_PUBLIC_GA_ID:-G-7EPYQ4D80T}
+        - NEXT_PUBLIC_CAMPAIGN_ENABLED=${NEXT_PUBLIC_CAMPAIGN_ENABLED:-false}
     image: mboa-v2:latest
     container_name: mboa-v2-app
     restart: unless-stopped

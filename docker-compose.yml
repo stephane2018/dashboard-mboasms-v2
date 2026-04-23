@@ -10,6 +10,8 @@ services:
         NEXT_PUBLIC_TOKEN_KEY: ${NEXT_PUBLIC_TOKEN_KEY:-mboasms-access-token}
         NEXT_PUBLIC_REFRESH_TOKEN_KEY: ${NEXT_PUBLIC_REFRESH_TOKEN_KEY:-mboasms-refresh-token}
         NEXT_PUBLIC_USER_KEY: ${NEXT_PUBLIC_USER_KEY:-mboasms-user}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-G-7EPYQ4D80T}
+        NEXT_PUBLIC_CAMPAIGN_ENABLED: ${NEXT_PUBLIC_CAMPAIGN_ENABLED:-false}
     ports:
       - 3000
     environment:
