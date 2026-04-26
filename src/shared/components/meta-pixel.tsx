@@ -3,11 +3,11 @@ import Script from "next/script";
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1485725002939285";
 
 export function MetaPixel() {
-  if (!META_PIXEL_ID || process.env.NODE_ENV !== "production") return null;
+  if (!META_PIXEL_ID) return null;
 
   return (
     <>
-      <Script id="meta-pixel-init" strategy="afterInteractive">
+      <Script id="meta-pixel-init" strategy="beforeInteractive">
         {`
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
