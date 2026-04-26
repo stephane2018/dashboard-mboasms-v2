@@ -9,8 +9,6 @@ import { Form } from '@/shared/ui/form';
 import { ArrowRight2 } from 'iconsax-react';
 import { Step2Personal } from './step-2-personal';
 import { Step3Security } from './step-3-security';
-import { Step4Enterprise } from './step-4-enterprise';
-import { Step5SmsConfig } from './step-5-sms-config';
 import { StepIndicator } from './step-indicator';
 import { useRegister, useT } from '@/core/hooks';
 
@@ -34,17 +32,6 @@ export function RegisterForm() {
       country: '',
       city: '',
       address: '',
-      socialRaison: '',
-      activityDomain: '',
-      contribuableNumber: '',
-      emailEnterprise: '',
-      telephoneEntreprise: '',
-      smsESenderId: '',
-      numeroCommerce: '',
-      adresseEnterprise: '',
-      villeEntreprise: '',
-      enterpriseCountryId: '',
-      urlSiteweb: '',
     },
   });
 
@@ -60,18 +47,6 @@ export function RegisterForm() {
       name: t('auth.security'),
       component: Step3Security,
       fields: ['password', 'confirmPassword', 'country', 'city', 'address'],
-    },
-    {
-      id: 'Step 3',
-      name: t('auth.enterpriseStepName'),
-      component: Step4Enterprise,
-      fields: ['socialRaison', 'activityDomain', 'contribuableNumber', 'smsESenderId'],
-    },
-    {
-      id: 'Step 4',
-      name: t('auth.enterpriseDetailsStepName'),
-      component: Step5SmsConfig,
-      fields: ['emailEnterprise', 'telephoneEntreprise', 'numeroCommerce', 'adresseEnterprise', 'villeEntreprise', 'urlSiteweb', 'enterpriseCountryId'],
     },
   ], [t]);
 

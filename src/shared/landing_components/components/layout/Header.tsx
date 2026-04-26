@@ -6,12 +6,14 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Moon, Sun, Settings2, Gift } from 'lucide-react';
 import { ArrowRight2, CloseCircle, User, Logout, Profile, Sms, Global, CloseSquare } from 'iconsax-react';
 import ScheduleCallModal from '../ScheduleCallModal';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { LanguageSwitcher } from '@/shared/common/language-switcher';
 import { useT } from '@/core/hooks';
 import { useAuth } from '@/core/hooks/useAuth';
+import { useLanguageStore } from '@/core/stores/languageStore';
 import { API_URL, API_URL_DASHBOARD } from '@/core/config/constante';
 import {
   Avatar,
@@ -30,7 +32,9 @@ import {
 const Header = () => {
   const pathname = usePathname();
   const { user, enterprise, clearUser } = useAuth();
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const { lang, setLang } = useLanguageStore();
+  const isCampaignMode = process.env.NEXT_PUBLIC_CAMPAIGN_ENABLED === "true";
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -306,8 +310,24 @@ const Header = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="hidden md:block"
+                className="hidden md:flex items-center gap-3"
               >
+                {isCampaignMode && (
+                  <Link
+                    href="/auth/register"
+                    className="relative overflow-hidden px-5 py-2.5 rounded-xl inline-flex items-center text-sm font-semibold bg-linear-to-r from-primary to-violet-600 text-white hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-md shadow-primary/30"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Gift size={15} className="shrink-0" />
+                      {lang === 'fr' ? "Profiter de l'offre" : "Get the offer"}
+                    </span>
+                    <motion.span
+                      className="absolute inset-0 -skew-x-12 bg-linear-to-r from-transparent via-white/30 to-transparent"
+                      animate={{ x: ['-120%', '220%'] }}
+                      transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 2.5, ease: 'easeInOut' }}
+                    />
+                  </Link>
+                )}
                 <button
                   onClick={handleLoginClick}
                   className="px-5 py-2.5 rounded-xl group inline-flex items-center text-sm font-semibold border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
@@ -319,8 +339,37 @@ const Header = () => {
                 </button>
               </motion.div>
             )}
-            <LanguageSwitcher variant="dropdown" className="hidden md:block" />
-            <ThemeToggle />
+            {isCampaignMode ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden md:flex items-center gap-1.5 p-2.5 rounded-full border border-border/70 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200">
+                    <Settings2 size={16} className="text-primary" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">{lang === 'fr' ? 'Langue' : 'Language'}</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setLang('fr')} className={`flex items-center gap-2 ${lang === 'fr' ? 'text-primary font-semibold' : ''}`}>
+                    <span>🇫🇷</span> Français {lang === 'fr' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLang('en')} className={`flex items-center gap-2 ${lang === 'en' ? 'text-primary font-semibold' : ''}`}>
+                    <span>🇬🇧</span> English {lang === 'en' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">{lang === 'fr' ? 'Thème' : 'Theme'}</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme('light')} className={`flex items-center gap-2 ${resolvedTheme === 'light' ? 'text-primary font-semibold' : ''}`}>
+                    <Sun size={14} /> {lang === 'fr' ? 'Clair' : 'Light'} {resolvedTheme === 'light' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')} className={`flex items-center gap-2 ${resolvedTheme === 'dark' ? 'text-primary font-semibold' : ''}`}>
+                    <Moon size={14} /> {lang === 'fr' ? 'Sombre' : 'Dark'} {resolvedTheme === 'dark' && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <LanguageSwitcher variant="dropdown" className="hidden md:block" />
+                <ThemeToggle />
+              </>
+            )}
             <button
               className="md:hidden text-foreground p-1 rounded-full hover:bg-primary/10 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -514,22 +563,48 @@ const Header = () => {
                       </motion.div>
                     </>
                   ) : (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.4 }}
-                      className="w-full"
-                    >
-                      <button
-                        onClick={handleLoginClick}
-                        className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                    <>
+                      {isCampaignMode && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.35 }}
+                          className="w-full"
+                        >
+                          <Link
+                            href="/auth/register"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="relative overflow-hidden flex items-center justify-center w-full px-5 py-3.5 rounded-xl text-base font-semibold bg-linear-to-r from-primary to-violet-600 text-white hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-md shadow-primary/30"
+                          >
+                            <span className="relative z-10 flex items-center gap-2">
+                              <Gift size={18} className="shrink-0" />
+                              {lang === 'fr' ? "Profiter de l'offre" : "Get the offer"}
+                            </span>
+                            <motion.span
+                              className="absolute inset-0 -skew-x-12 bg-linear-to-r from-transparent via-white/30 to-transparent"
+                              animate={{ x: ['-120%', '220%'] }}
+                              transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 2.5, ease: 'easeInOut' }}
+                            />
+                          </Link>
+                        </motion.div>
+                      )}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.4 }}
+                        className="w-full"
                       >
-                        <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
-                          {t('auth.login')}
-                          <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
-                        </span>
-                      </button>
-                    </motion.div>
+                        <button
+                          onClick={handleLoginClick}
+                          className="px-5 py-3.5 rounded-xl group flex items-center justify-center text-base font-semibold w-full border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                        >
+                          <span className="text-foreground group-hover:text-primary transition-colors duration-200 flex items-center">
+                            {t('auth.login')}
+                            <ArrowRight2 size="18" variant="Bold" color="currentColor" className="ml-2" />
+                          </span>
+                        </button>
+                      </motion.div>
+                    </>
                   )}
                 </div>
               </div>

@@ -19,20 +19,17 @@ export const registerSchema = z.object({
   country: z.string().trim().min(1, { message: 'Le pays est requis' }).max(100),
   city: z.string().trim().min(1, { message: 'La ville est requise' }).max(100),
   address: z.string().trim().min(1, { message: "L'adresse est requise" }).max(300),
-  socialRaison: z.string().trim().min(1, { message: 'La raison sociale est requise' }).max(200),
-  activityDomain: z.string().trim().min(1, { message: "Le domaine d'activité est requis" }).max(200),
-  contribuableNumber: z.string().trim().min(1, { message: 'Le numéro de contribuable est requis' }).max(50),
-  smsESenderId: z.string().trim().min(1, { message: "L'ID de l'expéditeur SMS est requis" }).max(11),
-  emailEnterprise: z.string().trim().email({ message: "L'e-mail entreprise n'est pas valide" }).max(254),
-  telephoneEntreprise: z.string().trim()
-    .min(9, { message: "Le téléphone de l'entreprise est requis" })
-    .max(15)
-    .regex(/^\+?\d{9,15}$/, { message: 'Format invalide' }),
-  villeEntreprise: z.string().trim().min(1, { message: "La ville de l'entreprise est requise" }).max(100),
-  numeroCommerce: z.string().trim().min(1, { message: 'Le numéro de commerce est requis' }).max(50),
-  adresseEnterprise: z.string().trim().min(1, { message: "L'adresse de l'entreprise est requise" }).max(300),
-  enterpriseCountryId: z.string().trim().min(1, { message: "Le pays de l'entreprise est requis" }).max(100),
-  urlSiteweb: z.string().trim().url({ message: 'URL invalide' }).max(500).optional().or(z.literal('')),
+  socialRaison: z.string().trim().max(200).optional().or(z.literal('')),
+  activityDomain: z.string().trim().max(200).optional().or(z.literal('')),
+  contribuableNumber: z.string().trim().max(50).optional().or(z.literal('')),
+  smsESenderId: z.string().trim().max(11).optional().or(z.literal('')),
+  emailEnterprise: z.string().trim().max(254).optional().or(z.literal('')),
+  telephoneEntreprise: z.string().trim().max(15).optional().or(z.literal('')),
+  villeEntreprise: z.string().trim().max(100).optional().or(z.literal('')),
+  numeroCommerce: z.string().trim().max(50).optional().or(z.literal('')),
+  adresseEnterprise: z.string().trim().max(300).optional().or(z.literal('')),
+  enterpriseCountryId: z.string().trim().max(100).optional().or(z.literal('')),
+  urlSiteweb: z.string().trim().max(500).optional().or(z.literal('')),
 })
 .superRefine((data, ctx) => {
   if (data.password !== data.confirmPassword) {

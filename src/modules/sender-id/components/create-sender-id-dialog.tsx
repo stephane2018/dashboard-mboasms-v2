@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, type ReactNode } from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import { useT } from "@/core/hooks"
 import {
   Dialog,
@@ -20,6 +20,7 @@ import {
   CloseCircle,
   TickCircle,
   Document,
+  Building,
 } from "iconsax-react"
 import { Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
@@ -28,6 +29,9 @@ import { fileService } from "@/core/services/file.service"
 import { senderIdService } from "@/core/services/sender-id.service"
 import { isSenderIdBlacklisted } from "../constants/blacklist"
 import { cn } from "@/lib/utils"
+import { httpClient } from "@/core/lib/http-client"
+import type { EnterpriseType } from "@/core/models/enterprise"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
 
 interface CreateSenderIdDialogProps {
   open: boolean
@@ -56,6 +60,76 @@ export function CreateSenderIdDialog({
   const { t } = useT()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+
+  // Enterprise section
+  const ENTERPRISE_FIELD_LABELS: Record<string, string> = {
+    socialRaison: "Raison sociale",
+    numeroCommerce: "Numéro de commerce",
+    urlImage: "Logo (URL)",
+    urlSiteweb: "Site web",
+    telephoneEnterprise: "Téléphone",
+    emailEnterprise: "Email",
+    villeEnterprise: "Ville",
+    adresseEnterprise: "Adresse",
+    activityDomain: "Domaine d'activité",
+    contribuableNumber: "Numéro contribuable",
+    pays: "Pays",
+  }
+
+  const ALL_ENTERPRISE_KEYS = Object.keys(ENTERPRISE_FIELD_LABELS)
+
+  // Initialise avec tous les champs vides — le fetch retire ceux déjà remplis
+  const [enterpriseFields, setEnterpriseFields] = useState<Record<string, string>>(
+    () => Object.fromEntries(ALL_ENTERPRISE_KEYS.map((k) => [k, ""]))
+  )
+  const [isUpdatingEnterprise, setIsUpdatingEnterprise] = useState(false)
+
+  useEffect(() => {
+    if (!open || !enterpriseId) return
+    // Remet tous les champs vides à l'ouverture
+    setEnterpriseFields(Object.fromEntries(ALL_ENTERPRISE_KEYS.map((k) => [k, ""])))
+    httpClient.get(`/api/v1/enterprise/${enterpriseId}`)
+      .then((res: any) => {
+        const data: Partial<EnterpriseType> = res?.data?.content ?? res?.data ?? res
+        setEnterpriseFields((prev) => {
+          const next = { ...prev }
+          ALL_ENTERPRISE_KEYS.forEach((key) => {
+            const val = (data as any)[key]
+            if (val && typeof val === "string" && val.trim() !== "") {
+              delete next[key] // champ déjà rempli → on le retire
+            }
+          })
+          return next
+        })
+      })
+      .catch(() => {}) // fetch échoue → on garde tous les champs affichés
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, enterpriseId])
+
+  const emptyEnterpriseKeys = Object.keys(enterpriseFields)
+
+  const handleEnterpriseUpdate = async () => {
+    const payload: Record<string, string> = {}
+    emptyEnterpriseKeys.forEach((key) => {
+      if (enterpriseFields[key]?.trim()) payload[key] = enterpriseFields[key].trim()
+    })
+    if (Object.keys(payload).length === 0) return
+    setIsUpdatingEnterprise(true)
+    try {
+      await httpClient.put(`/api/v1/enterprise/${enterpriseId}`, payload)
+      toast.success("Informations entreprise mises à jour")
+      setEnterpriseFields((prev) => {
+        const next = { ...prev }
+        Object.keys(payload).forEach((k) => delete next[k])
+        return next
+      })
+    } catch {
+      toast.error("Erreur lors de la mise à jour")
+    } finally {
+      setIsUpdatingEnterprise(false)
+    }
+  }
+
   const [kycFile, setKycFile] = useState<File | null>(null)
   const [authLetterFile, setAuthLetterFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -246,8 +320,29 @@ export function CreateSenderIdDialog({
           </DialogHeader>
         </div>
 
-        {/* Scrollable body */}
-        <div className="max-h-[60vh] overflow-y-auto px-5 py-5 space-y-5">
+        {/* Tabs */}
+        <Tabs defaultValue="sender-id" className="flex flex-col">
+          <div className="px-5 pt-3 pb-0 border-b border-border/60">
+            <TabsList className="w-full h-9 rounded-lg">
+              <TabsTrigger value="sender-id" className="flex-1 text-xs gap-1.5">
+                <UserTag size={12} color="currentColor" variant="Bulk" />
+                Sender ID
+              </TabsTrigger>
+              <TabsTrigger value="enterprise" className="flex-1 text-xs gap-1.5">
+                <Building size={12} color="currentColor" variant="Bulk" />
+                Entreprise
+                {emptyEnterpriseKeys.length > 0 && (
+                  <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white">
+                    {emptyEnterpriseKeys.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Scrollable body */}
+          <div className="max-h-[60vh] overflow-y-auto px-5 py-5">
+          <TabsContent value="sender-id" className="space-y-5 mt-0">
           {/* Identité */}
           <section className="space-y-3">
             <SectionLabel icon={<UserTag size={12} color="currentColor" variant="Bulk" />}>
@@ -336,6 +431,10 @@ export function CreateSenderIdDialog({
               className="rounded-lg resize-none text-sm"
             />
           </section>
+
+          
+
+
 
           {/* Documents */}
           <section className="space-y-3">
@@ -556,38 +655,17 @@ export function CreateSenderIdDialog({
 
           {/* Info note */}
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/15">
-            <InfoCircle
-              size={16}
-              color="currentColor"
-              variant="Bulk"
-              className="text-primary shrink-0 mt-0.5"
-            />
+            <InfoCircle size={16} color="currentColor" variant="Bulk" className="text-primary shrink-0 mt-0.5" />
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               {t("senderIds.infoNote")}
             </p>
           </div>
-        </div>
 
-        {/* Sticky footer */}
-        <div
-          className={cn(
-            "sticky bottom-0 z-10 flex items-center justify-end gap-2 px-5 py-3.5",
-            "border-t border-border/60 bg-background/80 backdrop-blur-md"
-          )}
-        >
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isBusy}
-            className="rounded-lg"
-          >
-            {t("common.cancel")}
-          </Button>
           <Button
             onClick={handleSave}
             disabled={isBusy || !canSubmit}
             className={cn(
-              "rounded-lg gap-2 bg-primary text-white font-semibold",
+              "w-full rounded-lg gap-2 bg-primary text-white font-semibold",
               "shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30",
               "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             )}
@@ -603,6 +681,91 @@ export function CreateSenderIdDialog({
                 {t("senderIds.createSenderId")}
               </>
             )}
+          </Button>
+          </TabsContent>
+
+          <TabsContent value="enterprise" className="mt-0">
+            <fieldset className="rounded-xl border border-border/10 px-4 pb-4 pt-1 space-y-3">
+              <legend className="-ml-1 px-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="text-primary"><Building size={12} color="currentColor" variant="Bulk" /></span>
+                Informations entreprise
+              </legend>
+
+              {emptyEnterpriseKeys.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <TickCircle size={28} color="currentColor" variant="Bulk" className="text-emerald-500" />
+                  <p className="text-sm font-medium text-foreground">Profil complet</p>
+                  <p className="text-[11px] text-muted-foreground">Toutes les informations entreprise sont renseignées.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start gap-2.5 rounded-xl border border-primary/15 bg-primary/5 px-3 py-2.5">
+                    <InfoCircle size={14} color="currentColor" variant="Bulk" className="text-primary shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Ces informations sont importantes pour l'approbation de votre Sender ID.
+                      Veuillez compléter les champs manquants ci-dessous avant de soumettre votre demande.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    {emptyEnterpriseKeys.map((key) => (
+                      <div key={key} className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          {ENTERPRISE_FIELD_LABELS[key]}
+                          <span className="ml-1 text-muted-foreground font-normal">(optionnel)</span>
+                        </label>
+                        <Input
+                          value={enterpriseFields[key]}
+                          onChange={(e) =>
+                            setEnterpriseFields((prev) => ({ ...prev, [key]: e.target.value }))
+                          }
+                          placeholder={ENTERPRISE_FIELD_LABELS[key]}
+                          className="h-9 rounded-lg text-sm"
+                          disabled={isUpdatingEnterprise}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleEnterpriseUpdate}
+                    disabled={
+                      isUpdatingEnterprise ||
+                      emptyEnterpriseKeys.every((k) => !enterpriseFields[k]?.trim())
+                    }
+                    className="w-full h-9 rounded-lg gap-2 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 font-semibold text-xs transition-all duration-200"
+                    variant="outline"
+                  >
+                    {isUpdatingEnterprise ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <TickCircle size={13} color="currentColor" variant="Bulk" />
+                    )}
+                    Mise à jour
+                  </Button>
+                </>
+              )}
+            </fieldset>
+          </TabsContent>
+          </div>
+        </Tabs>
+
+
+        {/* Sticky footer */}
+        <div
+          className={cn(
+            "sticky bottom-0 z-10 flex items-center justify-end gap-2 px-5 py-3.5",
+            "border-t border-border/60 bg-background/80 backdrop-blur-md"
+          )}
+        >
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isBusy}
+            className="rounded-lg"
+          >
+            {t("common.cancel")}
           </Button>
         </div>
       </DialogContent>
