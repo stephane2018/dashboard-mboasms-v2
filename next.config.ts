@@ -11,12 +11,19 @@ const metaDomains = {
   frameAncestors: 'https://www.facebook.com https://*.facebook.com https://business.facebook.com',
 };
 
+const googleDomains = {
+  script: 'https://www.googletagmanager.com https://www.google-analytics.com',
+  connect: 'https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com',
+  img: 'https://www.google-analytics.com https://www.googletagmanager.com',
+};
+
 const connectSrc = [
   "'self'",
   "https://dev.mboasms.com",
   "https://*.mboasms.com",
   "https://*.webapptest.cc",
   metaDomains.connect,
+  googleDomains.connect,
   ...(isDev ? ["http://localhost:*"] : []),
   ...(allowTraefik ? ["https://*.traefik.me"] : []),
 ].join(' ');
@@ -58,9 +65,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com ${metaDomains.script}${isDev ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com ${metaDomains.script} ${googleDomains.script}${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      `img-src 'self' data: blob: https://*.mboasms.com https://*.webapptest.cc ${metaDomains.img}`,
+      `img-src 'self' data: blob: https://*.mboasms.com https://*.webapptest.cc ${metaDomains.img} ${googleDomains.img}`,
       "font-src 'self' data:",
       `connect-src ${connectSrc}`,
       `frame-ancestors 'self' ${metaDomains.frameAncestors}`,
