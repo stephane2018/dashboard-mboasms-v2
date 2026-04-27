@@ -4,11 +4,19 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === 'development';
 const allowTraefik = process.env.NEXT_PUBLIC_ALLOW_TRAEFIK === 'true';
 
+const metaDomains = {
+  script: 'https://connect.facebook.net',
+  img: 'https://www.facebook.com https://*.facebook.com',
+  connect: 'https://www.facebook.com https://*.facebook.com https://connect.facebook.net',
+  frameAncestors: 'https://www.facebook.com https://*.facebook.com https://business.facebook.com',
+};
+
 const connectSrc = [
   "'self'",
   "https://dev.mboasms.com",
   "https://*.mboasms.com",
   "https://*.webapptest.cc",
+  metaDomains.connect,
   ...(isDev ? ["http://localhost:*"] : []),
   ...(allowTraefik ? ["https://*.traefik.me"] : []),
 ].join(' ');
@@ -25,10 +33,6 @@ const securityHeaders = [
   {
     key: 'X-XSS-Protection',
     value: '0'
-  },
-  {
-    key: 'X-Frame-Options',
-    value: 'DENY'
   },
   {
     key: 'X-Content-Type-Options',
@@ -54,12 +58,12 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${isDev ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com ${metaDomains.script}${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.mboasms.com https://*.webapptest.cc",
+      `img-src 'self' data: blob: https://*.mboasms.com https://*.webapptest.cc ${metaDomains.img}`,
       "font-src 'self' data:",
       `connect-src ${connectSrc}`,
-      "frame-ancestors 'self'",
+      `frame-ancestors 'self' ${metaDomains.frameAncestors}`,
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
