@@ -1,6 +1,21 @@
+'use client';
+
 import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1485725002939285";
+
+function MetaPixelRouteTracker() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.fbq) return;
+    window.fbq('track', 'PageView');
+  }, [pathname]);
+
+  return null;
+}
 
 export function MetaPixel() {
   if (!META_PIXEL_ID) return null;
@@ -31,6 +46,7 @@ export function MetaPixel() {
           alt=""
         />
       </noscript>
+      <MetaPixelRouteTracker />
     </>
   );
 }
