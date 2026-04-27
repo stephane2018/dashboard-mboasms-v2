@@ -39,7 +39,6 @@ export default function ConditionsPage() {
             <ArrowLeft size="16" color="currentColor" />
             Retour a l&apos;accueil
           </Link>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

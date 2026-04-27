@@ -213,7 +213,6 @@ export function PricingSection({ t, lang, onContactSales }: { t: typeof landingC
                         <Chart2 size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
                         <span className="text-foreground">{plan.minSMS} - {plan.maxSMS} SMS</span>
                       </li>
-                     
                       <li className="flex items-center text-sm">
                         <ShieldTick size="16" color="currentColor" variant="Bulk" className="text-primary mr-2.5 shrink-0" />
                         <span className="text-foreground">{lang === "fr" ? plan.descriptionFr : plan.descriptionEn}</span>
