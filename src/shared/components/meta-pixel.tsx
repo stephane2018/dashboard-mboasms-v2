@@ -1,52 +1,41 @@
-'use client';
+'use client'
 
-import Script from "next/script";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import Script from 'next/script'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1485725002939285";
-
-function MetaPixelRouteTracker() {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.fbq) return;
-    window.fbq('track', 'PageView');
-  }, [pathname]);
-
-  return null;
-}
+const FB_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1485725002939285'
 
 export function MetaPixel() {
-  if (!META_PIXEL_ID) return null;
+  const [loaded, setLoaded] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (!loaded) return
+    window.fbq('track', 'PageView')
+  }, [pathname, loaded])
+
+  if (!FB_PIXEL_ID) return null
 
   return (
     <>
-      <Script id="meta-pixel-init" strategy="beforeInteractive">
-        {`
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${META_PIXEL_ID}');
-          fbq('track', 'PageView');
-        `}
-      </Script>
+      <Script
+        id="fb-pixel"
+        src="/scripts/pixel.js"
+        strategy="afterInteractive"
+        onLoad={() => setLoaded(true)}
+        data-pixel-id={FB_PIXEL_ID}
+      />
       <noscript>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           height="1"
           width="1"
-          style={{ display: "none" }}
-          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+          style={{ display: 'none' }}
+          src={`https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>
-      <MetaPixelRouteTracker />
     </>
-  );
+  )
 }
