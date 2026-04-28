@@ -2,29 +2,46 @@
 
 import Script from 'next/script'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1485725002939285'
 
-export function MetaPixel() {
-  const [loaded, setLoaded] = useState(false)
+export const pageview = () => {
+  window.fbq('track', 'PageView')
+}
+
+function MetaPixelRouteTracker() {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!loaded) return
-    window.fbq('track', 'PageView')
-  }, [pathname, loaded])
+    pageview()
+  }, [pathname])
 
+  return null
+}
+
+export function MetaPixel() {
   if (!FB_PIXEL_ID) return null
 
   return (
     <>
       <Script
         id="fb-pixel"
-        src="/scripts/pixel.js"
         strategy="afterInteractive"
-        onLoad={() => setLoaded(true)}
-        data-pixel-id={FB_PIXEL_ID}
+        dangerouslySetInnerHTML={{
+          __html: `
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '${FB_PIXEL_ID}');
+            fbq('track', 'PageView');
+          `,
+        }}
       />
       <noscript>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -36,6 +53,7 @@ export function MetaPixel() {
           alt=""
         />
       </noscript>
+      <MetaPixelRouteTracker />
     </>
   )
 }
